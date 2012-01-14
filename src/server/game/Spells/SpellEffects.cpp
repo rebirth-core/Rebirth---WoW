@@ -23,7 +23,7 @@
 #include "Log.h"
 #include "UpdateMask.h"
 #include "World.h"
-#include "ObjectMgr.h"
+#include "ObjectMgr.h"F
 #include "SpellMgr.h"
 #include "Player.h"
 #include "SkillExtraItems.h"
