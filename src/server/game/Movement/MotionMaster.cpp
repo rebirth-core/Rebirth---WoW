@@ -175,12 +175,11 @@ void MotionMaster::DelayedExpire()
         --i_top;
 }
 
-void MotionMaster::MoveIdle(MovementSlot slot)
+void MotionMaster::MoveIdle()
 {
-    //if (empty() || !isStatic(top()))
-    //    push(&si_idleMovement);
-    if (!isStatic(Impl[slot]))
-        Mutate(&si_idleMovement, slot);
+    //! Should be preceded by MovementExpired or Clear if there's an overlying movementgenerator active
+    if (empty() || !isStatic(top()))
+        Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
 }
 
 void MotionMaster::MoveRandom(float spawndist)
@@ -196,18 +195,18 @@ void MotionMaster::MoveTargetedHome()
 {
     Clear(false);
 
-    if(i_owner->GetTypeId()==TYPEID_UNIT && !((Creature*)i_owner)->GetCharmerOrOwnerGUID())
+    if (i_owner->GetTypeId()==TYPEID_UNIT && !((Creature*)i_owner)->GetCharmerOrOwnerGUID())
     {
         sLog->outStaticDebug("Creature (Entry: %u GUID: %u) targeted home", i_owner->GetEntry(), i_owner->GetGUIDLow());
         Mutate(new HomeMovementGenerator<Creature>(), MOTION_SLOT_ACTIVE);
     }
-    else if(i_owner->GetTypeId()==TYPEID_UNIT && ((Creature*)i_owner)->GetCharmerOrOwnerGUID())
+    else if (i_owner->GetTypeId()==TYPEID_UNIT && ((Creature*)i_owner)->GetCharmerOrOwnerGUID())
     {
         sLog->outStaticDebug("Pet or controlled creature (Entry: %u GUID: %u) targeting home", i_owner->GetEntry(), i_owner->GetGUIDLow() );
         Unit *target = ((Creature*)i_owner)->GetCharmerOrOwner();
-        if(target)
+        if (target)
         {
-            sLog->outStaticDebug("Following %s (GUID: %u)", target->GetTypeId()==TYPEID_PLAYER ? "player" : "creature", target->GetTypeId()==TYPEID_PLAYER ? target->GetGUIDLow() : ((Creature*)target)->GetDBTableGUIDLow() );
+            sLog->outStaticDebug("Following %s (GUID: %u)", target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature", target->GetTypeId() == TYPEID_PLAYER ? target->GetGUIDLow() : ((Creature*)target)->GetDBTableGUIDLow() );
             Mutate(new FollowMovementGenerator<Creature>(*target,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE), MOTION_SLOT_ACTIVE);
         }
     }

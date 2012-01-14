@@ -18,7 +18,7 @@
 
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
-#include "packet_builder.h"
+#include "MovementPacketBuilder.h"
 #include "Unit.h"
 
 namespace Movement
@@ -50,7 +50,7 @@ namespace Movement
         return MOVE_RUN;
     }
 
-    int32 MoveSplineInit::Launch()
+    void MoveSplineInit::Launch()
     {
         MoveSpline& move_spline = *unit.movespline;
 
@@ -82,10 +82,10 @@ namespace Movement
             args.velocity = unit.GetSpeed(SelectSpeedType(moveFlags));
 
         if (!args.Validate())
-            return 0;
+            return;
 
         if (moveFlags & MOVEMENTFLAG_ROOT)
-			moveFlags &= ~MOVEMENTFLAG_MASK_MOVING;
+            moveFlags &= ~MOVEMENTFLAG_MASK_MOVING;
 
         unit.m_movementInfo.SetMovementFlags((MovementFlags)moveFlags);
         move_spline.Initialize(args);
@@ -93,9 +93,7 @@ namespace Movement
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
         data.append(unit.GetPackGUID());
         PacketBuilder::WriteMonsterMove(move_spline, data);
-        unit.SendMessageToSet(&data, true);
-
-        return move_spline.Duration();
+        unit.SendMessageToSet(&data,true);
     }
 
     MoveSplineInit::MoveSplineInit(Unit& m) : unit(m)

@@ -483,7 +483,7 @@ void Map::ScriptsProcess()
                     }
                     else
                         unit->NearTeleportTo(step.script->MoveTo.DestX, step.script->MoveTo.DestY, step.script->MoveTo.DestZ, unit->GetOrientation());
-                    }
+                }
                 break;
 
             case SCRIPT_COMMAND_FLAG_SET:

@@ -25,6 +25,8 @@
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
 
+#include <cmath>
+
 template<class T, typename D>
 void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 {
@@ -75,25 +77,14 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
         if( i_destinationHolder.HasDestination() && i_destinationHolder.GetDestinationDiff(x,y,z) < bothObjectSize )
             return;
     */
-    if (!i_path)
-        i_path = new PathFinderMovementGenerator(&owner);
 
-    // allow pets following their master to cheat while generating paths
-    bool forceDest = (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->isPet()
-                        && owner.HasUnitState(UNIT_STAT_FOLLOW));
-    i_path->calculate(x, y, z, forceDest);
-    if (i_path->getPathType() & PATHFIND_NOPATH)
-        return;
 
     D::_addUnitStateMove(owner);
     i_targetReached = false;
     i_recalculateTravel = false;
-    owner.AddUnitState(UNIT_STAT_CHASE);
 
     Movement::MoveSplineInit init(owner);
-    if (!i_target->IsInWater())
-        init.MovebyPath(i_path->getPath());
-    else init.MoveTo(i_target->GetPositionX(),i_target->GetPositionY(),i_target->GetPositionZ(),false,false);
+    init.MoveTo(x,y,z);
     init.SetWalk(((D*)this)->EnableWalking());
     init.Launch();
 }
@@ -130,7 +121,7 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     if (!i_target.isValid() || !i_target->IsInWorld())
         return false;
 
-    if (!&owner || !owner.isAlive())
+    if (!owner.isAlive())
         return true;
 
     if (owner.HasUnitState(UNIT_STAT_NOT_MOVE))
@@ -157,18 +148,11 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     i_recheckDistance.Update(time_diff);
     if (i_recheckDistance.Passed())
     {
-        i_recheckDistance.Reset(100);
+        i_recheckDistance.Reset(50);
         //More distance let have better performance, less distance let have more sensitive reaction at target move.
-        float allowed_dist = owner.GetCombatReach() + sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
-        G3D::Vector3 dest = owner.movespline->FinalDestination();
-
-        bool targetMoved = false;
-        if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
-            targetMoved = !i_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
-        else
-            targetMoved = !i_target->IsWithinDist2d(dest.x, dest.y, allowed_dist);
-
-        if (targetMoved)
+        float allowed_dist = i_target->GetObjectSize() + owner.GetObjectSize() + MELEE_RANGE - 0.5f;
+        float dist = (owner.movespline->FinalDestination() - G3D::Vector3(i_target->GetPositionX(),i_target->GetPositionY(),i_target->GetPositionZ())).squaredLength();
+        if (dist >= allowed_dist * allowed_dist)
             _setTargetLocation(owner);
     }
 
