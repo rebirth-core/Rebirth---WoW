@@ -23,6 +23,9 @@ void AddSC_example_escort();
 void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 void AddSC_example_commandscript();
+void AddSC_npc_jeran_lockwood();
+void AddSC_npc_valis_windchaser();
+void AddSC_npc_rugan_steelbelly();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -686,6 +689,8 @@ void AddWorldScripts()
     AddSC_achievement_scripts();
     AddSC_chat_log();
 	AddSC_npc_jeran_lockwood();
+	AddSC_npc_valis_windchaser();
+	AddSC_npc_rugan_steelbelly();
 #endif
 }
 
