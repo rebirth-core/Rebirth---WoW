@@ -598,8 +598,8 @@ void AddSC_outdoorpvp_zm();
 void AddSC_chat_log();
 
 //Rebirth WoW Scripts
-void AddSC_player_ranking();
-void AddSC_rank_info();
+//void AddSC_player_ranking();
+//void AddSC_rank_info();
 
 #endif
 
@@ -1238,7 +1238,7 @@ void AddBattlegroundScripts()
 void AddCustomScripts()
 {
 #ifdef SCRIPTS
-   AddSC_player_ranking();
-   AddSC_rank_info();
+  // AddSC_player_ranking();
+  // AddSC_rank_info();
 #endif
 }
