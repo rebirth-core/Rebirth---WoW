@@ -4778,6 +4778,12 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     if (roll_chance_i(20))                       // backfire stun
                         target->CastSpell(target, 51581, true, NULL, this);
                     break;
+                case 40856:                             // Aether Ray wrangling rope
+                    {
+                        GetBase()->SetMaxDuration(5000);
+                        GetBase()->SetDuration(5000);
+                        return;
+                    }
                 case 43873:                                     // Headless Horseman Laugh
                     target->PlayDistanceSound(11965);
                     break;
@@ -4898,6 +4904,27 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                             target->CastSpell(target, 36731, true, NULL, this);
                             break;
                         }
+
+						case 40856:                                     // Aether Ray Rope
+						{
+							if(target->GetEntry() != 22181)
+								return;
+
+							if(target->GetHealthPct() > 40.0f)
+								return;
+
+							if(aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+							{
+								if(Unit* Caster = GetCaster())
+								{
+									Caster->CastSpell(target, 40917, true);
+									((Player*)Caster)->KilledMonsterCredit(23343,0);
+									((Creature*)target)->ForcedDespawn(500);
+								}
+							}
+							return;
+						}
+
                         case 44191:                                     // Flame Strike
                         {
                             if (target->GetMap()->IsDungeon())
