@@ -22,6 +22,9 @@ set(scripts_STAT_SRCS
   World/npc_professions.cpp
   World/npc_taxi.cpp
   World/npcs_special.cpp
+  World/npc_jeran_lockwood.cpp
+  World/npc_valis_windchaser.cpp
+  World/npc_rugan_steelbelly.cpp
 )
 
 message("  -> Prepared: World")
