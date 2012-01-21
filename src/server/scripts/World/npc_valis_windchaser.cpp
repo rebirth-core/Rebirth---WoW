@@ -4,8 +4,8 @@
 #define VALIS_DEFAULT_TEXTID 14453
 #define VALIS_QUEST_TEXTID 14438
 #define VALIS_RP_TEXTID 14439
-#define GOSSIP_HELLO_VALIS_1 "Hol dir ein Argentumtunier Mount und eine Lanze."
-#define GOSSIP_HELLO_VALIS_2 "Ich brauche auch ein Ratschlag."
+#define GOSSIP_HELLO_VALIS_1 "Ich brauche ein Ratschlag."
+#define GOSSIP_HELLO_VALIS_2 "Danke."
 #define SPELL_CREDIT_VALIS 64115
 class npc_valis_windchaser : public CreatureScript
 {
@@ -22,7 +22,7 @@ public:
                        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_VALIS_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
                player->SEND_GOSSIP_MENU(VALIS_QUEST_TEXTID, creature->GetGUID());
                }
-               //Sinon Texte par défaut
+               //Sinon Texte par dï¿½faut
                else
                        player->SEND_GOSSIP_MENU(VALIS_DEFAULT_TEXTID, creature->GetGUID());
                return true;
@@ -34,7 +34,7 @@ public:
                {
                        case GOSSIP_ACTION_INFO_DEF+1:
                                player->CastSpell(player,SPELL_CREDIT_VALIS,true);//Cast du sort de credit quest (valide l'objectif)
-                               player->CLOSE_GOSSIP_MENU();//Ferme la fenetre du gossip coté client
+                               player->CLOSE_GOSSIP_MENU();//Ferme la fenetre du gossip cotï¿½ client
                        break;
                        case GOSSIP_ACTION_INFO_DEF+2:
                                //Raconte un blabla

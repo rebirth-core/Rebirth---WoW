@@ -3096,17 +3096,9 @@ void AuraEffect::HandleModPossess(AuraApplication const* aurApp, uint8 mode, boo
     }
 
     if (apply)
-    {
-        if (target->SetCharmedBy(caster, CHARM_TYPE_POSSESS, aurApp))
-            caster->ToPlayer()->SetMover(target);
-    }
+        target->SetCharmedBy(caster, CHARM_TYPE_POSSESS, aurApp);
     else
-    {
         target->RemoveCharmedBy(caster);
-        caster->ToPlayer()->SetMover(caster);
-        if (target->GetTypeId() == TYPEID_PLAYER)
-            target->ToPlayer()->SetMover(target);
-    }
 }
 
 // only one spell has this aura
@@ -3134,13 +3126,11 @@ void AuraEffect::HandleModPossessPet(AuraApplication const* aurApp, uint8 mode, 
         if (caster->ToPlayer()->GetPet() != pet)
             return;
 
-        if (pet->SetCharmedBy(caster, CHARM_TYPE_POSSESS, aurApp))
-            caster->ToPlayer()->SetMover(pet);
+        pet->SetCharmedBy(caster, CHARM_TYPE_POSSESS, aurApp);
     }
     else
     {
         pet->RemoveCharmedBy(caster);
-        caster->ToPlayer()->SetMover(caster);
 
         if (!pet->IsWithinDistInMap(caster, pet->GetMap()->GetVisibilityRange()))
             pet->Remove(PET_SAVE_NOT_IN_SLOT, true);
@@ -4742,6 +4732,12 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     if (roll_chance_i(20))                       // backfire stun
                         target->CastSpell(target, 51581, true, NULL, this);
                     break;
+                case 40856:                             // Aether Ray wrangling rope
+                    {
+                        GetBase()->SetMaxDuration(5000);
+                        GetBase()->SetDuration(5000);
+                        return;
+                    }
                 case 43873:                                     // Headless Horseman Laugh
                     target->PlayDistanceSound(11965);
                     break;
@@ -4867,6 +4863,27 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                             target->CastSpell(target, 36731, true, NULL, this);
                             break;
                         }
+
+						case 40856:                                     // Aether Ray Rope
+						{
+							if(target->GetEntry() != 22181)
+								return;
+
+							if(target->GetHealthPct() > 40.0f)
+								return;
+
+							if(aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+							{
+								if(Unit* Caster = GetCaster())
+								{
+									Caster->CastSpell(target, 40917, true);
+									((Player*)Caster)->KilledMonsterCredit(23343,0);
+									((Creature*)target)->ForcedDespawn(500);
+								}
+							}
+							return;
+						}
+
                         case 44191:                                     // Flame Strike
                         {
                             if (target->GetMap()->IsDungeon())
@@ -4897,6 +4914,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                             target->CastSpell((Unit*)NULL, GetAmount(), true, NULL, this);
                             break;
                         case 58600: // Restricted Flight Area
+						case 58730: // Restricted Flight Area
                             if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                                 target->CastSpell(target, 58601, true);
                             break;

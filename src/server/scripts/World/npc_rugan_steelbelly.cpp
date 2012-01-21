@@ -4,8 +4,8 @@
 #define RUGAN_DEFAULT_TEXTID 14453
 #define RUGAN_QUEST_TEXTID 14436
 #define RUGAN_RP_TEXTID 14437
-#define GOSSIP_HELLO_RUGAN_1 "Hallo."
-#define GOSSIP_HELLO_RUGAN_2 "Ratschlag für das chargen"
+#define GOSSIP_HELLO_RUGAN_1 "Ich brauche einen Ratschlag."
+#define GOSSIP_HELLO_RUGAN_2 "Danke"
 #define SPELL_CREDIT_RUGAN 64114
 
 class npc_rugan_steelbelly : public CreatureScript
