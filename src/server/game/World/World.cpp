@@ -71,6 +71,7 @@
 #include "CharacterDatabaseCleaner.h"
 #include "ScriptMgr.h"
 #include "WeatherMgr.h"
+#include "AuctionHouseBot.h"
 #include "CreatureTextMgr.h"
 #include "SmartAI.h"
 #include "Channel.h"
@@ -566,6 +567,18 @@ void World::LoadConfigSettings(bool reload)
     ///- Read other configuration items from the config file
 
     m_bool_configs[CONFIG_DURABILITY_LOSS_IN_PVP] = ConfigMgr::GetBoolDefault("DurabilityLoss.InPvP", false);
+
+    // movement anticheat
+    m_MvAnticheatEnable                     = ConfigMgr::GetBoolDefault("Anticheat.Movement.Enable",false);
+    m_MvAnticheatKick                       = ConfigMgr::GetBoolDefault("Anticheat.Movement.Kick",false);
+    m_MvAnticheatAlarmCount                 = (uint32)ConfigMgr::GetIntDefault("Anticheat.Movement.AlarmCount", 5);
+    m_MvAnticheatAlarmPeriod                = (uint32)ConfigMgr::GetIntDefault("Anticheat.Movement.AlarmTime", 5000);
+    m_MvAntiCheatBan                        = (unsigned char)ConfigMgr::GetIntDefault("Anticheat.Movement.BanType",0);
+    m_MvAnticheatBanTime                    = ConfigMgr::GetStringDefault("Anticheat.Movement.BanTime","1m");
+    m_MvAnticheatGmLevel                    = (unsigned char)ConfigMgr::GetIntDefault("Anticheat.Movement.GmLevel",0);
+    m_MvAnticheatKill                       = ConfigMgr::GetBoolDefault("Anticheat.Movement.Kill",false);
+    m_MvAnticheatMaxXYT                     = ConfigMgr::GetFloatDefault("Anticheat.Movement.MaxXYT",0.04f);
+    m_MvAnticheatIgnoreAfterTeleport        = (uint16)ConfigMgr::GetIntDefault("Anticheat.Movement.IgnoreSecAfterTeleport",10);
 
     m_int_configs[CONFIG_COMPRESSION] = ConfigMgr::GetIntDefault("Compression", 1);
     if (m_int_configs[CONFIG_COMPRESSION] < 1 || m_int_configs[CONFIG_COMPRESSION] > 9)
@@ -1750,6 +1763,9 @@ void World::SetInitialWorldSettings()
 
     LoadCharacterNameData();
 
+    sLog->outString("Initialize AuctionHouseBot...");
+    auctionbot.Initialize();
+
     // possibly enable db logging; avoid massive startup spam by doing it here.
     if (sLog->GetLogDBLater())
     {
@@ -1916,6 +1932,7 @@ void World::Update(uint32 diff)
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
     {
+        auctionbot.Update();
         m_timers[WUPDATE_AUCTIONS].Reset();
 
         ///- Update mails (return old mails with item, or delete them)
