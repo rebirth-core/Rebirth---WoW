@@ -23,9 +23,6 @@ void AddSC_example_escort();
 void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 void AddSC_example_commandscript();
-void AddSC_npc_jeran_lockwood();
-void AddSC_npc_valis_windchaser();
-void AddSC_npc_rugan_steelbelly();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -504,7 +501,7 @@ void AddSC_storm_peaks();
 void AddSC_zuldrak();
 void AddSC_crystalsong_forest();
 void AddSC_isle_of_conquest();
-
+void AddSC_Argen_Tournament();
 //outland
 void AddSC_boss_exarch_maladaar();           //Auchindoun Auchenai Crypts
 void AddSC_boss_shirrak_the_dead_watcher();
@@ -691,9 +688,6 @@ void AddWorldScripts()
     AddSC_npc_taxi();
     AddSC_achievement_scripts();
     AddSC_chat_log();
-	AddSC_npc_jeran_lockwood();
-	AddSC_npc_valis_windchaser();
-	AddSC_npc_rugan_steelbelly();
 #endif
 }
 
@@ -1219,6 +1213,7 @@ void AddNorthrendScripts()
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
     AddSC_isle_of_conquest();
+    AddSC_Argen_Tournament();
 	AddSC_wintergrasp();
 #endif
 }
