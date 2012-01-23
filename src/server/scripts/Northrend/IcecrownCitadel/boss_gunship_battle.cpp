@@ -1028,7 +1028,7 @@ class npc_muradin_gunship : public CreatureScript
                                 CheckUnfriendlyShip(me, _instance, DATA_GB_HIGH_OVERLORD_SAURFANG)->AddNPCPassengerInInstance(NPC_GB_PORTAL, 47.55099f, -0.101778f, 37.61111f, 1.55138f);
                             }
                             break;
-                        case EVENT_RENDING_THROW:
+                        /*case EVENT_RENDING_THROW:
                             if (UpdateVictim())
                                 if (me->getVictim()->IsWithinDistInMap(me, 50.0f, false)) // Todo: Fix the distance
                                 {
@@ -1037,7 +1037,7 @@ class npc_muradin_gunship : public CreatureScript
                                 }
                                 else
                                     events.CancelEvent(EVENT_RENDING_THROW);
-                            break;
+                            break;*/
                         case EVENT_TASTE_OF_BLOOD:
                             DoCast(me, SPELL_TASTE_OF_BLOOD);
                             break;
@@ -1069,7 +1069,7 @@ class npc_muradin_gunship : public CreatureScript
                             }
                             break;
                         case EVENT_OUTRO_ALLIANCE_1:
-  //                          _instance->DoCompleteAchievement(RAID_MODE(IM_ON_A_BOAT_10,IM_ON_A_BOAT_25,IM_ON_A_BOAT_10,IM_ON_A_BOAT_25));
+                            _instance->DoCompleteAchievement(RAID_MODE(IM_ON_A_BOAT_10,IM_ON_A_BOAT_25,IM_ON_A_BOAT_10,IM_ON_A_BOAT_25));
                             _instance->DoCastSpellOnPlayers(SPELL_ACHIEVEMENT_CHECK);
                             StartFlyShip(skybreaker);
                             StopFlyShip(CheckUnfriendlyShip(me,_instance,DATA_GB_HIGH_OVERLORD_SAURFANG));
@@ -2248,7 +2248,7 @@ class npc_saurfang_gunship : public CreatureScript
                             }
                             break;
                         case EVENT_OUTRO_HORDE_1:
-//                            _instance->DoCompleteAchievement(RAID_MODE(IM_ON_A_BOAT_10,IM_ON_A_BOAT_25,IM_ON_A_BOAT_10,IM_ON_A_BOAT_25));
+                            _instance->DoCompleteAchievement(RAID_MODE(IM_ON_A_BOAT_10,IM_ON_A_BOAT_25,IM_ON_A_BOAT_10,IM_ON_A_BOAT_25));
                             _instance->DoCastSpellOnPlayers(SPELL_ACHIEVEMENT_CHECK);
                             StartFlyShip(orgrimmar);
                             StopFlyShip(CheckUnfriendlyShip(me,_instance,DATA_GB_MURADIN_BRONZEBEARD));
@@ -2271,7 +2271,7 @@ class npc_saurfang_gunship : public CreatureScript
                             _instance->SetBossState(DATA_GUNSHIP_EVENT, FAIL);
                             RestartEvent(orgrimmar, CheckUnfriendlyShip(me,_instance,DATA_GB_MURADIN_BRONZEBEARD), map, HORDE);
                             break;
-                        case EVENT_RENDING_THROW:
+                        /*case EVENT_RENDING_THROW:
                             if (UpdateVictim())
                                 if (me->getVictim()->IsWithinDistInMap(me, 50.0f, false)) // Todo: Fix the distance
                                 {
@@ -2280,7 +2280,7 @@ class npc_saurfang_gunship : public CreatureScript
                                }
                                else
                                    events.CancelEvent(EVENT_RENDING_THROW);
-                            break;
+                            break;*/
                         case EVENT_SPAWN_MAGE:
                                Talk(SAY_NEW_BATTLE_MAGE_SPAWNED);
                                orgrimmar->AddNPCPassengerInInstance(NPC_GB_KORKRON_BATTLE_MAGE, 15.03016f, 0.00016f, 37.70952f, 1.55138f);
