@@ -19,7 +19,7 @@
 #ifndef DEF_TOC_H
 #define DEF_TOC_H
 
-enum eData
+enum Data
 {
     BOSS_GRAND_CHAMPIONS,
     BOSS_ARGENT_CHALLENGE_E,
@@ -27,26 +27,25 @@ enum eData
     BOSS_BLACK_KNIGHT,
     DATA_MOVEMENT_DONE,
     DATA_LESSER_CHAMPIONS_DEFEATED,
+    DATA_GRAND_CHAMPIONS_DEFEATED,
     DATA_START,
     DATA_IN_POSITION,
-    DATA_ARGENT_SOLDIER_DEFEATED
+    DATA_ARGENT_SOLDIER_DEFEATED,
+    DATA_TEAM_IN_INSTANCE
 };
 
 enum Data64
 {
     DATA_ANNOUNCER,
     DATA_MAIN_GATE,
-
-    DATA_GRAND_CHAMPION_VEHICLE_1,
-    DATA_GRAND_CHAMPION_VEHICLE_2,
-    DATA_GRAND_CHAMPION_VEHICLE_3,
+    DATA_PORTCULLIS,
 
     DATA_GRAND_CHAMPION_1,
     DATA_GRAND_CHAMPION_2,
     DATA_GRAND_CHAMPION_3
 };
 
-enum eNpcs
+enum Npcs
 {
     // Horde Champions
     NPC_MOKRA                   = 35572,
@@ -62,6 +61,20 @@ enum eNpcs
     NPC_JAELYNE                 = 34657,
     NPC_LANA                    = 34703,
 
+    // Faction champions horde
+    NPC_ORGRIMMAR_CHAMPION      = 35314,
+    NPC_SILVERMOON_CHAMPION     = 35326,
+    NPC_THUNDER_CHAMPION        = 35325,
+    NPC_TROLL_CHAMPION          = 35323,
+    NPC_UNDERCITY_CHAMPION      = 35327,
+
+    // Faction champions alliance
+    NPC_STORMWIND_CHAMPION      = 35328,
+    NPC_GNOMEREGAN_CHAMPION     = 35331,
+    NPC_EXODAR_CHAMPION         = 35330,
+    NPC_DARNASSUS_CHAMPION      = 35332,
+    NPC_IRONFORGE_CHAMPION      = 35329,
+
     NPC_EADRIC                  = 35119,
     NPC_PALETRESS               = 34928,
 
@@ -74,55 +87,52 @@ enum eNpcs
     NPC_RISEN_JAEREN            = 35545,
     NPC_RISEN_ARELAS            = 35564,
 
+    // Announcer Start Event
     NPC_JAEREN                  = 35004,
-    NPC_ARELAS                  = 35005
+    NPC_ARELAS                  = 35005,
+
+    // Announcer
+    NPC_JAEREN_AN               = 35591,
+    NPC_ARELAS_AN               = 35592,
 };
 
-enum eGameObjects
+enum GameObjects
 {
     GO_MAIN_GATE                = 195647,
+    GO_NORTH_PORTCULLIS         = 195650,
 
     GO_CHAMPIONS_LOOT           = 195709,
-    GO_CHAMPIONS_LOOT_H            = 195710,
+    GO_CHAMPIONS_LOOT_H         = 195710,
 
     GO_EADRIC_LOOT              = 195374,
     GO_EADRIC_LOOT_H            = 195375,
 
     GO_PALETRESS_LOOT           = 195323,
-    GO_PALETRESS_LOOT_H            = 195324
+    GO_PALETRESS_LOOT_H         = 195324
 };
 
-enum eVehicles
+enum Vehicles
 {
-    //Grand Champions Alliance Vehicles
-    VEHICLE_MARSHAL_JACOB_ALERIUS_MOUNT             = 35637,
-    VEHICLE_AMBROSE_BOLTSPARK_MOUNT                 = 35633,
-    VEHICLE_COLOSOS_MOUNT                           = 35768,
-    VEHICLE_EVENSONG_MOUNT                          = 34658,
-    VEHICLE_LANA_STOUTHAMMER_MOUNT                  = 35636,
-    //Faction Champions (ALLIANCE)
-    VEHICLE_DARNASSIA_NIGHTSABER                    = 33319,
-    VEHICLE_EXODAR_ELEKK                            = 33318,
-    VEHICLE_STORMWIND_STEED                         = 33217,
-    VEHICLE_GNOMEREGAN_MECHANOSTRIDER               = 33317,
-    VEHICLE_IRONFORGE_RAM                           = 33316,
-    //Grand Champions Horde Vehicles
-    VEHICLE_MOKRA_SKILLCRUSHER_MOUNT                = 35638,
-    VEHICLE_ERESSEA_DAWNSINGER_MOUNT                = 35635,
-    VEHICLE_RUNOK_WILDMANE_MOUNT                    = 35640,
-    VEHICLE_ZUL_TORE_MOUNT                          = 35641,
-    VEHICLE_DEATHSTALKER_VESCERI_MOUNT              = 35634,
-    //Faction Champions (HORDE)
-    VEHICLE_FORSAKE_WARHORSE                        = 33324,
-    VEHICLE_THUNDER_BLUFF_KODO                      = 33322,
-    VEHICLE_ORGRIMMAR_WOLF                          = 33320,
-    VEHICLE_SILVERMOON_HAWKSTRIDER                  = 33323,
-    VEHICLE_DARKSPEAR_RAPTOR                        = 33321,
+    VEHICLE_ARGENT_WARHORSE     = 35644,
+    VEHICLE_ARGENT_BATTLEWORG   = 36558,
+    VEHICLE_BLACK_KNIGHT        = 35491
+};
 
-    VEHICLE_ARGENT_WARHORSE                         = 35644,
-    VEHICLE_ARGENT_BATTLEWORG                       = 36558,
+enum Faction
+{
+    FACTION_HOSTILE_FOR_ALL     = 16
+};
 
-    VEHICLE_BLACK_KNIGHT                            = 35491
+static void BindPlayersToInstance(Creature* creature)
+{
+    Map* map = creature->GetMap();
+
+    if (map && map->IsDungeon() && map->IsRaidOrHeroicDungeon())
+    {
+        Map::PlayerList const &list = map->GetPlayers();
+        if (!list.isEmpty() && list.begin()->getSource())
+            ((InstanceMap*)map)->PermBindAllPlayers(list.begin()->getSource());
+    }
 };
 
 #endif
