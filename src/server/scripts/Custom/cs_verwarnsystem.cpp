@@ -33,13 +33,23 @@ class warn_commandscript : public CommandScript
 
 				return 0;
 			}
+
+			return 0;
 		}
 
 
 
         static bool HandleWarnLowCommand(ChatHandler* handler, const char* args)
         {
-			
+			if (!*args)  return false;
+			char* char_name = strtok((char*)args, " ");
+			if (!char_name)   return false;	
+				
+            std::string playerName = char_name;	
+
+			int playerGUID = GetCharInfo(playerName, 1);
+			int accountId = GetCharInfo(playerName, 2);
+			int isOnline = GetCharInfo(playerName, 3);
 		}
 		
         ChatCommand* GetCommands() const
