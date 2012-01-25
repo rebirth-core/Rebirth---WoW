@@ -38,6 +38,31 @@ class warn_commandscript : public CommandScript
 		}
 
 
+		static int GetWarnLevel(int accountId)
+		{
+			QueryResult result = LoginDatabase.PQuery("SELECT warn_level FROM account WHERE id = '%d'", accountId);
+			if(result)
+			{
+			    Field *field = result->Fetch();
+			    uint32 warnLevel = field[0].GetUInt32();
+				return warnLevel;
+			}
+			else 
+				return 0;
+		}
+
+		static int GetWarnings(int accountId)
+		{
+			QueryResult result = LoginDatabase.PQuery("SELECT warnings FROM account WHERE id = '%d'", accountId);
+			if(result)
+			{
+			    Field *field = result->Fetch();
+			    uint32 warnings = field[0].GetUInt32();
+				return warnings;
+			}
+			else 
+				return 0;
+		}
 
         static bool HandleWarnLowCommand(ChatHandler* handler, const char* args)
         {
@@ -50,6 +75,8 @@ class warn_commandscript : public CommandScript
 			int playerGUID = GetCharInfo(playerName, 1);
 			int accountId = GetCharInfo(playerName, 2);
 			int isOnline = GetCharInfo(playerName, 3);
+			int warnLevel = GetWarnLevel(accountId);
+			int warnings = GetWarnings(accountId);
 		}
 		
         ChatCommand* GetCommands() const
