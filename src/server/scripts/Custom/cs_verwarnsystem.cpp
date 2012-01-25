@@ -9,24 +9,28 @@ class warn_commandscript : public CommandScript
 
 		static int GetCharInfo(std::string charName, int getInfo)
 		{
-			QueryResult result_char_guid = CharacterDatabase.PQuery("SELECT guid, account, online FROM characters WHERE name = '%s'", charName.c_str());
-			if(result_char_guid)
+			QueryResult result = CharacterDatabase.PQuery("SELECT guid, account, online FROM characters WHERE name = '%s'", charName.c_str());
+			if(result)
 			{
-				Field *field = result_char_guid->Fetch();
+				Field *field = result->Fetch();
+				uint32 char_guid;
+				uint32 accountId;
+				uint32 IsOnline;
+
 				switch(getInfo)
 				{
 					case 1:
-						uint32 char_guid = field[0].GetUInt32();
+						char_guid = field[0].GetUInt32();
 						return char_guid;
 					break;
 
 					case 2:
-						uint32 accountId = field[1].GetUInt32();
+						accountId = field[1].GetUInt32();
 						return accountId;
 					break;
 
 					case 3:
-						uint32 IsOnline = field[2].GetUInt32();
+						IsOnline = field[2].GetUInt32();
 						return IsOnline;
 					break;
 				}
@@ -64,19 +68,45 @@ class warn_commandscript : public CommandScript
 				return 0;
 		}
 
+		static void WarnPlayer(int accountId)
+		{
+
+		}
+
+		static int GetMaxWarnings(int accountId)
+		{
+			return 0;
+		}
+
+		static void BanAccount(int accountId)
+		{
+
+		}
+
         static bool HandleWarnLowCommand(ChatHandler* handler, const char* args)
         {
 			if (!*args)  return false;
 			char* char_name = strtok((char*)args, " ");
 			if (!char_name)   return false;	
-				
-            std::string playerName = char_name;	
+			std::string playerName = char_name;	
 
 			int playerGUID = GetCharInfo(playerName, 1);
 			int accountId = GetCharInfo(playerName, 2);
 			int isOnline = GetCharInfo(playerName, 3);
 			int warnLevel = GetWarnLevel(accountId);
 			int warnings = GetWarnings(accountId);
+
+			if(playerGUID != 0 && accountId != 0)
+			{
+				WarnPlayer(accountId);
+
+				if(GetWarnings(accountId) >= GetMaxWarnings(accountId))
+				{
+					BanAccount(accountId);
+				}
+			}
+
+			return true;
 		}
 		
         ChatCommand* GetCommands() const
