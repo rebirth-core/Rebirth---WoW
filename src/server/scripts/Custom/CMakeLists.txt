@@ -10,8 +10,7 @@
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
-Custom/npc_ranking_info.cpp
-Custom/player_ranking.cpp
+Custom/cs_verwarnsystem.cpp
 )
 
 message("  -> Prepared: Custom")

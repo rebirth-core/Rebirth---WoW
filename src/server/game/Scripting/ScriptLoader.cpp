@@ -601,8 +601,9 @@ void AddSC_wintergrasp();
 void AddSC_chat_log();
 
 //Rebirth WoW Scripts
-void AddSC_player_ranking();
-void AddSC_rank_info();
+//void AddSC_player_ranking();
+//void AddSC_rank_info();
+  void AddSC_verwarn_command();
 
 #endif
 
@@ -1245,7 +1246,8 @@ void AddBattlegroundScripts()
 void AddCustomScripts()
 {
 #ifdef SCRIPTS
-   AddSC_player_ranking();
-   AddSC_rank_info();
+   //AddSC_player_ranking();
+   //AddSC_rank_info();
+   AddSC_verwarn_command();
 #endif
 }
