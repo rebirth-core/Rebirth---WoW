@@ -24,6 +24,7 @@
 #include "World.h"
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
+#include "Player.h"
 
 template<class T, typename D>
 void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
