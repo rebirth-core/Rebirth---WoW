@@ -30,7 +30,7 @@
 PathFinderMovementGenerator::PathFinderMovementGenerator(const Unit* owner) :
     m_polyLength(0), m_type(PATHFIND_BLANK),
     m_useStraightPath(false), m_forceDestination(false), m_pointPathLimit(MAX_POINT_PATH_LENGTH),
-    m_sourceUnit(owner), m_navMesh(NULL), m_navMeshQuery(NULL)
+    m_sourceUnit(owner), m_navMesh(NULL), m_navMeshLock(NULL), m_navMeshQuery(NULL)
 {
     sLog->outDebug(LOG_FILTER_MAPS, "++ PathFinderMovementGenerator::PathFinderMovementGenerator for %u \n", m_sourceUnit->GetGUIDLow());
 
@@ -39,6 +39,7 @@ PathFinderMovementGenerator::PathFinderMovementGenerator(const Unit* owner) :
     {
         MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
         m_navMesh = mmap->GetNavMesh(mapId);
+        m_navMeshLock = mmap->GetNavMeshLock(mapId);
         m_navMeshQuery = mmap->GetNavMeshQuery(mapId, m_sourceUnit->GetInstanceId());
     }
 
@@ -96,7 +97,9 @@ bool PathFinderMovementGenerator::calculate(float destX, float destY, float dest
     else
     {
         // target moved, so we need to update the poly path
+        m_navMeshLock->acquire_read();
         BuildPolyPath(start, dest);
+        m_navMeshLock->release();
         return true;
     }
 }
