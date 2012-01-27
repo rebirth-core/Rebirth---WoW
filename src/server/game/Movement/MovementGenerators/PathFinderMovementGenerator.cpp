@@ -555,11 +555,7 @@ bool PathFinderMovementGenerator::HaveTile(const Vector3 &p) const
     float point[VERTEX_SIZE] = {p.y, p.z, p.x};
 
     m_navMesh->calcTileLoc(point, &tx, &ty);
-
-    if (m_navMesh->getTileAt(tx, ty))
-        return true;
-
-    return false;
+    return m_navMesh->getTileAt(tx, ty) != 0;
 }
 
 uint32 PathFinderMovementGenerator::fixupCorridor(dtPolyRef* path, uint32 npath, uint32 maxPath,
