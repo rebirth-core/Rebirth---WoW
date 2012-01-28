@@ -2852,9 +2852,16 @@ void AuraEffect::HandleAuraAllowFlight(AuraApplication const* aurApp, uint8 mode
         // allow flying
         WorldPacket data;
         if (apply)
+        {
+            static_cast<Player*>(target)->SetCanFly(true);
+            static_cast<Player*>(target)->m_anti_BeginFallZ=INVALID_HEIGHT;
             data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
+        }
         else
+        {
             data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
+            static_cast<Player*>(target)->SetCanFly(false);
+        }
         data.append(target->GetPackGUID());
         data << uint32(0);                                      // unk
         player->SendDirectMessage(&data);
@@ -2901,7 +2908,11 @@ void AuraEffect::HandleAuraFeatherFall(AuraApplication const* aurApp, uint8 mode
 
     WorldPacket data;
     if (apply)
+    {
         data.Initialize(SMSG_MOVE_FEATHER_FALL, 8+4);
+        if (target->GetTypeId() == TYPEID_PLAYER)
+            static_cast<Player*>(target)->m_anti_BeginFallZ=INVALID_HEIGHT;
+    }
     else
         data.Initialize(SMSG_MOVE_NORMAL_FALL, 8+4);
     data.append(target->GetPackGUID());
@@ -3250,9 +3261,15 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
             {
                 WorldPacket data;
                 if (apply)
+                {
+                    static_cast<Player*>(target)->SetCanFly(true);
                     data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
+                }
                 else
+                {
                     data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
+                    static_cast<Player*>(target)->SetCanFly(false);
+                }
                 data.append(player->GetPackGUID());
                 data << uint32(0);                                      // unknown
                 player->SendDirectMessage(&data);
@@ -4732,6 +4749,12 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     if (roll_chance_i(20))                       // backfire stun
                         target->CastSpell(target, 51581, true, NULL, this);
                     break;
+                case 40856:                             // Aether Ray wrangling rope
+                    {
+                        GetBase()->SetMaxDuration(5000);
+                        GetBase()->SetDuration(5000);
+                        return;
+                    }
                 case 43873:                                     // Headless Horseman Laugh
                     target->PlayDistanceSound(11965);
                     break;
@@ -4857,6 +4880,27 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                             target->CastSpell(target, 36731, true, NULL, this);
                             break;
                         }
+
+						case 40856:                                     // Aether Ray Rope
+						{
+							if(target->GetEntry() != 22181)
+								return;
+
+							if(target->GetHealthPct() > 40.0f)
+								return;
+
+							if(aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+							{
+								if(Unit* Caster = GetCaster())
+								{
+									Caster->CastSpell(target, 40917, true);
+									((Player*)Caster)->KilledMonsterCredit(23343,0);
+									((Creature*)target)->ForcedDespawn(500);
+								}
+							}
+							return;
+						}
+
                         case 44191:                                     // Flame Strike
                         {
                             if (target->GetMap()->IsDungeon())
@@ -4887,6 +4931,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                             target->CastSpell((Unit*)NULL, GetAmount(), true, NULL, this);
                             break;
                         case 58600: // Restricted Flight Area
+						case 58730: // Restricted Flight Area
                             if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                                 target->CastSpell(target, 58601, true);
                             break;
