@@ -418,6 +418,10 @@ void Vehicle::RemovePassenger(Unit* unit)
         unit->m_movementInfo.t_pos.Relocate(0, 0, 0, 0);
         unit->m_movementInfo.t_time = 0;
         unit->m_movementInfo.t_seat = 0;
+        unit->SetUnitMovementFlags(0);
+        unit->SetExtraUnitMovementFlags(0);
+        if (unit->HasUnitState(UNIT_STAT_NOT_MOVE))
+            unit->ClearUnitState(UNIT_STAT_NOT_MOVE);
     }
 
     if (_me->GetTypeId() == TYPEID_UNIT && _me->ToCreature()->IsAIEnabled)
@@ -507,4 +511,31 @@ uint8 Vehicle::GetAvailableSeatCount() const
             ++ret;
 
     return ret;
+}
+
+
+void Vehicle::Relocate(Position pos)
+{
+    sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle::Relocate %u", _me->GetEntry());
+
+    std::set<Unit*> vehiclePlayers;
+    for (int8 i = 0; i < 8; i++)
+        vehiclePlayers.insert(GetPassenger(i));
+
+    // passengers should be removed or they will have movement stuck
+    RemoveAllPassengers();
+
+    for (std::set<Unit*>::const_iterator itr = vehiclePlayers.begin(); itr != vehiclePlayers.end(); ++itr)
+    {
+        if (Unit* plr = (*itr))
+        {
+            // relocate/setposition doesn't work for player
+            plr->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
+            //plr->TeleportTo(pPlayer->GetMapId(), triggerPos.GetPositionX(), triggerPos.GetPositionY(), triggerPos.GetPositionZ(), triggerPos.GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
+        }
+    }
+
+    _me->UpdatePosition(pos, true);
+    // problems, and impossible to do delayed enter
+    //pPlayer->EnterVehicle(veh);
 }

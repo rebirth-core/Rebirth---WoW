@@ -30,6 +30,8 @@
 #include "CreatureAI.h"
 #include "MapManager.h"
 #include "BattlegroundIC.h"
+#include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 
 bool IsPrimaryProfessionSkill(uint32 skill)
 {
@@ -1129,6 +1131,26 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
                 return false;
             if (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY))
                 return false;
+            break;
+        }
+        case 58730: // No fly Zone - Wintergrasp
+        {
+             if (!player)
+                 return false;
+
+             if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+             {
+                 OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+                 if ((pvpWG->isWarTime()==false) || player->isDead() || player->HasAura(45472) || player->HasAura(44795) || player->GetPositionZ() > 619.2f || player->isInFlight() || (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)))
+                    return false;
+             }
+             break;
+        }
+        case 58045: // Essence of Wintergrasp - Wintergrasp
+        case 57940: // Essence of Wintergrasp - Northrend
+        {
+             if (!player || player->GetTeamId() != sWorld->getWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION))
+             return false;
             break;
         }
         case 68719: // Oil Refinery - Isle of Conquest.
@@ -2962,6 +2984,9 @@ void SpellMgr::LoadDbcDataCorrections()
         {
             case 40244: case 40245: // Simon Game Visual
             case 40246: case 40247: // Simon Game Visual
+            case 23881: // Warrior's Bloodthirst
+                spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+                break;
             case 42835: // Spout, remove damage effect, only anim is needed
                 spellInfo->Effect[0] = 0;
                 break;
@@ -3058,6 +3083,11 @@ void SpellMgr::LoadDbcDataCorrections()
             case 66588: // Flaming Spear
             case 54171: // Divine Storm
                 spellInfo->MaxAffectedTargets = 3;
+                break;
+            case 68645: // Rocket Pack! Hack untill movejump will be implemented properly
+                spellInfo->Effect[0] = SPELL_EFFECT_KNOCK_BACK_DEST;
+                spellInfo->EffectMiscValue[0] = -250;
+                spellInfo->EffectBasePoints[0] = 150;
                 break;
             case 38310: // Multi-Shot
             case 53385: // Divine Storm (Damage)

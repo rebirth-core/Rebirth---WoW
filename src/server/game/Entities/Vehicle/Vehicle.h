@@ -23,6 +23,7 @@
 #include "VehicleDefines.h"
 
 struct VehicleEntry;
+struct Position;
 class Unit;
 
 class Vehicle
@@ -54,7 +55,8 @@ class Vehicle
         void RemoveAllPassengers();
         void Dismiss();
         bool IsVehicleInUse() { return Seats.begin() != Seats.end(); }
-
+		void Relocate(Position pos);
+		
         SeatMap Seats;
 
         VehicleSeatEntry const* GetSeatForPassenger(Unit* passenger);

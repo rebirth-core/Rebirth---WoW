@@ -165,6 +165,7 @@ set(scripts_STAT_SRCS
   Northrend/IcecrownCitadel/icecrown_citadel_teleport.cpp
   Northrend/IcecrownCitadel/boss_lord_marrowgar.cpp
   Northrend/IcecrownCitadel/boss_lady_deathwhisper.cpp
+  Northrend/IcecrownCitadel/boss_gunship_battle.cpp
   Northrend/IcecrownCitadel/boss_deathbringer_saurfang.cpp
   Northrend/IcecrownCitadel/boss_festergut.cpp
   Northrend/IcecrownCitadel/boss_rotface.cpp
@@ -192,6 +193,8 @@ set(scripts_STAT_SRCS
   Northrend/DraktharonKeep/drak_tharon_keep.h
   Northrend/DraktharonKeep/boss_tharon_ja.cpp
   Northrend/DraktharonKeep/boss_dred.cpp
+  Northrend/wintergrasp.cpp
+  Northrend/argenttournament.cpp
 )
 
 message("  -> Prepared: Northrend")
