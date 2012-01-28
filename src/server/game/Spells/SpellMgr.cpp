@@ -3031,6 +3031,7 @@ void SpellMgr::LoadDbcDataCorrections()
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
                 spellInfo->EffectImplicitTargetB[0] = 0;
                 break;
+			case 63665: // Charge (Argent Tournament emote on riders)
             case 31447: // Mark of Kaz'rogal (needs target selection script)
             case 31298: // Sleep (needs target selection script)
             case 51904: // Summon Ghouls On Scarlet Crusade (this should use conditions table, script for this spell needs to be fixed)
@@ -3039,6 +3040,11 @@ void SpellMgr::LoadDbcDataCorrections()
             case 29200: // Purify Helboar Meat
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
                 spellInfo->EffectImplicitTargetB[0] = 0;
+                break;
+			case 68282: // Charge (Trial of the champion)
+
+            case 62960: // Charge (Argent tournament fields)
+                spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
                 break;
             case 31344: // Howl of Azgalor
                 spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_100_YARDS; // 100yards instead of 50000?!
