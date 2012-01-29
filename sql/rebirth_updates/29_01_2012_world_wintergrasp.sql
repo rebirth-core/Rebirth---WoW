@@ -128,23 +128,11 @@ INSERT INTO `script_texts` (`npc_entry`,`entry`,`content_default`,`content_loc1`
 
 /* Vehicle Teleporter */
 UPDATE `gameobject_template` SET `type` = 6, `faction` = 0, `data2` = 10, `data3` = 54643, `ScriptName` = 'go_wg_veh_teleporter' WHERE `entry` = 192951;
-
-/* Spectral Gyphron to Wintergrasp */
-DELETE FROM `spell_area` WHERE `spell`=55164 AND `area`=4197;
-INSERT INTO `spell_area` 
-(`spell`,`area`,`quest_start`,`quest_start_active`,`aura_spell`,`racemask`,`gender`,`autocast`) 
-VALUES
-(55164,4197,0,0,8326,65527,2,1);
-
-/* Spirit healer */
+/* Spirit Guide */
 UPDATE `creature_template` SET `ScriptName` = 'npc_wg_spirit_guide' WHERE `entry` IN (31841,31842);
-
-DELETE FROM `script_texts` WHERE entry BETWEEN -1850507 AND -1850500;
-INSERT INTO `script_texts` (`npc_entry`,`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES
-(0, -1850500, 'Guide me to the Fortress Graveyard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
-(0, -1850501, 'Guide me to the Sunken Ring Graveyard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
-(0, -1850502, 'Guide me to the Broken Temple Graveyard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
-(0, -1850503, 'Guide me to the Westspark Graveyard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
-(0, -1850504, 'Guide me to the Eastspark Graveyard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
-(0, -1850505, 'Guide me back to the Horde landing camp.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
-(0, -1850506, 'Guide me back to the Alliance landing camp.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
+/* Teleport spell target positions */
+DELETE FROM `spell_target_position` WHERE `id` IN (59762,59766,59767,59765);
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES (59762, 571, 5104.75, 2300.94, 368.56, 0.73); -- sunken ring teleport
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES (59766, 571, 4336.46, 3235.35, 390.24, 0.19); -- westpark teleport 
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES (59767, 571, 4318.44, 2408.04, 392.59, 6.12); -- eastpark teleport
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES (59765, 571, 5031.83, 3710.75, 372.48, 3.99); -- horde landing teleport
