@@ -134,6 +134,7 @@ void FleeingMovementGenerator<Creature>::Finalize(Creature &owner)
 {
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.ClearUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
+	owner.StopMoving();
     if (owner.getVictim())
         owner.SetTarget(owner.getVictim()->GetGUID());
 }
