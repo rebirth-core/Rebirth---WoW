@@ -824,6 +824,8 @@ const dtMeshTile* dtNavMesh::getTileAt(int x, int y) const
 	// Find tile based on hash.
 	int h = computeTileHash(x,y,m_tileLutMask);
 	dtMeshTile* tile = m_posLookup[h];
+    if (!tile)
+        return false;
 	while (tile)
 	{
 		if (tile->header && tile->header->x == x && tile->header->y == y)
