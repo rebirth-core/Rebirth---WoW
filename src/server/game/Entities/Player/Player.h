@@ -1085,6 +1085,21 @@ class Player : public Unit, public GridObject<Player>
         explicit Player (WorldSession* session);
         ~Player ();
 
+        //movement anticheat
+        float  m_anti_MovedLen;         //Length of traveled way
+        uint32 m_anti_LastLenCheck;
+        float  m_anti_BeginFallZ;    //alternative falling begin
+        uint32 m_anti_lastalarmtime;    //last time when alarm generated
+        uint32 m_anti_alarmcount;       //alarm counter
+        time_t m_anti_TeleTime;
+        bool m_CanFly;
+        time_t Anti__GetLastTeleTime() const { return m_anti_TeleTime; }
+        void Anti__SetLastTeleTime() { m_anti_TeleTime=time(NULL); m_anti_BeginFallZ=INVALID_HEIGHT; }
+        //bool CanFly() const { return HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY); }
+        bool CanFly() const { return m_CanFly; }
+        void SetCanFly(bool CanFly) { m_CanFly=CanFly; }
+        inline bool Anti__CheatOccurred(const char* Reason,float Speed,uint16 Op, float Val1=0.0f,uint32 Val2=0,const MovementInfo* MvInfo=NULL,bool ForceReport=false);
+
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
         static UpdateMask updateVisualBits;
@@ -1878,6 +1893,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
+		void ApplySpellPenetrationBonus(int32 amount, bool apply);
         void UpdateResistances(uint32 school);
         void UpdateArmor();
         void UpdateMaxHealth();
@@ -1904,7 +1920,7 @@ class Player : public Unit, public GridObject<Player>
         float OCTRegenMPPerSpirit();
         float GetRatingMultiplier(CombatRating cr) const;
         float GetRatingBonusValue(CombatRating cr) const;
-        uint32 GetBaseSpellPowerBonus() { return m_baseSpellPower; }
+        uint32 GetBaseSpellPowerBonus() const { return m_baseSpellPower; }
         int32 GetSpellPenetrationItemMod() const { return m_spellPenetrationItemMod; }
 
         float GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const;
@@ -2147,6 +2163,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool InBattleground()       const                { return m_bgData.bgInstanceID != 0; }
         bool InArena()              const;
+		bool InOutdoorPVP(bool inwar = false);
         uint32 GetBattlegroundId()  const                { return m_bgData.bgInstanceID; }
         BattlegroundTypeId GetBattlegroundTypeId() const { return m_bgData.bgTypeID; }
         Battleground* GetBattleground() const;

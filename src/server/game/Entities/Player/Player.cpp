@@ -74,6 +74,7 @@
 #include "InstanceScript.h"
 #include <cmath>
 #include "AccountMgr.h"
+#include "OutdoorPvPWG.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -768,6 +769,16 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_rest_bonus=0;
     rest_type=REST_TYPE_NO;
     ////////////////////Rest System/////////////////////
+
+    //movement anticheat
+    m_anti_LastLenCheck = getMSTime();
+    m_anti_MovedLen = 0.0f;
+    m_anti_BeginFallZ = INVALID_HEIGHT;
+    m_anti_lastalarmtime = 0;    //last time when alarm generated
+    m_anti_alarmcount = 0;       //alarm counter
+    m_anti_TeleTime = 0;
+    m_CanFly=false;
+    /////////////////////////////////
 
     m_mailsLoaded = false;
     m_mailsUpdated = false;
@@ -2798,6 +2809,8 @@ void Player::SetInWater(bool apply)
     RemoveAurasWithInterruptFlags(apply ? AURA_INTERRUPT_FLAG_NOT_ABOVEWATER : AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
 
     getHostileRefManager().updateThreatTables();
+    // movement anticheat
+    if (apply) m_anti_BeginFallZ=INVALID_HEIGHT;
 }
 
 void Player::SetGameMaster(bool on)
@@ -7882,8 +7895,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
                 ApplyHealthRegenBonus(int32(val), apply);
                 break;
             case ITEM_MOD_SPELL_PENETRATION:
-                ApplyModInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE, -val, apply);
-                m_spellPenetrationItemMod += apply ? val : -val;
+                ApplySpellPenetrationBonus(int32(val), apply);
                 break;
             // deprecated item mods
             case ITEM_MOD_SPELL_HEALING_DONE:
@@ -13917,8 +13929,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                             sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "+ %u HEALTH_REGENERATION", enchant_amount);
                             break;
                         case ITEM_MOD_SPELL_PENETRATION:
-                            ApplyModInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE, enchant_amount, apply);
-                            m_spellPenetrationItemMod += apply ? int32(enchant_amount) : -int32(enchant_amount);
+                            ApplySpellPenetrationBonus(enchant_amount, apply);
                             sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "+ %u SPELL_PENETRATION", enchant_amount);
                             break;
                         case ITEM_MOD_BLOCK_VALUE:
@@ -22285,6 +22296,19 @@ bool Player::InArena() const
     return true;
 }
 
+bool Player::InOutdoorPVP(bool inwar)
+{
+    if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+        return false;
+
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+
+    if (!pvpWG || !pvpWG->HasPlayerInWG(this, inwar))
+        return false;
+
+    return true;
+}
+
 bool Player::GetBGAccessByLevel(BattlegroundTypeId bgTypeId) const
 {
     // get a template bg instead of running one
@@ -22585,6 +22609,11 @@ void Player::RemoveItemDependentAurasAndCasts(Item* pItem)
 
         // skip if not item dependent or have alternative item
         if (HasItemFitToSpellRequirements(spellInfo, pItem))
+        {
+            ++itr;
+            continue;
+        }
+        if (aura->GetId() == 46924)
         {
             ++itr;
             continue;
@@ -23819,6 +23848,15 @@ void Player::HandleFall(MovementInfo const& movementInfo)
     // calculate total z distance of the fall
     float z_diff = m_lastFallZ - movementInfo.pos.GetPositionZ();
     //sLog->outDebug("zDiff = %f", z_diff);
+
+    float anticheat_z_diff = m_anti_BeginFallZ-movementInfo.pos.GetPositionZ();
+    if (z_diff < anticheat_z_diff)
+    {
+        // sLog->outBasic("z_diff=%f, while anticheat_z_diff=%f ... possible cheat attempt by player %s(%d), account %u ?",
+        //                 z_diff,anticheat_z_diff,GetName(),GetGUIDLow(),GetSession()->GetAccountId());
+        z_diff = anticheat_z_diff;
+    }
+    m_anti_BeginFallZ=INVALID_HEIGHT;
 
     //Players with low fall distance, Feather Fall or physical immunity (charges used) are ignored
     // 14.57 can be calculated by resolving damageperc formula below to 0

@@ -63,6 +63,7 @@
 #include "GameObjectAI.h"
 #include "AccountMgr.h"
 #include "InstanceScript.h"
+#include "OutdoorPvPWG.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -1216,6 +1217,16 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
                     m_caster->CastSpell(m_caster, 51037, true);
                     unitTarget->Kill(unitTarget);
+                    return;
+                }
+                 case 30023: //Gushing Wound Removal
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->RemoveAura(35321);
+                    unitTarget->RemoveAura(38363);
+                    unitTarget->RemoveAura(39215);
                     return;
                 }
             }
@@ -4436,6 +4447,23 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
+                //Teleport to Lake Wintergrasp
+                case 58622:
+                {
+                  if (OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
+                     if (unitTarget->getLevel() > 74)
+                     {
+                       if ((pvpWG->getDefenderTeam()==TEAM_ALLIANCE) && (unitTarget->ToPlayer()->GetTeam() == ALLIANCE))
+                          unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_FORTRESS, true);
+                       else if ((pvpWG->getDefenderTeam()==TEAM_ALLIANCE) && (unitTarget->ToPlayer()->GetTeam() == HORDE))
+                          unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_HORDE_CAMP, true);
+                       else if ((pvpWG->getDefenderTeam()!=TEAM_ALLIANCE) && (unitTarget->ToPlayer()->GetTeam() == HORDE))
+                          unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_FORTRESS, true);
+                       else if ((pvpWG->getDefenderTeam()!=TEAM_ALLIANCE) && (unitTarget->ToPlayer()->GetTeam() == ALLIANCE))
+                          unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_ALLIENCE_CAMP, true);
+                     }
+                    return;
+                }
                 // Glyph of Backstab
                 case 63975:
                 {
@@ -4534,6 +4562,31 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 26465:
                     unitTarget->RemoveAuraFromStack(26464);
                     return;
+                case 62575:
+                {
+                    if (m_caster->GetOwner())
+                        m_caster->GetOwner()->CastSpell(unitTarget,62626,true );
+                    return;
+                }
+                case 62960:
+                {
+                    if (!unitTarget)
+                        return;
+                    m_caster->CastSpell(unitTarget,62563,true );
+                    m_caster->CastSpell(unitTarget,68321,true );
+                    return;
+                }
+                case 62626:
+                case 68321:
+                {
+                    if (!unitTarget)
+                        return;
+                    if (unitTarget->GetAura(62719))
+                        unitTarget->RemoveAuraFromStack(62719);
+                    if(unitTarget->GetAura(64100))
+                        unitTarget->RemoveAuraFromStack(64100);
+                    return;
+                }
                 // Shadow Flame (All script effects, not just end ones to prevent player from dodging the last triggered spell)
                 case 22539:
                 case 22972:
@@ -6210,6 +6263,9 @@ void Spell::EffectCharge(SpellEffIndex /*effIndex*/)
         // not all charge effects used in negative spells
         if (!m_spellInfo->IsPositive() && m_caster->GetTypeId() == TYPEID_PLAYER)
             m_caster->Attack(unitTarget, true);
+
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            static_cast<Player*>(m_caster)->m_anti_BeginFallZ=INVALID_HEIGHT;
     }
 }
 
