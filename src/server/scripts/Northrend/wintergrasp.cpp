@@ -24,6 +24,13 @@
 #define GOSSIP_HELLO_DEMO2  "Build demolisher."
 #define GOSSIP_HELLO_DEMO3  "Build siege engine."
 #define GOSSIP_HELLO_DEMO4  "I cannot build more!"
+#define GOSSIP_HELLO_SPIRIT1  "Guide me to the Fortress Graveyard."
+#define GOSSIP_HELLO_SPIRIT2  "Guide me to the Sunken Ring Graveyard."
+#define GOSSIP_HELLO_SPIRIT3  "Guide me to the Broken Temple Graveyard."
+#define GOSSIP_HELLO_SPIRIT4  "Guide me to the Westspark Graveyard."
+#define GOSSIP_HELLO_SPIRIT5  "Guide me to the Eastspark Graveyard."
+#define GOSSIP_HELLO_SPIRIT6  "Guide me back to the Horde landing camp."
+#define GOSSIP_HELLO_SPIRIT7  "Guide me back to the Alliance landing camp."
 
 class npc_demolisher_engineerer : public CreatureScript
 {
