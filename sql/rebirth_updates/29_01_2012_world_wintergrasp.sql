@@ -18,8 +18,8 @@ REPLACE INTO `trinity_string` VALUES ('769', 'Wintergrasp outdoorPvP is disabled
 REPLACE INTO `trinity_string` VALUES ('770', 'Wintergrasp outdoorPvP is enabled.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 REPLACE INTO `trinity_string` VALUES ('771', 'You have reached Rank 1: Corporal', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '?? ???????? ????? 1: ??????');
 REPLACE INTO `trinity_string` VALUES ('772', 'You have reached Rank 2: First Lieutenant', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '?? ???????? ????? 2: ?????????');
-REPLACE INTO `trinity_string` VALUES ('780', 'Die Schlachte um Tausendwinter beginnt in 30 Minuten!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '?? ????? ??  ????? ??????? ???? ???????? 30 ?????!');
-REPLACE INTO `trinity_string` VALUES ('781', 'Die Schlachte um Tausendwinter beginnt in 10 Minuten!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '?? ????? ??  ????? ??????? ???? ???????? 10 ?????!');
+REPLACE INTO `trinity_string` VALUES ('780', 'Before the Battle of  Wintergrasp left 30 minutes!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '?? ????? ??  ????? ??????? ???? ???????? 30 ?????!');
+REPLACE INTO `trinity_string` VALUES ('781', 'Before the Battle of  Wintergrasp left 10 minutes!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '?? ????? ??  ????? ??????? ???? ???????? 10 ?????!');
 REPLACE INTO `trinity_string` VALUES ('782', 'The battle for Wintergrasp  has stopped! Not enough defenders. Wintergrasp Fortress remains  Attackers.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '????? ?? ????? ??????? ???? ???????????. ?? ??????? ??????????. ???????? ????????? ?????????  ???????.');
 REPLACE INTO `trinity_string` VALUES ('783', 'The battle for Wintergrasp  has stopped! Not enough attackers. Wintergrasp Fortress remains  Defenders.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '????? ?? ????? ??????? ???? ???????????. ?? ??????? ??????????. ???????? ???????? ??????????.');
 
@@ -119,9 +119,32 @@ UPDATE `creature` SET `id` = 30739 WHERE `guid` in (51157, 51450, 52496, 51046, 
 UPDATE `creature_template` SET `flags_extra` = 2 WHERE `entry` in (30488, 30489);
 UPDATE `creature` SET `phaseMask` = 512 WHERE `guid` in (121120, 116248);
 /*Set raid quests*/
-UPDATE `quest_template` SET `Type` = 62 WHERE `entry` IN (13177, 13178, 13179, 13180, 13185, 13186, 13222, 13223, 13538, 13539);
+UPDATE `quest_template` SET `Type` = 62 WHERE `Id` IN (13177, 13178, 13179, 13180, 13185, 13186, 13222, 13223, 13538, 13539);
 
 UPDATE `creature_template` SET `ScriptName` = 'npc_wg_dalaran_queue' WHERE `entry` IN (32169,32170,35599,35596,35600,35601,35598,35603,35602,35597,35612,35611);
 DELETE FROM `script_texts` WHERE entry =-1850507;
 INSERT INTO `script_texts` (`npc_entry`,`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES
-(0, -1850507, 'Enter to queue in Wintergrasp', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', 0, 0, 0, 0, '');
+(0, -1850507, 'Enter to queue in Wintergrasp', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '?????? ? ??????? ?? ????? ??????? ????', 0, 0, 0, 0, '');
+
+/* Vehicle Teleporter */
+UPDATE `gameobject_template` SET `type` = 6, `faction` = 0, `data2` = 10, `data3` = 54643, `ScriptName` = 'go_wg_veh_teleporter' WHERE `entry` = 192951;
+
+/* Spectral Gyphron to Wintergrasp */
+DELETE FROM `spell_area` WHERE `spell`=55164 AND `area`=4197;
+INSERT INTO `spell_area` 
+(`spell`,`area`,`quest_start`,`quest_start_active`,`aura_spell`,`racemask`,`gender`,`autocast`) 
+VALUES
+(55164,4197,0,0,8326,65527,2,1);
+
+/* Spirit healer */
+UPDATE `creature_template` SET `ScriptName` = 'npc_wg_spirit_guide' WHERE `entry` IN (31841,31842);
+
+DELETE FROM `script_texts` WHERE entry BETWEEN -1850507 AND -1850500;
+INSERT INTO `script_texts` (`npc_entry`,`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES
+(0, -1850500, 'Guide me to the Fortress Graveyard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
+(0, -1850501, 'Guide me to the Sunken Ring Graveyard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
+(0, -1850502, 'Guide me to the Broken Temple Graveyard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
+(0, -1850503, 'Guide me to the Westspark Graveyard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
+(0, -1850504, 'Guide me to the Eastspark Graveyard.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
+(0, -1850505, 'Guide me back to the Horde landing camp.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),
+(0, -1850506, 'Guide me back to the Alliance landing camp.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, ''),

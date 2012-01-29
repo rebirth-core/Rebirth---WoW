@@ -18,6 +18,7 @@
 #include "ScriptPCH.h"
 #include "OutdoorPvPMgr.h"
 #include "OutdoorPvPWG.h"
+#include "Vehicle.h"
 
 #define GOSSIP_HELLO_DEMO1  "Build catapult."
 #define GOSSIP_HELLO_DEMO2  "Build demolisher."
@@ -169,8 +170,129 @@ public:
    }
 };
 
+class go_wg_veh_teleporter : public GameObjectScript
+{
+public:
+   go_wg_veh_teleporter() : GameObjectScript("go_wg_veh_teleporter") { }
+
+   bool OnGossipHello(Player* player, GameObject* go)
+   {
+       if (GameObject* trigger = go->FindNearestGameObject(190375, 500)) // Wintergrasp Fortress Gate
+       {
+           if (Vehicle* vehicle = player->GetVehicle())
+           {
+               Position triggerPos;
+               trigger->GetPosition(&triggerPos);
+               triggerPos.m_positionX -= 30;
+               vehicle->Relocate(triggerPos);
+           }
+       }
+       return true;
+   }
+};
+
+class npc_wg_spirit_guide : public CreatureScript
+{
+public:
+   npc_wg_spirit_guide() : CreatureScript("npc_wg_spirit_guide") { }
+   
+   CreatureAI *GetAI(Creature *creature) const
+   {
+       return new npc_wg_spirit_guideAI(creature);
+   }
+
+   bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+   {
+       if (OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
+	   {
+           if (pvpWG->isWarTime())
+           {
+                   if (pvpWG->getDefenderTeam() == TEAM_HORDE)
+                   {
+                       if (pPlayer->GetTeam() == TEAM_ALLIANCE)
+                       {
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT4, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+3);
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT5, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+4);
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT7, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+6);
+                       }
+					   else
+                       {
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT1, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF);
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT2, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+1);
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT3, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+2);
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT6, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+5);
+                       }
+                   }
+                   else
+                   {
+                       if (pPlayer->GetTeam() == TEAM_ALLIANCE)
+                       {
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT1, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF);
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT2, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+1);
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT3, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+2);
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT7, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+6);
+                       }
+					   else
+                       {
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT4, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+3);
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT5, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+4);
+                           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_SPIRIT6, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+5);
+                       }
+                   }
+           }
+       }
+
+       pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+       return true;
+   }
+
+   bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+   {
+       pPlayer->CLOSE_GOSSIP_MENU();
+       if (pPlayer->isGameMaster() || pCreature->GetZoneScript() && pCreature->GetZoneScript()->GetData(pCreature->GetDBTableGUIDLow()))
+       {
+           switch (uiAction - GOSSIP_ACTION_INFO_DEF)
+           {
+                   case 0:
+                       pPlayer->CastSpell(pPlayer, 59760, false, NULL, NULL, pCreature->GetGUID());	//Fortress teleport
+                   break;	
+                   case 1:
+                       pPlayer->CastSpell(pPlayer, 59762, false, NULL, NULL, pCreature->GetGUID());	//sunken ring teleport
+                   break;	
+                   case 2:
+                       pPlayer->CastSpell(pPlayer, 59763, false, NULL, NULL, pCreature->GetGUID());	//broken temple teleport
+                   break;	
+                   case 3:
+                       pPlayer->CastSpell(pPlayer, 59766, false, NULL, NULL, pCreature->GetGUID());	//westpark teleport 
+                   break;	
+                   case 4:
+                       pPlayer->CastSpell(pPlayer, 59767, false, NULL, NULL, pCreature->GetGUID());	//eastpark teleport
+                   break;	
+                   case 5:
+                       pPlayer->CastSpell(pPlayer, 59765, false, NULL, NULL, pCreature->GetGUID());	//horde landing teleport
+                   break;	
+                   case 6:
+                       pPlayer->CastSpell(pPlayer, 59769, false, NULL, NULL, pCreature->GetGUID());	//alliance landing teleport
+                   break;	
+           }
+       }
+
+       return true;
+   }
+   
+   struct npc_wg_spirit_guideAI : public ScriptedAI
+   {
+       npc_wg_spirit_guideAI(Creature* pCreature) : ScriptedAI(pCreature)
+       {
+           me->SetReactState(REACT_PASSIVE);
+       }
+   };
+};
+
 void AddSC_wintergrasp()
 {
    new npc_demolisher_engineerer();
    new npc_wg_dalaran_queue();
+   new npc_wg_spirit_guide();
+   new go_wg_veh_teleporter();
 }
