@@ -74,6 +74,7 @@
 #include "InstanceScript.h"
 #include <cmath>
 #include "AccountMgr.h"
+#include "OutdoorPvPWG.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -22274,6 +22275,19 @@ bool Player::InArena() const
 {
     Battleground* bg = GetBattleground();
     if (!bg || !bg->isArena())
+        return false;
+
+    return true;
+}
+
+bool Player::InOutdoorPVP(bool inwar)
+{
+    if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+        return false;
+
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+
+    if (!pvpWG || !pvpWG->HasPlayerInWG(this, inwar))
         return false;
 
     return true;
