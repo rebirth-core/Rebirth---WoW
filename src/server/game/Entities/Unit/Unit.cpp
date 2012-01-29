@@ -5798,7 +5798,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 case 12328:
                 {
                     target = SelectNearbyTarget();
-                    if (!target)
+                    if (!target || target == victim)
                         return false;
 
                     triggered_spell_id = 26654;
