@@ -133,12 +133,11 @@ enum Actions
     ACTION_BERSERK              = 3, // Also used by both Halions
     ACTION_PHASE_TWO            = 4, // Halion Controller
     ACTION_PHASE_THREE          = 5,
-    ACTION_DESPAWN_ADDS         = 6,
-    ACTION_REMOVE_EXIT_PORTALS  = 7,
+    ACTION_CLEANUP              = 6,
 
-    ACTION_BEGIN_ROTATION       = 8, // Orb Rotation Focus
+    ACTION_BEGIN_ROTATION       = 7, // Orb Rotation Focus
 
-    ACTION_SHOOT                = 9, // Orb Carrier
+    ACTION_SHOOT                = 8, // Orb Carrier
 };
 
 enum Phases
@@ -236,7 +235,6 @@ class boss_halion : public CreatureScript
                 _Reset();
             }
 
-            // This is triggered by the TwilightHalionAI::JustDied, but can of course be triggered on its own.
             void JustDied(Unit* killer)
             {
                 _JustDied();
@@ -249,10 +247,7 @@ class boss_halion : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SOUL_CONSUMPTION);
 
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
-                {
-                    controller->AI()->DoAction(ACTION_DESPAWN_ADDS);
-                    controller->AI()->DoAction(ACTION_REMOVE_EXIT_PORTALS);
-                }
+                    controller->AI()->DoAction(ACTION_CLEANUP);
 
                 if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION)))
                     if (twilightHalion->isAlive())
@@ -266,12 +261,8 @@ class boss_halion : public CreatureScript
                 instance->SetBossState(DATA_HALION, FAIL);
                 instance->DoCastSpellOnPlayers(SPELL_LEAVE_TWILIGHT_REALM);
 
-                // TODO: This shouldn't be here at all.
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
-                {
-                    controller->AI()->DoAction(ACTION_DESPAWN_ADDS);
-                    controller->AI()->DoAction(ACTION_REMOVE_EXIT_PORTALS);
-                }
+                    controller->AI()->DoAction(ACTION_CLEANUP);
 
                 if (Creature* halion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION)))
                     halion->DespawnOrUnsummon();
@@ -326,12 +317,14 @@ class boss_halion : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_ACTIVATE_FIREWALL:
+                        {
                             // Firewall is activated 10 seconds after starting encounter, DOOR_TYPE_ROOM is only instant.
                             if (GameObject* firewall = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_FLAME_RING)))
                                 instance->HandleGameObject(instance->GetData64(DATA_FLAME_RING), false, firewall);
                             if (GameObject* firewall = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_TWILIGHT_FLAME_RING)))
                                 instance->HandleGameObject(instance->GetData64(DATA_TWILIGHT_FLAME_RING), false, firewall);
                             break;
+                        }
                         case EVENT_FLAME_BREATH:
                             DoCast(me, SPELL_FLAME_BREATH);
                             events.ScheduleEvent(EVENT_FLAME_BREATH, 25000);
@@ -345,6 +338,7 @@ class boss_halion : public CreatureScript
                             events.ScheduleEvent(EVENT_TAIL_LASH, 10000);
                             break;
                         case EVENT_METEOR_STRIKE:
+                        {
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_TWILIGHT_REALM))
                             {
                                 target->GetPosition(&_meteorStrikePos);
@@ -353,6 +347,7 @@ class boss_halion : public CreatureScript
                             }
                             events.ScheduleEvent(EVENT_METEOR_STRIKE, 40000);
                             break;
+                        }
                         case EVENT_FIERY_COMBUSTION:
                         {
                             Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true, -SPELL_TWILIGHT_REALM);
@@ -373,10 +368,8 @@ class boss_halion : public CreatureScript
 
             void SetData(uint32 index, uint32 value)
             {
-                if (index != DATA_FIGHT_PHASE)
-                    return;
-
-                events.SetPhase(value);
+                if (index == DATA_FIGHT_PHASE)
+                    events.SetPhase(value);
             }
 
             void DoAction(int32 const action)
@@ -387,6 +380,7 @@ class boss_halion : public CreatureScript
                 Talk(SAY_BERSERK);
                 DoCast(me, SPELL_BERSERK);
             }
+
         private:
             Position _meteorStrikePos;
         };
@@ -506,10 +500,8 @@ class boss_twilight_halion : public CreatureScript
 
             void DoAction(int32 const action)
             {
-                if (action != ACTION_BERSERK)
-                    return;
-
-                DoCast(me, SPELL_BERSERK);
+                if (action == ACTION_BERSERK)
+                    DoCast(me, SPELL_BERSERK);
             }
 
             void UpdateAI(uint32 const diff)
@@ -627,10 +619,12 @@ class npc_halion_controller : public CreatureScript
                         _instance->DoUpdateWorldState(WORLDSTATE_CORPOREALITY_TOGGLE, 1);
                         break;
                     }
-                    case ACTION_DESPAWN_ADDS:
+                    case ACTION_CLEANUP:
                     {
                         _summons.DespawnAll();
                         _events.Reset();
+                        if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
+                            halion->ToUnit()->RemoveGameObject(SPELL_SUMMON_TWILIGHT_PORTAL, true);
                         break;
                     }
                     case ACTION_BERSERK:
@@ -992,20 +986,20 @@ class npc_combustion_consumption : public CreatureScript
                 {
                     case NPC_COMBUSTION:
                         _explosionSpell = SPELL_FIERY_COMBUSTION_EXPLOSION;
-                        _auraSpell = SPELL_COMBUSTION_DAMAGE_AURA;
+                        _damageSpell = SPELL_COMBUSTION_DAMAGE_AURA;
                         me->SetPhaseMask(0x20, true);
                         if (IsHeroic())
                             me->SetPhaseMask(me->GetPhaseMask() | 0x1, true);
                         break;
                     case NPC_CONSUMPTION:
                         _explosionSpell = SPELL_SOUL_CONSUMPTION_EXPLOSION;
-                        _auraSpell = SPELL_CONSUMPTION_DAMAGE_AURA;
+                        _damageSpell = SPELL_CONSUMPTION_DAMAGE_AURA;
                         if (IsHeroic())
                             me->SetPhaseMask(me->GetPhaseMask() | 0x20, true);
                         break;
                     default: // Should never happen
                         _explosionSpell = 0;
-                        _auraSpell = 0;
+                        _damageSpell = 0;
                         break;
                 }
             }
@@ -1019,14 +1013,14 @@ class npc_combustion_consumption : public CreatureScript
 
             void SetData(uint32 type, uint32 value)
             {
-                if (type != DATA_STACKS_DISPELLED || !_auraSpell || !_explosionSpell)
+                if (type != DATA_STACKS_DISPELLED || !_damageSpell || !_explosionSpell)
                     return;
 
                 CustomSpellValues values;
                 values.AddSpellMod(SPELLVALUE_AURA_STACK, value);
                 me->CastCustomSpell(SPELL_SCALE_AURA, values, me);
 
-                DoCast(me, _auraSpell);
+                DoCast(me, _damageSpell);
                 
                 int32 damage = 1200 + (value * 1290); // Needs moar research.
                 me->CastCustomSpell(_explosionSpell, SPELLVALUE_BASE_POINT0, damage, me);
@@ -1037,7 +1031,7 @@ class npc_combustion_consumption : public CreatureScript
         private:
             InstanceScript* _instance;
             uint32 _explosionSpell;
-            uint32 _auraSpell;
+            uint32 _damageSpell;
         };
 
         CreatureAI* GetAI(Creature* creature) const
@@ -1068,7 +1062,7 @@ class npc_orb_carrier : public CreatureScript
                     DoCast(me, SPELL_TRACK_ROTATION, false);
             }
 
-            void DoAction(uint32 action)
+            void DoAction(int32 const action)
             {
                 if (action == ACTION_SHOOT)
                 {
