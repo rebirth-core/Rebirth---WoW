@@ -26,7 +26,8 @@
 #include "DetourAlloc.h"
 #include "DetourAssert.h"
 #include <new>
-
+#include <unistd.h>
+#include <errno.h>
 
 inline bool overlapSlabs(const float* amin, const float* amax,
 						 const float* bmin, const float* bmax,
