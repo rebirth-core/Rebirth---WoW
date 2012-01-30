@@ -769,6 +769,18 @@ class npc_muradin_gunship : public CreatureScript
 
         bool OnGossipSelect(Player* player, Creature* pCreature, uint32 /*sender*/, uint32 action)
         {
+			QueryResult checkDisabled = WorldDatabase.PQuery("SELECT disabled FROM unstable_encounters WHERE boss_id = 1");
+			uint32 disabled;
+			char str_err[200];
+
+			if(checkDisabled)
+			{
+                Field *field = checkDisabled->Fetch();
+                disabled = field[0].GetUInt32();
+			}
+			else
+				disabled = 1;
+
             InstanceScript* instance = pCreature->GetInstanceScript();
             player->PlayerTalkClass->ClearMenus();
             player->CLOSE_GOSSIP_MENU();
@@ -776,11 +788,17 @@ class npc_muradin_gunship : public CreatureScript
             if (action == GOSSIP_ACTION_INFO_DEF+2)
                 pCreature->MonsterSay("I'll wait for the raid leader.", LANG_UNIVERSAL, player->GetGUID());
 
-            if (action == 1001)
+            if (action == 1001 && disabled == 0)
             {
                 pCreature->AI()->DoAction(ACTION_INTRO_START);
                 pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             }
+			else if (action == 1001 && disabled == 1)
+			{
+				sprintf(str_err,"Dieser Boss Encounter ist zurzeit deaktiviert! Bitte wende dich an den Support um mehr zu erfahren.");
+				player->MonsterWhisper(str_err,player->GetGUID(),true);
+			}
+
             return true;
         }
 
@@ -1049,7 +1067,7 @@ class npc_muradin_gunship : public CreatureScript
                             {
                                 pSaurfang->AI()->Talk(SAY_BOARDING_SKYBREAKER_SAURFANG);
                             }
-                            if(Creature* Sergante = skybreaker->AddNPCPassengerInInstance(NPC_GB_KORKRON_SERGANTE, -15.51547f, -0.160213f, 20.87252f, 1.56211f))
+                            if(Creature* Sergante = skybreaker->AddNPCPassengerInInstance(NPC_GB_KORKRON_SERGANTE, -15.51547f, -0.160213f, 26.87252f, 1.56211f))
                             {
                                 Sergante->CastSpell(Sergante, SPELL_TELEPORT_VISUAL, true);
                             }
@@ -1060,7 +1078,7 @@ class npc_muradin_gunship : public CreatureScript
                         case EVENT_BOARDING_REAVERS_MARINE:
                             if(count <= SummonCount)
                             {
-                                if(Creature* Reavers = skybreaker->AddNPCPassengerInInstance(NPC_GB_KORKRON_REAVERS, -15.51547f, -0.160213f, 20.87252f, 1.56211f))
+                                if(Creature* Reavers = skybreaker->AddNPCPassengerInInstance(NPC_GB_KORKRON_REAVERS, -15.51547f, -0.160213f, 26.87252f, 1.56211f))
                                 {
                                     Reavers->CastSpell(Reavers, SPELL_TELEPORT_VISUAL, true);
                                     events.ScheduleEvent(EVENT_BOARDING_REAVERS_MARINE, 21000 / SummonCount);
@@ -1972,6 +1990,18 @@ class npc_saurfang_gunship : public CreatureScript
 
         bool OnGossipSelect(Player* player, Creature* pCreature, uint32 /*sender*/, uint32 action)
         {
+			QueryResult checkDisabled = WorldDatabase.PQuery("SELECT disabled FROM unstable_encounters WHERE boss_id = 1");
+			uint32 disabled;
+			char str_err[200];
+
+			if(checkDisabled)
+			{
+                Field *field = checkDisabled->Fetch();
+                disabled = field[0].GetUInt32();
+			}
+			else
+				disabled = 1;
+
             InstanceScript* instance = pCreature->GetInstanceScript();
             player->PlayerTalkClass->ClearMenus();
             player->CLOSE_GOSSIP_MENU();
@@ -1979,11 +2009,17 @@ class npc_saurfang_gunship : public CreatureScript
             if (action == GOSSIP_ACTION_INFO_DEF+2)
                 pCreature->MonsterSay("I'll wait for the raid leader.", LANG_UNIVERSAL, player->GetGUID());
 
-            if (action == 1001)
+            if (action == 1001 && disabled == 0)
             {
                 pCreature->AI()->DoAction(ACTION_INTRO_START);
                 pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             }
+			else if (action == 1001 && disabled == 1)
+			{
+				sprintf(str_err,"Dieser Boss Encounter ist zurzeit deaktiviert! Bitte wende dich an den Support um mehr zu erfahren.");
+				player->MonsterWhisper(str_err,player->GetGUID(),true);
+			}
+
             return true;
         }
         struct npc_saurfang_gunshipAI : public ScriptedAI
@@ -2229,7 +2265,7 @@ class npc_saurfang_gunship : public CreatureScript
                              {
                                  pSaurfang->AI()->Talk(SAY_BOARDING_SKYBREAKER_MURADIN);
                              }
-                             if (Creature* Sergante = orgrimmar->AddNPCPassengerInInstance(NPC_GB_SKYBREAKER_SERGANTE, 15.03016f, -7.00016f, 37.70952f, 1.55138f))
+                             if (Creature* Sergante = orgrimmar->AddNPCPassengerInInstance(NPC_GB_SKYBREAKER_SERGANTE, 15.03016f, -7.00016f, 43.70952f, 1.55138f))
                              {
                                  Sergante->CastSpell(Sergante, SPELL_TELEPORT_VISUAL, true);
                              }
@@ -2239,7 +2275,7 @@ class npc_saurfang_gunship : public CreatureScript
                         case EVENT_BOARDING_REAVERS_MARINE:
                             if(count <= SummonCount)
                             {
-                                if(Creature* Marine = orgrimmar->AddNPCPassengerInInstance(NPC_GB_SKYBREAKER_MARINE, 15.03016f, -7.00016f, 37.70952f, 1.55138f))
+                                if(Creature* Marine = orgrimmar->AddNPCPassengerInInstance(NPC_GB_SKYBREAKER_MARINE, 15.03016f, -7.00016f, 43.70952f, 1.55138f))
                                 {
                                     Marine->CastSpell(Marine, SPELL_TELEPORT_VISUAL, true);
                                     count++;
