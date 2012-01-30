@@ -830,7 +830,7 @@ class npc_muradin_gunship : public CreatureScript
 
             bool CanAIAttack(Unit const* target) const
             {
-                if (target->GetEntry() == NPC_GB_KORKRON_SERGANTE || target->GetEntry() == NPC_GB_KORKRON_REAVERS)
+                if (target->GetTypeId() == TYPEID_PLAYER || target->GetEntry() == NPC_GB_KORKRON_SERGANTE || target->GetEntry() == NPC_GB_KORKRON_REAVERS)
                     return true;
 
                 return false;
@@ -1028,16 +1028,16 @@ class npc_muradin_gunship : public CreatureScript
                                 CheckUnfriendlyShip(me, _instance, DATA_GB_HIGH_OVERLORD_SAURFANG)->AddNPCPassengerInInstance(NPC_GB_PORTAL, 47.55099f, -0.101778f, 37.61111f, 1.55138f);
                             }
                             break;
-                        /*case EVENT_RENDING_THROW:
+                        case EVENT_RENDING_THROW:
                             if (UpdateVictim())
-                                if (me->getVictim()->IsWithinDistInMap(me, 50.0f, false)) // Todo: Fix the distance
+                                if (me->getVictim()/*->IsWithinDistInMap(me, 50.0f, false)*/) // Todo: Fix the distance
                                 {
                                     DoCastVictim(SPELL_RENDING_THROW);
                                     EventScheduled = false;
                                 }
                                 else
                                     events.CancelEvent(EVENT_RENDING_THROW);
-                            break;*/
+                            break;
                         case EVENT_TASTE_OF_BLOOD:
                             DoCast(me, SPELL_TASTE_OF_BLOOD);
                             break;
@@ -1069,7 +1069,7 @@ class npc_muradin_gunship : public CreatureScript
                             }
                             break;
                         case EVENT_OUTRO_ALLIANCE_1:
-                           // _instance->DoCompleteAchievement(RAID_MODE(IM_ON_A_BOAT_10,IM_ON_A_BOAT_25,IM_ON_A_BOAT_10,IM_ON_A_BOAT_25));
+                            //_instance->DoCompleteAchievement(RAID_MODE(IM_ON_A_BOAT_10,IM_ON_A_BOAT_25,IM_ON_A_BOAT_10,IM_ON_A_BOAT_25));
                             _instance->DoCastSpellOnPlayers(SPELL_ACHIEVEMENT_CHECK);
                             StartFlyShip(skybreaker);
                             StopFlyShip(CheckUnfriendlyShip(me,_instance,DATA_GB_HIGH_OVERLORD_SAURFANG));
@@ -2030,7 +2030,7 @@ class npc_saurfang_gunship : public CreatureScript
 
             bool CanAIAttack(Unit const* target) const
             {
-                if (target->GetEntry() == NPC_GB_SKYBREAKER_SERGANTE || target->GetEntry() == NPC_GB_SKYBREAKER_MARINE)
+                if (target->GetTypeId() == TYPEID_PLAYER || target->GetEntry() == NPC_GB_SKYBREAKER_SERGANTE || target->GetEntry() == NPC_GB_SKYBREAKER_MARINE)
                     return true;
 
                 return false;
@@ -2271,16 +2271,16 @@ class npc_saurfang_gunship : public CreatureScript
                             _instance->SetBossState(DATA_GUNSHIP_EVENT, FAIL);
                             RestartEvent(orgrimmar, CheckUnfriendlyShip(me,_instance,DATA_GB_MURADIN_BRONZEBEARD), map, HORDE);
                             break;
-                        /*case EVENT_RENDING_THROW:
+                        case EVENT_RENDING_THROW:
                             if (UpdateVictim())
-                                if (me->getVictim()->IsWithinDistInMap(me, 50.0f, false)) // Todo: Fix the distance
+                                if (me->getVictim()/*->IsWithinDistInMap(me, 50.0f, false)*/) // Todo: Fix the distance
                                 {
                                     DoCastVictim(SPELL_RENDING_THROW);
                                     EventScheduled = false;
                                }
                                else
                                    events.CancelEvent(EVENT_RENDING_THROW);
-                            break;*/
+                            break;
                         case EVENT_SPAWN_MAGE:
                                Talk(SAY_NEW_BATTLE_MAGE_SPAWNED);
                                orgrimmar->AddNPCPassengerInInstance(NPC_GB_KORKRON_BATTLE_MAGE, 15.03016f, 0.00016f, 37.70952f, 1.55138f);
