@@ -1,8 +1,8 @@
-commit 01be79a53be03c2caf860ed326701170aa485256
+commit 24e7fbdc1e50d920f8d76a2af7f6711a0a8b5596
 Author: Venugh <venugh@gmx.net>
-Date:   Sat Jan 14 20:27:09 2012 +0100
+Date:   Mon Jan 30 22:12:27 2012 +0100
 
-    mmaps patch version 0.8.0
+    Mmaps patch version 0.9
 
 diff --git a/dep/CMakeLists.txt b/dep/CMakeLists.txt
 index 9c13ad5..1106a80 100644
@@ -804,10 +804,10 @@ index 0000000..3cee3f6
 +#endif // DETOURCOMMON_H
 diff --git a/dep/recastnavigation/Detour/DetourNavMesh.cpp b/dep/recastnavigation/Detour/DetourNavMesh.cpp
 new file mode 100644
-index 0000000..e139e3f
+index 0000000..fa589ec
 --- /dev/null
 +++ b/dep/recastnavigation/Detour/DetourNavMesh.cpp
-@@ -0,0 +1,1235 @@
+@@ -0,0 +1,1251 @@
 +//
 +// Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 +//
@@ -836,7 +836,8 @@ index 0000000..e139e3f
 +#include "DetourAlloc.h"
 +#include "DetourAssert.h"
 +#include <new>
-+
++#include <unistd.h>
++#include <errno.h>
 +
 +inline bool overlapSlabs(const float* amin, const float* amax,
 +						 const float* bmin, const float* bmax,
@@ -1631,16 +1632,31 @@ index 0000000..e139e3f
 +
 +const dtMeshTile* dtNavMesh::getTileAt(int x, int y) const
 +{
-+	// Find tile based on hash.
-+	int h = computeTileHash(x,y,m_tileLutMask);
-+	dtMeshTile* tile = m_posLookup[h];
-+	while (tile)
-+	{
-+		if (tile->header && tile->header->x == x && tile->header->y == y)
-+			return tile;
-+		tile = tile->next;
-+	}
-+	return 0;
++        // Find tile based on hash.
++        if (x<-10000 || y<-10000 ||  y>10000 || x>10000)
++            return 0;
++        int h = computeTileHash(x,y,m_tileLutMask);
++        access ((char*)(m_posLookup+h),F_OK);
++        if (errno==14)
++            return 0;
++        dtMeshTile* tile = m_posLookup[h];
++        while (tile)
++        {
++                if (sizeof(*tile)!=sizeof(dtMeshTile))
++                        return 0;
++                if (sizeof(*tile->header)!=sizeof(dtMeshHeader))
++                        return 0;
++                access ((char*)tile,F_OK);
++                if (errno==14)
++                        return 0;
++                access ((char*)tile->header,F_OK);
++                if (errno==14)
++                        return 0;
++                if (tile->header && tile->header->x == x && tile->header->y == y)
++                        return tile;
++                tile = tile->next;
++        }
++        return 0;
 +}
 +
 +dtMeshTile* dtNavMesh::getNeighbourTileAt(int x, int y, int side) const
@@ -14628,10 +14644,10 @@ index 0000000..ab04733
 +
 diff --git a/src/server/collision/Management/MMapManager.cpp b/src/server/collision/Management/MMapManager.cpp
 new file mode 100644
-index 0000000..90aece5
+index 0000000..00549b9
 --- /dev/null
 +++ b/src/server/collision/Management/MMapManager.cpp
-@@ -0,0 +1,301 @@
+@@ -0,0 +1,322 @@
 +/*
 + * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
 + * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
@@ -14782,8 +14798,12 @@ index 0000000..90aece5
 +        dtMeshHeader* header = (dtMeshHeader*)data;
 +        dtTileRef tileRef = 0;
 +
++        mmap->navMeshLock.acquire_write();
++        dtStatus stat = mmap->navMesh->addTile(data, fileHeader.size, DT_TILE_FREE_DATA, 0, &tileRef);
++        mmap->navMeshLock.release();
++
 +        // memory allocated for data is now managed by detour, and will be deallocated when the tile is removed
-+        if (DT_SUCCESS == mmap->navMesh->addTile(data, fileHeader.size, DT_TILE_FREE_DATA, 0, &tileRef))
++        if (DT_SUCCESS == stat)
 +        {
 +            mmap->mmapLoadedTiles.insert(std::pair<uint32, dtTileRef>(packedGridPos, tileRef));
 +            ++loadedTiles;
@@ -14823,8 +14843,12 @@ index 0000000..90aece5
 +
 +        dtTileRef tileRef = mmap->mmapLoadedTiles[packedGridPos];
 +
++        mmap->navMeshLock.acquire_write();
++        dtStatus stat = mmap->navMesh->removeTile(tileRef, NULL, NULL);
++        mmap->navMeshLock.release();
++
 +        // unload, and mark as non loaded
-+        if (DT_SUCCESS != mmap->navMesh->removeTile(tileRef, NULL, NULL))
++        if (DT_SUCCESS != stat)
 +        {
 +            // this is technically a memory leak
 +            // if the grid is later reloaded, dtNavMesh::addTile will return error but no extra memory is used
@@ -14858,7 +14882,12 @@ index 0000000..90aece5
 +        {
 +            uint32 x = (i->first >> 16);
 +            uint32 y = (i->first & 0x0000FFFF);
-+            if (DT_SUCCESS != mmap->navMesh->removeTile(i->second, NULL, NULL))
++
++            mmap->navMeshLock.acquire_write();
++            dtStatus stat = mmap->navMesh->removeTile(i->second, NULL, NULL);
++            mmap->navMeshLock.release();
++
++            if (DT_SUCCESS != stat)
 +                sLog->outError("MMAP:unloadMap: Could not unload %03u%02i%02i.mmtile from navmesh", mapId, y, x);
 +            else
 +            {
@@ -14908,6 +14937,14 @@ index 0000000..90aece5
 +        return loadedMMaps[mapId]->navMesh;
 +    }
 +
++    ACE_RW_Mutex* MMapManager::GetNavMeshLock(uint32 mapId)
++    {
++        if (loadedMMaps.find(mapId) == loadedMMaps.end())
++            return NULL;
++
++        return &loadedMMaps[mapId]->navMeshLock;
++    }
++ 
 +    dtNavMeshQuery const* MMapManager::GetNavMeshQuery(uint32 mapId, uint32 instanceId)
 +    {
 +        if (loadedMMaps.find(mapId) == loadedMMaps.end())
@@ -14936,10 +14973,10 @@ index 0000000..90aece5
 \ No newline at end of file
 diff --git a/src/server/collision/Management/MMapManager.h b/src/server/collision/Management/MMapManager.h
 new file mode 100644
-index 0000000..8af4520
+index 0000000..cd32933
 --- /dev/null
 +++ b/src/server/collision/Management/MMapManager.h
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,88 @@
 +/*
 + * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
 + * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
@@ -14960,6 +14997,8 @@ index 0000000..8af4520
 +
 +#ifndef _MMAP_MANAGER_H
 +#define _MMAP_MANAGER_H
++
++#include <ace/RW_Mutex.h>
 +
 +#include "UnorderedMap.h"
 +#include "DetourAlloc.h"
@@ -14986,6 +15025,7 @@ index 0000000..8af4520
 +        }
 +
 +        dtNavMesh* navMesh;
++        ACE_RW_Mutex navMeshLock;
 +
 +        // we have to use single dtNavMeshQuery for every instance, since those are not thread safe
 +        NavMeshQuerySet navMeshQueries;     // instanceId to query
@@ -15011,6 +15051,7 @@ index 0000000..8af4520
 +            // the returned [dtNavMeshQuery const*] is NOT threadsafe
 +            dtNavMeshQuery const* GetNavMeshQuery(uint32 mapId, uint32 instanceId);
 +            dtNavMesh const* GetNavMesh(uint32 mapId);
++            ACE_RW_Mutex* GetNavMeshLock(uint32 mapId);
 +
 +            uint32 getLoadedTilesCount() const { return loadedTiles; }
 +            uint32 getLoadedMapsCount() const { return loadedMMaps.size(); }
@@ -15389,10 +15430,10 @@ index 4f99af2..f8e75a0 100755
          void setTimer(uint32 timer) { Timer = timer; };
  
 diff --git a/src/server/game/CMakeLists.txt b/src/server/game/CMakeLists.txt
-index 658e9a1..c4394e5 100644
+index 745e596..538bb09 100644
 --- a/src/server/game/CMakeLists.txt
 +++ b/src/server/game/CMakeLists.txt
-@@ -106,6 +106,8 @@ include_directories(
+@@ -108,6 +108,8 @@ include_directories(
    ${CMAKE_SOURCE_DIR}/dep/mersennetwister
    ${CMAKE_SOURCE_DIR}/dep/SFMT
    ${CMAKE_SOURCE_DIR}/dep/zlib
@@ -15423,7 +15464,7 @@ index 7833198..9ff0fd5 100755
  
  //============================================================
 diff --git a/src/server/game/Entities/Object/Object.cpp b/src/server/game/Entities/Object/Object.cpp
-index 5c034f1..7338581 100755
+index 7cedaa0..844e892 100755
 --- a/src/server/game/Entities/Object/Object.cpp
 +++ b/src/server/game/Entities/Object/Object.cpp
 @@ -1300,7 +1300,7 @@ bool WorldObject::IsWithinLOSInMap(const WorldObject* obj) const
@@ -15450,7 +15491,7 @@ index 5c034f1..7338581 100755
      GetNearPoint2D(x, y, distance2d+searcher_size, absAngle);
 -    z = GetPositionZ();
 +    const float init_z = z = GetPositionZ();
-     UpdateGroundPositionZ(x, y, z);
+     UpdateAllowedPositionZ(x, y, z);
  
      /*
 @@ -2541,8 +2541,10 @@ void WorldObject::GetNearPoint(WorldObject const* /*searcher*/, float &x, float
@@ -15513,10 +15554,10 @@ index 5c034f1..7338581 100755
  
      for (uint8 j = 0; j < 10; ++j)
 diff --git a/src/server/game/Entities/Player/Player.cpp b/src/server/game/Entities/Player/Player.cpp
-index bed3c0c..4a7bdcd 100755
+index 44186da..9605838 100755
 --- a/src/server/game/Entities/Player/Player.cpp
 +++ b/src/server/game/Entities/Player/Player.cpp
-@@ -2300,6 +2300,22 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
+@@ -2309,6 +2309,22 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
      return true;
  }
  
@@ -15540,10 +15581,10 @@ index bed3c0c..4a7bdcd 100755
  {
      if (m_bgData.joinPos.m_mapId == MAPID_INVALID)
 diff --git a/src/server/game/Entities/Player/Player.h b/src/server/game/Entities/Player/Player.h
-index 7a45559..ee2eb61 100755
+index 2fa171c..c3c4586 100755
 --- a/src/server/game/Entities/Player/Player.h
 +++ b/src/server/game/Entities/Player/Player.h
-@@ -1092,6 +1092,7 @@ class Player : public Unit, public GridObject<Player>
+@@ -1095,6 +1095,7 @@ class Player : public Unit, public GridObject<Player>
          void RemoveFromWorld();
  
          bool TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options = 0);
@@ -15552,7 +15593,7 @@ index 7a45559..ee2eb61 100755
          {
              return TeleportTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetOrientation(), options);
 diff --git a/src/server/game/Entities/Unit/Unit.cpp b/src/server/game/Entities/Unit/Unit.cpp
-index 63aa777..e4230d5 100755
+index e02331e..f6bd791 100755
 --- a/src/server/game/Entities/Unit/Unit.cpp
 +++ b/src/server/game/Entities/Unit/Unit.cpp
 @@ -359,10 +359,10 @@ bool Unit::haveOffhandWeapon() const
@@ -15939,7 +15980,7 @@ index fbe609b..18091ac 100755
          // so in the next map creation, (EnsureGridCreated actually) VMaps will be reloaded
          Map::UnloadAll();
 diff --git a/src/server/game/Miscellaneous/SharedDefines.h b/src/server/game/Miscellaneous/SharedDefines.h
-index 53f7009..87b8fd2 100755
+index 81b1b14..e7f8da0 100755
 --- a/src/server/game/Miscellaneous/SharedDefines.h
 +++ b/src/server/game/Miscellaneous/SharedDefines.h
 @@ -20,6 +20,7 @@
@@ -15950,7 +15991,7 @@ index 53f7009..87b8fd2 100755
  #include <cassert>
  
  enum SpellEffIndex
-@@ -3104,4 +3105,33 @@ enum RemoveMethod
+@@ -3107,4 +3108,33 @@ enum RemoveMethod
      GROUP_REMOVEMETHOD_LEAVE   = 2,
  };
  
@@ -15985,7 +16026,7 @@ index 53f7009..87b8fd2 100755
 +
  #endif
 diff --git a/src/server/game/Movement/MotionMaster.cpp b/src/server/game/Movement/MotionMaster.cpp
-index 2656d88..b913fa9 100755
+index 8975a2d..4350d3e 100755
 --- a/src/server/game/Movement/MotionMaster.cpp
 +++ b/src/server/game/Movement/MotionMaster.cpp
 @@ -280,18 +280,18 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlo
@@ -16010,7 +16051,7 @@ index 2656d88..b913fa9 100755
      }
  }
  
-@@ -392,19 +392,20 @@ void MotionMaster::MoveFall()
+@@ -395,19 +395,20 @@ void MotionMaster::MoveFall(uint32 id/*=0*/)
  
  void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id)
  {
@@ -16034,7 +16075,7 @@ index 2656d88..b913fa9 100755
  }
  
 diff --git a/src/server/game/Movement/MotionMaster.h b/src/server/game/Movement/MotionMaster.h
-index 00f1701..6174eec 100755
+index a5bd086..927b3ff 100755
 --- a/src/server/game/Movement/MotionMaster.h
 +++ b/src/server/game/Movement/MotionMaster.h
 @@ -153,7 +153,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
@@ -16047,7 +16088,7 @@ index 00f1701..6174eec 100755
          // These two movement types should only be used with creatures having landing/takeoff animations
          void MoveLand(uint32 id, Position const& pos, float speed);
 diff --git a/src/server/game/Movement/MovementGenerators/ConfusedMovementGenerator.cpp b/src/server/game/Movement/MovementGenerators/ConfusedMovementGenerator.cpp
-index ac09f2d..777e840 100755
+index 94608d8..22232c3 100755
 --- a/src/server/game/Movement/MovementGenerators/ConfusedMovementGenerator.cpp
 +++ b/src/server/game/Movement/MovementGenerators/ConfusedMovementGenerator.cpp
 @@ -19,6 +19,7 @@
@@ -16058,7 +16099,7 @@ index ac09f2d..777e840 100755
  #include "VMapFactory.h"
  #include "MoveSplineInit.h"
  #include "MoveSpline.h"
-@@ -31,66 +32,17 @@
+@@ -32,66 +33,17 @@
  template<class T>
  void ConfusedMovementGenerator<T>::Initialize(T &unit)
  {
@@ -16127,7 +16168,7 @@ index ac09f2d..777e840 100755
      i_nextMoveTime.Reset(0);
      unit.StopMoving();
      unit.AddUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_CONFUSED_MOVE);
-@@ -108,10 +60,7 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
+@@ -109,10 +61,7 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
          unit.AddUnitState(UNIT_STAT_CONFUSED_MOVE);
  
          if (unit.movespline->Finalized())
@@ -16139,7 +16180,7 @@ index ac09f2d..777e840 100755
      }
      else
      {
-@@ -122,12 +71,23 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
+@@ -123,12 +72,23 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
              // start moving
              unit.AddUnitState(UNIT_STAT_CONFUSED_MOVE);
  
@@ -16168,7 +16209,7 @@ index ac09f2d..777e840 100755
              init.SetWalk(true);
              init.Launch();
          }
-@@ -141,6 +101,7 @@ void ConfusedMovementGenerator<Player>::Finalize(Player &unit)
+@@ -142,6 +102,7 @@ void ConfusedMovementGenerator<Player>::Finalize(Player &unit)
  {
      unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
      unit.ClearUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_CONFUSED_MOVE);
@@ -16202,7 +16243,7 @@ index b9f96bb..689c31f 100755
  #endif
  
 diff --git a/src/server/game/Movement/MovementGenerators/FleeingMovementGenerator.cpp b/src/server/game/Movement/MovementGenerators/FleeingMovementGenerator.cpp
-index 458e6f9..7e2efa9 100755
+index 458e6f9..6e29b63 100755
 --- a/src/server/game/Movement/MovementGenerators/FleeingMovementGenerator.cpp
 +++ b/src/server/game/Movement/MovementGenerators/FleeingMovementGenerator.cpp
 @@ -20,6 +20,7 @@
@@ -16563,7 +16604,15 @@ index 458e6f9..7e2efa9 100755
  void FleeingMovementGenerator<Player>::Finalize(Player &owner)
  {
      owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-@@ -374,8 +165,6 @@ FleeingMovementGenerator<T>::Update(T &owner, const uint32 &time_diff)
+@@ -343,6 +134,7 @@ void FleeingMovementGenerator<Creature>::Finalize(Creature &owner)
+ {
+     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
+     owner.ClearUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
++	owner.StopMoving();
+     if (owner.getVictim())
+         owner.SetTarget(owner.getVictim()->GetGUID());
+ }
+@@ -374,8 +166,6 @@ FleeingMovementGenerator<T>::Update(T &owner, const uint32 &time_diff)
  
  template void FleeingMovementGenerator<Player>::Initialize(Player &);
  template void FleeingMovementGenerator<Creature>::Initialize(Creature &);
@@ -16611,10 +16660,10 @@ index 84997d6..31665fb 100755
  
 diff --git a/src/server/game/Movement/MovementGenerators/PathFinderMovementGenerator.cpp b/src/server/game/Movement/MovementGenerators/PathFinderMovementGenerator.cpp
 new file mode 100644
-index 0000000..686c57c
+index 0000000..96e9b0c
 --- /dev/null
 +++ b/src/server/game/Movement/MovementGenerators/PathFinderMovementGenerator.cpp
-@@ -0,0 +1,780 @@
+@@ -0,0 +1,793 @@
 +/*
 + * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
 + *
@@ -16647,7 +16696,7 @@ index 0000000..686c57c
 +PathFinderMovementGenerator::PathFinderMovementGenerator(const Unit* owner) :
 +    m_polyLength(0), m_type(PATHFIND_BLANK),
 +    m_useStraightPath(false), m_forceDestination(false), m_pointPathLimit(MAX_POINT_PATH_LENGTH),
-+    m_sourceUnit(owner), m_navMesh(NULL), m_navMeshQuery(NULL)
++    m_sourceUnit(owner), m_navMesh(NULL), m_navMeshLock(NULL), m_navMeshQuery(NULL)
 +{
 +    sLog->outDebug(LOG_FILTER_MAPS, "++ PathFinderMovementGenerator::PathFinderMovementGenerator for %u \n", m_sourceUnit->GetGUIDLow());
 +
@@ -16656,6 +16705,7 @@ index 0000000..686c57c
 +    {
 +        MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
 +        m_navMesh = mmap->GetNavMesh(mapId);
++        m_navMeshLock = mmap->GetNavMeshLock(mapId);
 +        m_navMeshQuery = mmap->GetNavMeshQuery(mapId, m_sourceUnit->GetInstanceId());
 +    }
 +
@@ -16713,7 +16763,9 @@ index 0000000..686c57c
 +    else
 +    {
 +        // target moved, so we need to update the poly path
++        m_navMeshLock->acquire_read();
 +        BuildPolyPath(start, dest);
++        m_navMeshLock->release();
 +        return true;
 +    }
 +}
@@ -17165,11 +17217,21 @@ index 0000000..686c57c
 +
 +bool PathFinderMovementGenerator::HaveTile(const Vector3 &p) const
 +{
++    bool haveTiles;
 +    int tx, ty;
 +    float point[VERTEX_SIZE] = {p.y, p.z, p.x};
 +
++    // check if the start and end point have a mmtile loaded
 +    m_navMesh->calcTileLoc(point, &tx, &ty);
-+    return (m_navMesh->getTileAt(tx, ty) != NULL);
++    haveTiles = m_navMesh->getTileAt(tx, ty) != 0;
++
++    if (haveTiles)
++    {
++        m_navMesh->calcTileLoc(point, &tx, &ty);
++        haveTiles = m_navMesh->getTileAt(tx, ty) != 0;
++    }
++
++    return haveTiles;
 +}
 +
 +uint32 PathFinderMovementGenerator::fixupCorridor(dtPolyRef* path, uint32 npath, uint32 maxPath,
@@ -17397,10 +17459,10 @@ index 0000000..686c57c
 +}
 diff --git a/src/server/game/Movement/MovementGenerators/PathFinderMovementGenerator.h b/src/server/game/Movement/MovementGenerators/PathFinderMovementGenerator.h
 new file mode 100644
-index 0000000..f4edd1a
+index 0000000..2d68835
 --- /dev/null
 +++ b/src/server/game/Movement/MovementGenerators/PathFinderMovementGenerator.h
-@@ -0,0 +1,135 @@
+@@ -0,0 +1,138 @@
 +/*
 + * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
 + *
@@ -17421,6 +17483,8 @@ index 0000000..f4edd1a
 +
 +#ifndef _PATH_INFO_H
 +#define _PATH_INFO_H
++
++#include <ace/RW_Mutex.h>
 +
 +#include "SharedDefines.h"
 +#include "DetourNavMesh.h"
@@ -17494,6 +17558,7 @@ index 0000000..f4edd1a
 +
 +        const Unit* const       m_sourceUnit;       // the unit that is moving
 +        const dtNavMesh*        m_navMesh;          // the nav mesh
++        ACE_RW_Mutex*           m_navMeshLock;
 +        const dtNavMeshQuery*   m_navMeshQuery;     // the nav mesh query used to find the path
 +
 +        dtQueryFilter m_filter;                     // use single filter for all movements, update it when needed
@@ -17537,10 +17602,10 @@ index 0000000..f4edd1a
 +
 +#endif
 diff --git a/src/server/game/Movement/MovementGenerators/PointMovementGenerator.cpp b/src/server/game/Movement/MovementGenerators/PointMovementGenerator.cpp
-index 505615c..89d8368 100755
+index 8846501..df43ecd 100755
 --- a/src/server/game/Movement/MovementGenerators/PointMovementGenerator.cpp
 +++ b/src/server/game/Movement/MovementGenerators/PointMovementGenerator.cpp
-@@ -33,7 +33,7 @@ void PointMovementGenerator<T>::Initialize(T &unit)
+@@ -34,7 +34,7 @@ void PointMovementGenerator<T>::Initialize(T &unit)
  
      unit.AddUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
      Movement::MoveSplineInit init(unit);
@@ -17678,19 +17743,19 @@ index 0205b73..53070f7 100755
      if (creature.GetFormation() && creature.GetFormation()->getLeader() == &creature)
          creature.GetFormation()->LeaderMoveTo(destX, destY, destZ);
 diff --git a/src/server/game/Movement/MovementGenerators/TargetedMovementGenerator.cpp b/src/server/game/Movement/MovementGenerators/TargetedMovementGenerator.cpp
-index bded2fd..3f042ae 100755
+index 0d2982a..c26fd4e 100755
 --- a/src/server/game/Movement/MovementGenerators/TargetedMovementGenerator.cpp
 +++ b/src/server/game/Movement/MovementGenerators/TargetedMovementGenerator.cpp
-@@ -25,8 +25,6 @@
- #include "MoveSplineInit.h"
+@@ -26,8 +26,6 @@
  #include "MoveSpline.h"
+ #include "Player.h"
  
 -#include <cmath>
 -
  template<class T, typename D>
  void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
  {
-@@ -78,13 +76,22 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
+@@ -79,13 +77,22 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
              return;
      */
  
@@ -17714,7 +17779,7 @@ index bded2fd..3f042ae 100755
      init.SetWalk(((D*)this)->EnableWalking());
      init.Launch();
  }
-@@ -149,10 +156,17 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
+@@ -150,10 +157,17 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
      if (i_recheckDistance.Passed())
      {
          i_recheckDistance.Reset(50);
@@ -17737,7 +17802,7 @@ index bded2fd..3f042ae 100755
      }
  
 diff --git a/src/server/game/Movement/MovementGenerators/TargetedMovementGenerator.h b/src/server/game/Movement/MovementGenerators/TargetedMovementGenerator.h
-index 785d12b..b7f4823 100755
+index 696c99e..2d3af9c 100755
 --- a/src/server/game/Movement/MovementGenerators/TargetedMovementGenerator.h
 +++ b/src/server/game/Movement/MovementGenerators/TargetedMovementGenerator.h
 @@ -21,6 +21,7 @@
@@ -17746,9 +17811,9 @@ index 785d12b..b7f4823 100755
  #include "FollowerReference.h"
 +#include "PathFinderMovementGenerator.h"
  #include "Timer.h"
+ #include "Unit.h"
  
- class TargetedMovementGeneratorBase
-@@ -39,13 +40,18 @@ class TargetedMovementGeneratorMedium
+@@ -40,13 +41,18 @@ class TargetedMovementGeneratorMedium
      protected:
          TargetedMovementGeneratorMedium(Unit &target, float offset, float angle) :
              TargetedMovementGeneratorBase(target), i_offset(offset), i_angle(angle),
@@ -17769,7 +17834,7 @@ index 785d12b..b7f4823 100755
          Unit* GetTarget() const { return i_target.getTarget(); }
  
          void unitSpeedChanged() { i_recalculateTravel=true; }
-@@ -59,6 +65,8 @@ class TargetedMovementGeneratorMedium
+@@ -60,6 +66,8 @@ class TargetedMovementGeneratorMedium
          float i_angle;
          bool i_recalculateTravel : 1;
          bool i_targetReached : 1;
@@ -17779,10 +17844,10 @@ index 785d12b..b7f4823 100755
  
  template<class T>
 diff --git a/src/server/game/Movement/MovementGenerators/WaypointMovementGenerator.cpp b/src/server/game/Movement/MovementGenerators/WaypointMovementGenerator.cpp
-index ea858ea..e9db3ea 100755
+index ce8628a..a3349f0 100755
 --- a/src/server/game/Movement/MovementGenerators/WaypointMovementGenerator.cpp
 +++ b/src/server/game/Movement/MovementGenerators/WaypointMovementGenerator.cpp
-@@ -113,7 +113,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
+@@ -114,7 +114,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
      creature.AddUnitState(UNIT_STAT_ROAMING_MOVE);   
      
      Movement::MoveSplineInit init(creature);
@@ -17812,7 +17877,7 @@ index 4b8dbcc..220f5ce 100644
          std::string ToString() const;
      };
 diff --git a/src/server/game/Movement/Spline/MoveSplineInit.cpp b/src/server/game/Movement/Spline/MoveSplineInit.cpp
-index 885ade5..e0de425 100644
+index b5ae923..239572d 100644
 --- a/src/server/game/Movement/Spline/MoveSplineInit.cpp
 +++ b/src/server/game/Movement/Spline/MoveSplineInit.cpp
 @@ -50,7 +50,7 @@ namespace Movement
@@ -17967,19 +18032,6 @@ index b6ddaa9..cc6fd30 100755
  
  #endif
  
-diff --git a/src/server/game/Spells/SpellEffects.cpp b/src/server/game/Spells/SpellEffects.cpp
-index eaf5f4e..0398cfb 100755
---- a/src/server/game/Spells/SpellEffects.cpp
-+++ b/src/server/game/Spells/SpellEffects.cpp
-@@ -23,7 +23,7 @@
- #include "Log.h"
- #include "UpdateMask.h"
- #include "World.h"
--#include "ObjectMgr.h"
-+#include "ObjectMgr.h"F
- #include "SpellMgr.h"
- #include "Player.h"
- #include "SkillExtraItems.h"
 diff --git a/src/server/game/World/World.cpp b/src/server/game/World/World.cpp
 index 426a93f..58012c7 100755
 --- a/src/server/game/World/World.cpp
@@ -18057,7 +18109,7 @@ index bedd8a8..ae3ae5c 100755
  };
  
 diff --git a/src/server/scripts/CMakeLists.txt b/src/server/scripts/CMakeLists.txt
-index d34b1b8..4f14414 100644
+index 56e63af..c1798fb 100644
 --- a/src/server/scripts/CMakeLists.txt
 +++ b/src/server/scripts/CMakeLists.txt
 @@ -55,6 +55,9 @@ include_directories(
@@ -18070,7 +18122,7 @@ index d34b1b8..4f14414 100644
    ${CMAKE_SOURCE_DIR}/src/server/shared
    ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
    ${CMAKE_SOURCE_DIR}/src/server/shared/Cryptography
-@@ -121,6 +124,8 @@ include_directories(
+@@ -120,6 +123,8 @@ include_directories(
    ${CMAKE_SOURCE_DIR}/src/server/game/Movement
    ${CMAKE_SOURCE_DIR}/src/server/game/Movement/MovementGenerators
    ${CMAKE_SOURCE_DIR}/src/server/game/Movement/Waypoints
@@ -18131,7 +18183,7 @@ index 0000000..ac697f7
 +#endif
 \ No newline at end of file
 diff --git a/src/server/worldserver/CMakeLists.txt b/src/server/worldserver/CMakeLists.txt
-index 60adce4..568b219 100644
+index 191bbbf..69a4c62 100644
 --- a/src/server/worldserver/CMakeLists.txt
 +++ b/src/server/worldserver/CMakeLists.txt
 @@ -48,6 +48,7 @@ include_directories(
@@ -18142,7 +18194,7 @@ index 60adce4..568b219 100644
    ${CMAKE_SOURCE_DIR}/src/server/collision
    ${CMAKE_SOURCE_DIR}/src/server/collision/Management
    ${CMAKE_SOURCE_DIR}/src/server/shared
-@@ -165,6 +166,7 @@ target_link_libraries(worldserver
+@@ -163,6 +164,7 @@ target_link_libraries(worldserver
    collision
    g3dlib
    gsoap
