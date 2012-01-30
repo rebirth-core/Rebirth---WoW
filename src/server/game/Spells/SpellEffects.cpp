@@ -3707,6 +3707,9 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
     pGameObj->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
 
+    //! Check if correct (@Machiavelli, @QAston, and all those who can :))
+    m_caster->AddGameObject(pGameObj);
+
     ExecuteLogEffectSummonObject(effIndex, pGameObj);
 
     // Wild object not have owner and check clickable by players
