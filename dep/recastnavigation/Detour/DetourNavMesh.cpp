@@ -822,18 +822,31 @@ dtStatus dtNavMesh::addTile(unsigned char* data, int dataSize, int flags,
 
 const dtMeshTile* dtNavMesh::getTileAt(int x, int y) const
 {
-	// Find tile based on hash.
-	int h = computeTileHash(x,y,m_tileLutMask);
-	dtMeshTile* tile = m_posLookup[h];
-    if (!tile)
-        return false;
-	while (tile)
-	{
-		if (tile->header && tile->header->x == x && tile->header->y == y)
-			return tile;
-		tile = tile->next;
-	}
-	return 0;
+        // Find tile based on hash.
+        if (x<-10000 || y<-10000 ||  y>10000 || x>10000)
+            return 0;
+        int h = computeTileHash(x,y,m_tileLutMask);
+        access ((char*)(m_posLookup+h),F_OK);
+        if (errno==14)
+            return 0;
+        dtMeshTile* tile = m_posLookup[h];
+        while (tile)
+        {
+                if (sizeof(*tile)!=sizeof(dtMeshTile))
+                        return 0;
+                if (sizeof(*tile->header)!=sizeof(dtMeshHeader))
+                        return 0;
+                access ((char*)tile,F_OK);
+                if (errno==14)
+                        return 0;
+                access ((char*)tile->header,F_OK);
+                if (errno==14)
+                        return 0;
+                if (tile->header && tile->header->x == x && tile->header->y == y)
+                        return tile;
+                tile = tile->next;
+        }
+        return 0;
 }
 
 dtMeshTile* dtNavMesh::getNeighbourTileAt(int x, int y, int side) const
