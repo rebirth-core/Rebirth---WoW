@@ -93,7 +93,8 @@ namespace MMAP
         ASSERT(mmap->navMesh);
 
         // check if we already have this tile loaded
-        uint32 packedGridPos = packTileID(x, y);
+        // y and x are swapped for purpose,dont change this in any part of this bool
+        uint32 packedGridPos = packTileID(y, x);
         if (mmap->mmapLoadedTiles.find(packedGridPos) != mmap->mmapLoadedTiles.end())
         {
             sLog->outError("MMAP:loadMap: Asked to load already loaded navmesh tile. %03u%02i%02i.mmtile", mapId, y, x);
