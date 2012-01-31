@@ -678,7 +678,7 @@ bool CheckRatingDataExists(Player* player)
 
 void CreateRatingData(Player* player)
 {
-	CharacterDatabase.PExecute("INSERT INTO character_battleground_rating (player) VALUES (%u)",player);
+	CharacterDatabase.PExecute("INSERT INTO character_battleground_rating (player) VALUES (%u)",player->GetGUIDLow());
 }
 
 void Battleground::UpdatePlayerRating(uint32 winner)
