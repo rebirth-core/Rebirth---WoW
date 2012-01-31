@@ -740,6 +740,7 @@ void BattlegroundWS::EndBattleground(uint32 winner)
     //complete map_end rewards (even if no team wins)
     RewardHonorToTeam(GetBonusHonorFromKill(m_HonorEndKills), ALLIANCE);
     RewardHonorToTeam(GetBonusHonorFromKill(m_HonorEndKills), HORDE);
+	UpdatePlayerRating(winner);
 
     Battleground::EndBattleground(winner);
 }

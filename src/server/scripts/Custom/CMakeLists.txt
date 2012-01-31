@@ -12,6 +12,7 @@ set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
 #Custom/npc_ranking_info.cpp
 #Custom/player_ranking.cpp
+Custom/PVPSystem/BattleGround_Rating.cpp
 )
 
 message("  -> Prepared: Custom")

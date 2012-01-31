@@ -660,8 +660,56 @@ void Battleground::YellToAll(Creature* creature, const char* text, uint32 langua
 void Battleground::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 {
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+	{
         if (Player* player = _GetPlayerForTeam(TeamID, itr, "RewardHonorToTeam"))
             UpdatePlayerScore(player, SCORE_BONUS_HONOR, Honor);
+	}
+}
+
+bool CheckRatingDataExists(Player* player)
+{
+	QueryResult result = CharacterDatabase.PQuery("SELECT * FROM character_battleground_rating WHERE player = %u", player->GetGUIDLow());
+
+	if(result)
+	    return true;
+	else
+		return false;
+}
+
+void CreateRatingData(Player* player)
+{
+	CharacterDatabase.PExecute("INSERT INTO character_battleground_rating (player) VALUES (%u)",player);
+}
+
+void Battleground::UpdatePlayerRating(uint32 winner)
+{
+	uint32 loser;
+	if (winner == ALLIANCE)
+		loser = HORDE;
+	else
+		loser = ALLIANCE;
+
+    for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+	{
+        Player* player = _GetPlayerForTeam(winner, itr, "RewardRatingToTeam");
+		if (!CheckRatingDataExists(player))
+			CreateRatingData(player);
+		if(CheckRatingDataExists(player))
+		{
+			CharacterDatabase.PExecute("UPDATE character_battleground_rating SET rating = rating + 35 WHERE player = %u",player->GetGUIDLow());
+		}
+	}
+
+	for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+	{
+        Player* player = _GetPlayerForTeam(loser, itr, "RewardRatingToTeam");
+		if (!CheckRatingDataExists(player))
+			CreateRatingData(player);
+		if(CheckRatingDataExists(player))
+		{
+			CharacterDatabase.PExecute("UPDATE character_battleground_rating SET rating = rating - 15 WHERE player = %u",player->GetGUIDLow());
+		}
+	}
 }
 
 void Battleground::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, uint32 TeamID)
