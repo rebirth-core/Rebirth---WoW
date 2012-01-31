@@ -184,7 +184,7 @@ namespace MMAP
         MMapData* mmap = loadedMMaps[mapId];
 
         // check if we have this tile loaded
-        uint32 packedGridPos = packTileID(x, y);
+        uint32 packedGridPos = packTileID(y, x);
         if (mmap->mmapLoadedTiles.find(packedGridPos) == mmap->mmapLoadedTiles.end())
         {
             // file may not exist, therefore not loaded
