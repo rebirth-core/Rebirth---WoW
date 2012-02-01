@@ -1458,7 +1458,7 @@ class spell_halion_twilight_cutter : public SpellScriptLoader
             void RemoveNotBetween(std::list<Unit*>& targets)
             {
                 Unit* caster = GetCaster();
-                if (Aura* cutter = GetCaster()->GetAura(SPELL_TWILIGHT_CUTTER))
+                if (Aura* cutter = caster->GetAura(SPELL_TWILIGHT_CUTTER))
                 {
                     if (Unit* cutterCaster = cutter->GetCaster())
                         targets.remove_if(TwilightCutterSelector(caster, cutterCaster));
