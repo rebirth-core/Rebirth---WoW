@@ -31,7 +31,9 @@ enum Data
     DATA_START,
     DATA_IN_POSITION,
     DATA_ARGENT_SOLDIER_DEFEATED,
-    DATA_TEAM_IN_INSTANCE
+    DATA_TEAM_IN_INSTANCE,
+	DATA_TEAM,
+	DATA_I_VE_HAD_WORSE
 };
 
 enum Data64
@@ -42,7 +44,8 @@ enum Data64
 
     DATA_GRAND_CHAMPION_1,
     DATA_GRAND_CHAMPION_2,
-    DATA_GRAND_CHAMPION_3
+    DATA_GRAND_CHAMPION_3,
+	DATA_BLACK_KNIGHT
 };
 
 enum Npcs
@@ -83,7 +86,7 @@ enum Npcs
     NPC_PRIESTESS               = 35307,
 
     NPC_BLACK_KNIGHT            = 35451,
-
+	NPC_RISEN_CHAMPION          = 35590,
     NPC_RISEN_JAEREN            = 35545,
     NPC_RISEN_ARELAS            = 35564,
 
