@@ -577,7 +577,6 @@ class npc_halion_controller : public CreatureScript
 
             void Reset() { me->SetReactState(REACT_PASSIVE); }
 
-            // Let him count as summoner for various NPCs, making them dissapear at encounter failure or success.
             void JustSummoned(Creature* who)
             {
                 _summons.Summon(who);
@@ -624,7 +623,7 @@ class npc_halion_controller : public CreatureScript
                         _summons.DespawnAll();
                         _events.Reset();
                         if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
-                            halion->ToUnit()->RemoveGameObject(SPELL_SUMMON_TWILIGHT_PORTAL, true);
+                            halion->RemoveGameObject(SPELL_SUMMON_TWILIGHT_PORTAL, true);
                         break;
                     }
                     case ACTION_BERSERK:
@@ -1134,7 +1133,7 @@ class spell_halion_fiery_combustion : public SpellScriptLoader
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget()->HasAura(SPELL_MARK_OF_COMBUSTION))
-                    GetTarget()->RemoveAurasDueToSpell(SPELL_MARK_OF_COMBUSTION, 0, 0, AURA_REMOVE_BY_ENEMY_SPELL);
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_MARK_OF_COMBUSTION, 0, 0, AURA_REMOVE_BY_EXPIRE);
             }
 
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -1180,7 +1179,7 @@ class spell_halion_soul_consumption : public SpellScriptLoader
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget()->HasAura(SPELL_MARK_OF_CONSUMPTION))
-                    GetTarget()->RemoveAurasDueToSpell(SPELL_MARK_OF_CONSUMPTION, 0, 0, AURA_REMOVE_BY_ENEMY_SPELL);
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_MARK_OF_CONSUMPTION, 0, 0, AURA_REMOVE_BY_EXPIRE);
             }
 
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -1229,6 +1228,18 @@ class spell_halion_mark_of_combustion : public SpellScriptLoader
             {
                 Unit* target = GetTarget();
 
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL) // Purged
+                    target->RemoveAurasDueToSpell(SPELL_FIERY_COMBUSTION, 0, 0, AURA_REMOVE_BY_ENEMY_SPELL);
+
+                //! Don't process if the aura is not considered expired.
+                //! The hook will still be called upon dispelling Soul Consumption because
+                //! it causes Mark of Combustion to be considered removed by expire.
+                //! It will also be called upon purging the mark, but purging it will
+                //! trigger Fiery Conbustion's dispel.
+                //! Note: This is really fubarish, we need something simpler.
+                if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+                    return;
+
                 InstanceScript* instance = target->GetInstanceScript();
                 if (!instance)
                     return;
@@ -1275,6 +1286,18 @@ class spell_halion_mark_of_consumption : public SpellScriptLoader
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 Unit* target = GetTarget();
+
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL) // Purged
+                    target->RemoveAurasDueToSpell(SPELL_SOUL_CONSUMPTION, 0, 0, AURA_REMOVE_BY_ENEMY_SPELL);
+
+                //! Don't process if the aura is not considered expired.
+                //! The hook will still be called upon dispelling Soul Consumption because
+                //! it causes Mark of Consumption to be considered removed by expire.
+                //! It will also be called upon purging the mark, but purging it will
+                //! trigger Soul Consumption's dispel.
+                //! Note: This is really fubarish, we need something simpler.
+                if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+                    return;
 
                 InstanceScript* instance = target->GetInstanceScript();
                 if (!instance)
@@ -1367,15 +1390,14 @@ class spell_halion_leave_twilight_realm : public SpellScriptLoader
 
             void HandleBeforeHit()
             {
-                // Right before, make the Soul Consumption explode
-                if (Player* plr = GetHitPlayer())
-                    plr->RemoveAurasDueToSpell(SPELL_SOUL_CONSUMPTION, 0, 0, AURA_REMOVE_BY_ENEMY_SPELL);
+                if (Player* player = GetHitPlayer())
+                    player->RemoveAurasDueToSpell(SPELL_SOUL_CONSUMPTION, 0, 0, AURA_REMOVE_BY_ENEMY_SPELL);
             }
 
             void FilterTargets(std::list<Unit*>& targets)
             {
                 targets.remove_if(Trinity::UnitAuraCheck(false, SPELL_TWILIGHT_REALM));
-                //! Alternative code ? ^ Looks better imho.
+                //! Wat about dis ?
                 //! targets.clear();
                 //! if (GetTargetUnit() && GetTargetUnit()->HasAura(SPELL_TWILIGHT_REALM))
                 //!    targets.push_back(GetTargetUnit());
@@ -1410,9 +1432,8 @@ class spell_halion_enter_twilight_realm : public SpellScriptLoader
 
             void HandleBeforeHit()
             {
-                // Right before, make the Fiery Combustion explode
-                if (Player* plr = GetHitPlayer())
-                    plr->RemoveAurasDueToSpell(SPELL_FIERY_COMBUSTION, 0, 0, AURA_REMOVE_BY_ENEMY_SPELL);
+                if (Player* player = GetHitPlayer())
+                    player->RemoveAurasDueToSpell(SPELL_FIERY_COMBUSTION, 0, 0, AURA_REMOVE_BY_ENEMY_SPELL);
             }
 
             void Register()
