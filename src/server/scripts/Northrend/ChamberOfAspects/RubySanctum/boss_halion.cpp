@@ -1391,7 +1391,7 @@ class spell_halion_leave_twilight_realm : public SpellScriptLoader
             void HandleBeforeHit()
             {
                 if (Player* player = GetHitPlayer())
-                    player->RemoveAurasDueToSpell(SPELL_SOUL_CONSUMPTION, 0, 0, AURA_REMOVE_BY_EXPIRE);
+                    player->RemoveAurasDueToSpell(SPELL_SOUL_CONSUMPTION, 0, 0, AURA_REMOVE_BY_ENEMY_SPELL);
             }
 
             void FilterTargets(std::list<Unit*>& targets)
@@ -1433,7 +1433,7 @@ class spell_halion_enter_twilight_realm : public SpellScriptLoader
             void HandleBeforeHit()
             {
                 if (Player* player = GetHitPlayer())
-                    player->RemoveAurasDueToSpell(SPELL_FIERY_COMBUSTION, 0, 0, AURA_REMOVE_BY_EXPIRE);
+                    player->RemoveAurasDueToSpell(SPELL_FIERY_COMBUSTION, 0, 0, AURA_REMOVE_BY_ENEMY_SPELL);
             }
 
             void Register()
