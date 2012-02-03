@@ -1936,7 +1936,7 @@ class npc_zafod_boombox : public CreatureScript
 		      disabled = 1;
 
             // Maybe this isn't blizzlike but I can't find any spell in the DBCs
-            if (pPlayer->GetItemCount(49278, false) == 0 && disabled = 0)
+            if (pPlayer->GetItemCount(49278, false) == 0 && disabled == 0)
                 pPlayer->ADD_GOSSIP_ITEM(0, "Yeah, I'm sure safety is your top priority. Give me a rocket pack.", 631, 1);
 			else
 				pPlayer->ADD_GOSSIP_ITEM(0, "Die Luftschiff Schlacht ist zurzeit dekativiert. Bitte wende dich an den Support!.", 631, 0);

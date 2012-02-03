@@ -41,6 +41,7 @@ void AddSC_item_spell_scripts();
 void AddSC_example_spell_scripts();
 
 void AddSC_SmartSCripts();
+void AddSC_erfolg_hook();
 
 //Commands
 void AddSC_account_commandscript();
@@ -611,6 +612,7 @@ void AddScripts()
     AddExampleScripts();
     AddSpellScripts();
     AddSC_SmartSCripts();
+	AddSC_erfolg_hook();
     AddCommandScripts();
 #ifdef SCRIPTS
     AddWorldScripts();
