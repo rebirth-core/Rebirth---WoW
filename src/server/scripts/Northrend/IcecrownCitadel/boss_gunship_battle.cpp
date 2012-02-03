@@ -1924,9 +1924,22 @@ class npc_zafod_boombox : public CreatureScript
 
         bool OnGossipHello(Player* pPlayer, Creature* pCreature)
         {
+		    QueryResult result = WorldDatabase.PQuery("SELECT disabled FROM unstable_encounters WHERE boss_id = 1");
+		    uint32 disabled = 1;
+
+		    if(result)
+		    {
+			  Field *field = result->Fetch();
+			  disabled = field[0].GetUInt32();
+		    }
+		    else
+		      disabled = 1;
+
             // Maybe this isn't blizzlike but I can't find any spell in the DBCs
-            if (pPlayer->GetItemCount(49278, false) == 0)
+            if (pPlayer->GetItemCount(49278, false) == 0 && disabled = 0)
                 pPlayer->ADD_GOSSIP_ITEM(0, "Yeah, I'm sure safety is your top priority. Give me a rocket pack.", 631, 1);
+			else
+				pPlayer->ADD_GOSSIP_ITEM(0, "Die Luftschiff Schlacht ist zurzeit dekativiert. Bitte wende dich an den Support!.", 631, 0);
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             return true;
         }
@@ -1958,6 +1971,11 @@ class npc_zafod_boombox : public CreatureScript
                     return false;
                 }
             }
+			else if (action == 0)
+			{
+				pCreature->MonsterWhisper("Die Luftschiff Schlacht ist zurzeit dekativiert. Bitte wende dich an den Support!", player->GetGUIDLow());
+				return true;
+			}
 
             return true;
         }
