@@ -31,6 +31,16 @@ class rebirth_commandscript : public CommandScript
             if(points <  0 || points > 10000)
                return false;
 
+            QueryResult result = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", handler->getSelectedPlayer()->GetSession()->GetAccountId());
+            if (!result)
+               return false;
+
+            Field *field = result->Fetch();
+            int32 eventPoints = field[0].GetInt32();
+
+            if (points - eventPoints < 0)
+                points = eventPoints;
+
             LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
 
             return true;
@@ -41,7 +51,7 @@ class rebirth_commandscript : public CommandScript
             static ChatCommand RebirthSubSubCommandTable[] =
             {
                 { "addpoints", SEC_MODERATOR, true, &HandleAddPointsCommand, "", NULL },
-				{ "removepoints", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
+                { "removepoints", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 		
