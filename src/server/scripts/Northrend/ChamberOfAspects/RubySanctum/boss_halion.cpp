@@ -95,6 +95,9 @@ enum Spells
     SPELL_TWILIGHT_CUTTER_TRIGGERED     = 74769,
     SPELL_TWILIGHT_PULSE_PERIODIC       = 78861,
     SPELL_TRACK_ROTATION                = 74758, // NPC_ORB_CARRIER -> NPC_ORB_ROTATION_FOCUS
+
+    // Living Inferno
+    SPELL_BLAZING_AURA                  = 75885,
 };
 
 enum Events
@@ -695,7 +698,7 @@ class npc_halion_controller : public CreatureScript
                                     if (canUpdate)
                                         materialCorporealityValue -= 10;
                                 }
-                                else if (TwilightDamageTaken >= 1.02 * MaterialDamageTaken)
+                                else if (TwilightDamageTaken >= 1.02f * MaterialDamageTaken)
                                 {
                                     TwilightDamageTaken = 0;
                                     MaterialDamageTaken = 0;
@@ -1083,6 +1086,61 @@ class npc_orb_carrier : public CreatureScript
         CreatureAI* GetAI(Creature* creature) const
         {
             return GetRubySanctumAI<npc_orb_carrierAI>(creature);
+        }
+};
+
+class npc_living_inferno : public CreatureScript
+{
+    public:
+        npc_living_inferno() : CreatureScript("npc_living_inferno") { }
+
+        struct npc_living_infernoAI : public ScriptedAI
+        {
+            npc_living_infernoAI(Creature* creature) : ScriptedAI(creature) { }
+
+            void JustSummoned(Creature* /*summoner*/)
+            {
+                me->SetInCombatWithZone();
+                DoCast(me, SPELL_BLAZING_AURA);
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return GetRubySanctumAI<npc_living_infernoAI>(creature);
+        }
+};
+
+//! Need sniff data
+class npc_living_ember : public CreatureScript
+{
+    public:
+        npc_living_ember() : CreatureScript("npc_living_ember") { }
+
+        struct npc_living_emberAI : public ScriptedAI
+        {
+            npc_living_emberAI(Creature* creature) : ScriptedAI(creature) { }
+
+            void JustSummoned(Creature /*summoner*/)
+            {
+                _berserkingTimer = 2 * MINUTE * IN_MILLISECONDS;
+                me->SetInCombatWithZone();
+            }
+
+            void UpdateAI(uint32 const diff)
+            {
+                if (_berserkingTimer < diff)
+                    DoCast(me, SPELL_BERSERK);
+                else _berserkingTimer -= diff;
+            }
+
+        private:
+            uint32 _berserkingTimer;
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return GetRubySanctumAI<npc_living_emberAI>(creature);
         }
 };
 
@@ -1512,6 +1570,8 @@ void AddSC_boss_halion()
     new npc_meteor_strike();
     new npc_combustion_consumption();
     new npc_orb_carrier();
+    new npc_living_inferno();
+    new npc_living_ember();
 
     new spell_halion_meteor_strike_marker();
     new spell_halion_combustion_consumption_summon();
