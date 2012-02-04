@@ -38,7 +38,7 @@ class rebirth_commandscript : public CommandScript
             Field *field = result->Fetch();
             int32 eventPoints = field[0].GetInt32();
 
-            if (points - eventPoints < 0)
+            if (eventPoints - points < 0)
                 points = eventPoints;
 
             LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
