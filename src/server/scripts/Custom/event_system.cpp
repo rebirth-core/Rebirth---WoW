@@ -13,6 +13,11 @@ class rebirth_commandscript : public CommandScript
 
             int points = atoi((char*)args);
 
+            if(points <  0 || points > 10000)
+               return false;
+
+            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte + %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
+
             return true;
         }
 
@@ -35,7 +40,8 @@ class rebirth_commandscript : public CommandScript
                 { "rebirth", SEC_MODERATOR, true, NULL, "", RebirthSubCommandTable  },
                 { NULL, 0, false, NULL, "", NULL }
             };
-            return WarnCommandTable;
+
+            return RebirthCommandTable;
         }
 };
 
