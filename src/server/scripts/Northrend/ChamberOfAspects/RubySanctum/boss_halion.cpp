@@ -1006,26 +1006,26 @@ class npc_combustion_consumption : public CreatureScript
                 }
             }
 
-            void IsSummonedBy(Unit* /*summoner*/)
+            void IsSummonedBy(Unit* summoner)
             {
                 // Let Halion Controller count as summoner
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION_CONTROLLER)))
                     controller->AI()->JustSummoned(me);
+
+                _summoner = summoner;
             }
 
             void SetData(uint32 type, uint32 value)
             {
-                if (type != DATA_STACKS_DISPELLED || !_damageSpell || !_explosionSpell)
+                if (type != DATA_STACKS_DISPELLED || !_damageSpell || !_explosionSpell || !_summoner)
                     return;
 
-                CustomSpellValues values;
-                values.AddSpellMod(SPELLVALUE_AURA_STACK, value);
-                me->CastCustomSpell(SPELL_SCALE_AURA, values, me);
-
+                me->CastCustomSpell(SPELL_SCALE_AURA, SPELLVALUE_AURA_STACK, value, me);
                 DoCast(me, _damageSpell);
                 
                 int32 damage = 1200 + (value * 1290); // Needs moar research.
-                me->CastCustomSpell(_explosionSpell, SPELLVALUE_BASE_POINT0, damage, me);
+                // Target is TARGET_UNIT_AREA_ALLY_SRC (TARGET_SRC_CASTER)
+                _summoner->CastCustomSpell(_explosionSpell, SPELLVALUE_BASE_POINT0, damage, _summoner);
             }
 
             void UpdateAI(const uint32 /*diff*/) { }
@@ -1034,6 +1034,8 @@ class npc_combustion_consumption : public CreatureScript
             InstanceScript* _instance;
             uint32 _explosionSpell;
             uint32 _damageSpell;
+
+            Unit* _summoner;
         };
 
         CreatureAI* GetAI(Creature* creature) const
