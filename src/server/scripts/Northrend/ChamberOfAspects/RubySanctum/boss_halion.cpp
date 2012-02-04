@@ -1132,7 +1132,7 @@ class npc_living_ember : public CreatureScript
             void UpdateAI(uint32 const diff)
             {
                 if (_berserkingTimer < diff)
-                    DoCast(me, SPELL_BERSERK);
+                    DoCast(me, SPELL_BERSERK); // Find the correct spellid for it.
                 else _berserkingTimer -= diff;
             }
 
