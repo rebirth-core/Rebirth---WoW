@@ -40,8 +40,8 @@ enum DataTypes
     DATA_XERESTRASZA                        = 5,
     DATA_CRYSTAL_CHANNEL_TARGET             = 6,
     DATA_BALTHARUS_SHARED_HEALTH            = 7,
-    DATA_ZARITHIAN_SPAWN_STALKER_1          = 8,
-    DATA_ZARITHIAN_SPAWN_STALKER_2          = 9,
+    DATA_ZARITHRIAN_SPAWN_STALKER_1          = 8,
+    DATA_ZARITHRIAN_SPAWN_STALKER_2          = 9,
     DATA_HALION_CONTROLLER                  = 10,
     DATA_ORB_CARRIER                        = 11,
     DATA_ORB_ROTATION_FOCUS                 = 12,
@@ -71,7 +71,7 @@ enum CreaturesIds
     // General Zarithrian
     NPC_GENERAL_ZARITHRIAN                  = 39746,
     NPC_ONYX_FLAMECALLER                    = 39814,
-    NPC_ZARITHIAN_SPAWN_STALKER             = 39794,
+    NPC_ZARITHRIAN_SPAWN_STALKER             = 39794,
 
     // Saviana Ragefire
     NPC_SAVIANA_RAGEFIRE                    = 39747,

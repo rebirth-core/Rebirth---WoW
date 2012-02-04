@@ -49,7 +49,7 @@ class instance_ruby_sanctum : public InstanceMapScript
                 BaltharusSharedHealth    = 0;
                 FlameWallsGUID           = 0;
                 FlameRingGUID            = 0;
-                memset(ZarithianSpawnStalkerGUID, 0, 2 * sizeof(uint64));
+                memset(ZarithrianSpawnStalkerGUID, 0, 2 * sizeof(uint64));
                 memset(BurningTreeGUID, 0, 4 * sizeof(uint64));
             }
 
@@ -87,11 +87,11 @@ class instance_ruby_sanctum : public InstanceMapScript
                     case NPC_XERESTRASZA:
                         XerestraszaGUID = creature->GetGUID();
                         break;
-                    case NPC_ZARITHIAN_SPAWN_STALKER:
-                        if (!ZarithianSpawnStalkerGUID[0])
-                            ZarithianSpawnStalkerGUID[0] = creature->GetGUID();
+                    case NPC_ZARITHRIAN_SPAWN_STALKER:
+                        if (!ZarithrianSpawnStalkerGUID[0])
+                            ZarithrianSpawnStalkerGUID[0] = creature->GetGUID();
                         else
-                            ZarithianSpawnStalkerGUID[1] = creature->GetGUID();
+                            ZarithrianSpawnStalkerGUID[1] = creature->GetGUID();
                         break;
                     default:
                         break;
@@ -167,9 +167,9 @@ class instance_ruby_sanctum : public InstanceMapScript
                         return SavianaRagefireGUID;
                     case DATA_GENERAL_ZARITHRIAN:
                         return GeneralZarithrianGUID;
-                    case DATA_ZARITHIAN_SPAWN_STALKER_1:
-                    case DATA_ZARITHIAN_SPAWN_STALKER_2:
-                        return ZarithianSpawnStalkerGUID[type - DATA_ZARITHIAN_SPAWN_STALKER_1];
+                    case DATA_ZARITHRIAN_SPAWN_STALKER_1:
+                    case DATA_ZARITHRIAN_SPAWN_STALKER_2:
+                        return ZarithrianSpawnStalkerGUID[type - DATA_ZARITHRIAN_SPAWN_STALKER_1];
                     case DATA_HALION:
                         return HalionGUID;
                     case DATA_TWILIGHT_HALION:
@@ -340,7 +340,7 @@ class instance_ruby_sanctum : public InstanceMapScript
             uint64 CrystalChannelTargetGUID;
             uint64 XerestraszaGUID;
             uint64 FlameWallsGUID;
-            uint64 ZarithianSpawnStalkerGUID[2];
+            uint64 ZarithrianSpawnStalkerGUID[2];
             uint64 BurningTreeGUID[4];
             uint64 FlameRingGUID;
             uint64 TwilightFlameRingGUID;
