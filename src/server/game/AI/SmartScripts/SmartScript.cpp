@@ -39,6 +39,7 @@ SmartScript::SmartScript()
     go = NULL;
     me = NULL;
     mEventPhase = 0;
+    mInvinceabilityHpLevel = 0;
     mPathId = 0;
     mTargetStorage = new ObjectListMap();
     mStoredEvents.clear();
@@ -991,15 +992,10 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!me)
                 break;
 
-            SmartAI* ai = CAST_AI(SmartAI, me->AI());
-
-            if (!ai)
-                break;
-
             if (e.action.invincHP.percent)
-                ai->SetInvinceabilityHpLevel(me->CountPctFromMaxHealth(e.action.invincHP.percent));
+                mInvinceabilityHpLevel = me->CountPctFromMaxHealth(e.action.invincHP.percent);
             else
-                ai->SetInvinceabilityHpLevel(e.action.invincHP.minHP);
+                mInvinceabilityHpLevel = e.action.invincHP.minHP;
             break;
         }
         case SMART_ACTION_SET_DATA:
