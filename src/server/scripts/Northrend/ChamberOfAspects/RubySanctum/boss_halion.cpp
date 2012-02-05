@@ -178,7 +178,6 @@ struct CorporealityData
     uint8 materialPercentage;
     uint32 materialRealmSpell;
     uint32 twilightRealmSpell;
-    // uint8 twilightPercentage; // Unneeded
 };
 
 uint8 const MAX_CORPOREALITY_STATE = 11;
@@ -578,7 +577,10 @@ class npc_halion_controller : public CreatureScript
                 me->SetPhaseMask(me->GetPhaseMask() | 0x20, true);
             }
 
-            void Reset() { me->SetReactState(REACT_PASSIVE); }
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
 
             void JustSummoned(Creature* who)
             {
@@ -602,7 +604,7 @@ class npc_halion_controller : public CreatureScript
                     {
                         _events.ScheduleEvent(EVENT_SHADOW_PULSARS_SHOOT, 10000); // Fix the timer
 
-                        me->SummonCreature(NPC_TWILIGHT_HALION, HalionSpawnPos);
+                        me->GetMap()->SummonCreature(NPC_TWILIGHT_HALION, HalionSpawnPos);
 
                         if (Creature* rotationFocus = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_ORB_ROTATION_FOCUS)))
                             rotationFocus->AI()->DoAction(ACTION_BEGIN_ROTATION);
@@ -1414,7 +1416,7 @@ class spell_halion_combustion_consumption_summon : public SpellScriptLoader
 
                 Position pos;
                 caster->GetPosition(&pos);
-                if (Creature* summon = caster->GetMap()->SummonCreature(entry, pos, properties, duration, caster, GetSpellInfo()->Id))
+                if (Creature* summon = caster->SummonCreature(entry, pos, properties, duration, caster, GetSpellInfo()->Id))
                     if (summon->IsAIEnabled)
                         summon->AI()->SetData(DATA_STACKS_DISPELLED, GetSpellValue()->EffectBasePoints[EFFECT_1]);
             }
