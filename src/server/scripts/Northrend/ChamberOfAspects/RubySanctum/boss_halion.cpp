@@ -41,7 +41,8 @@ enum Texts
     EMOTE_PHYSICAL_OUT_PHYSICAL      = 2, // Your companion's efforts have forced Halion further out of the Physical realm!
     EMOTE_PHYSICAL_IN_PHYSICAL       = 3, // Your efforts have forced Halion further into the Physical realm!
     EMOTE_REGENERATE                 = 4, // Without pressure in both realms, Halion begins to regenerate.
-    EMOTE_WARN_LASER                 = 5, // The orbiting spheres pulse with dark energy!
+
+    EMOTE_WARN_LASER                 = 0, // The orbiting spheres pulse with dark energy!
 };
 
 enum Spells
@@ -117,15 +118,14 @@ enum Events
     EVENT_INTRO_PROGRESS_3      = 10,
     EVENT_CHECK_CORPOREALITY    = 11,
     EVENT_SHADOW_PULSARS_SHOOT  = 12,
-    EVENT_WARN_LASERS           = 13,
-    EVENT_BERSERK               = 14,
+    EVENT_BERSERK               = 13,
 
     // Meteor Strike
-    EVENT_SPAWN_METEOR_FLAME    = 15,
+    EVENT_SPAWN_METEOR_FLAME    = 14,
 
     // Twilight Halion
-    EVENT_DARK_BREATH           = 16,
-    EVENT_SOUL_CONSUMPTION      = 17,
+    EVENT_DARK_BREATH           = 15,
+    EVENT_SOUL_CONSUMPTION      = 16,
 };
 
 enum Actions
@@ -671,17 +671,7 @@ class npc_halion_controller : public CreatureScript
                             if (Creature* orbCarrier = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_ORB_CARRIER)))
                                 orbCarrier->AI()->DoAction(ACTION_SHOOT);
 
-                            _events.ScheduleEvent(EVENT_SHADOW_PULSARS_SHOOT, 30000);
-                            _events.ScheduleEvent(EVENT_WARN_LASERS, 25000);
-                            break;
-                        }
-                        case EVENT_WARN_LASERS:
-                        {
-                            Map::PlayerList const &PlList = me->GetMap()->GetPlayers();
-                            for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
-                                if (Player* player = i->getSource())
-                                    if (player->HasAura(SPELL_TWILIGHT_REALM))
-                                        Talk(EMOTE_WARN_LASER, player->GetGUID());
+                            _events.ScheduleEvent(EVENT_SHADOW_PULSARS_SHOOT, 29000);   // 9 sec channel duration, every 20th second
                             break;
                         }
                         case EVENT_CHECK_CORPOREALITY:
@@ -1073,14 +1063,28 @@ class npc_orb_carrier : public CreatureScript
                     Vehicle* vehicle = me->GetVehicleKit();
 
                     if (Unit* southOrb = vehicle->GetPassenger(SEAT_SOUTH))
+                    {
                         if (Unit* northOrb = vehicle->GetPassenger(SEAT_NORTH))
-                            northOrb->CastSpell(southOrb, SPELL_TWILIGHT_CUTTER);
+                        {
+                            northOrb->AI()->Talk(EMOTE_WARN_LASER);
+                            northOrb->CastSpell(northOrb, SPELL_TWILIGHT_PULSE_PERIODIC, true);
+                            southOrb->CastSpell(southOrb, SPELL_TWILIGHT_PULSE_PERIODIC, true);
+                            northOrb->CastSpell(southOrb, SPELL_TWILIGHT_CUTTER, false);
+                        }
+                    }
 
-                    // Doublecheck which one casts on which here (Need moar sniffz)
-                    if (IsHeroic())
-                        if (Unit* eastOrb = vehicle->GetPassenger(SEAT_EAST))
-                            if (Unit* westOrb = vehicle->GetPassenger(SEAT_WEST))
-                                eastOrb->CastSpell(westOrb, SPELL_TWILIGHT_CUTTER);
+                    if (!IsHeroic())
+                        return;
+
+                    if (Unit* eastOrb = vehicle->GetPassenger(SEAT_EAST))
+                    {
+                        if (Unit* westOrb = vehicle->GetPassenger(SEAT_WEST))
+                        {
+                            eastOrb->CastSpell(eastOrb, SPELL_TWILIGHT_PULSE_PERIODIC, true);
+                            westOrb->CastSpell(westOrb, SPELL_TWILIGHT_PULSE_PERIODIC, true);
+                            eastOrb->CastSpell(westOrb, SPELL_TWILIGHT_CUTTER, false);
+                        }
+                    }
                 }
             }
         };
@@ -1157,6 +1161,9 @@ class spell_halion_meteor_strike_marker : public SpellScriptLoader
 
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
+                if (!GetCaster())
+                    return;
+
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                     if (Creature* creCaster = GetCaster()->ToCreature())
                         creCaster->AI()->DoAction(ACTION_METEOR_STRIKE_AOE);
