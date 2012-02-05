@@ -974,7 +974,7 @@ class npc_combustion_consumption : public CreatureScript
         struct npc_combustion_consumptionAI : public Scripted_NoMovementAI
         {
             npc_combustion_consumptionAI(Creature* creature) : Scripted_NoMovementAI(creature),
-                   _instance(creature->GetInstanceScript())
+                   _summonerGuid(0), _instance(creature->GetInstanceScript())
             {
                 switch (me->GetEntry())
                 {
@@ -1004,12 +1004,14 @@ class npc_combustion_consumption : public CreatureScript
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION_CONTROLLER)))
                     controller->AI()->JustSummoned(me);
 
-                _summoner = summoner;
+                _summonerGuid = summoner->GetGUID();
             }
 
             void SetData(uint32 type, uint32 value)
             {
-                if (type != DATA_STACKS_DISPELLED || !_damageSpell || !_explosionSpell || !_summoner)
+                Unit* summoner = ObjectAccessor::GetUnit(*me, _summonerGuid);
+
+                if (type != DATA_STACKS_DISPELLED || !_damageSpell || !_explosionSpell || !summoner)
                     return;
 
                 me->CastCustomSpell(SPELL_SCALE_AURA, SPELLVALUE_AURA_STACK, value, me);
@@ -1017,7 +1019,7 @@ class npc_combustion_consumption : public CreatureScript
                 
                 int32 damage = 1200 + (value * 1290); // Needs moar research.
                 // Target is TARGET_UNIT_AREA_ALLY_SRC (TARGET_SRC_CASTER)
-                _summoner->CastCustomSpell(_explosionSpell, SPELLVALUE_BASE_POINT0, damage, _summoner);
+                summoner->CastCustomSpell(_explosionSpell, SPELLVALUE_BASE_POINT0, damage, summoner);
             }
 
             void UpdateAI(const uint32 /*diff*/) { }
@@ -1026,8 +1028,7 @@ class npc_combustion_consumption : public CreatureScript
             InstanceScript* _instance;
             uint32 _explosionSpell;
             uint32 _damageSpell;
-
-            Unit* _summoner;
+            uint64 _summonerGuid;
         };
 
         CreatureAI* GetAI(Creature* creature) const
