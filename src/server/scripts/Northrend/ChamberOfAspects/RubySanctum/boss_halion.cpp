@@ -123,6 +123,9 @@ enum Events
     // Twilight Halion
     EVENT_DARK_BREATH           = 15,
     EVENT_SOUL_CONSUMPTION      = 16,
+
+    // Living Ember
+    EVENT_EMBER_ENRAGE          = 17,
 };
 
 enum Actions
