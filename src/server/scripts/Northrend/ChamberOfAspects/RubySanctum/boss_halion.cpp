@@ -676,6 +676,7 @@ class npc_halion_controller : public CreatureScript
                             _events.ScheduleEvent(EVENT_SHADOW_PULSARS_SHOOT, 29000);   // 9 sec channel duration, every 20th second
                             break;
                         }
+                        // TODO: Look closer at this
                         case EVENT_CHECK_CORPOREALITY:
                         {
                             bool canUpdate = false;
@@ -1417,7 +1418,7 @@ class spell_halion_combustion_consumption_summon : public SpellScriptLoader
 
                 Position pos;
                 caster->GetPosition(&pos);
-                if (Creature* summon = caster->SummonCreature(entry, pos, properties, duration, caster, GetSpellInfo()->Id))
+                if (Creature* summon = caster->GetMap()->SummonCreature(entry, pos, properties, duration, caster, GetSpellInfo()->Id))
                     if (summon->IsAIEnabled)
                         summon->AI()->SetData(DATA_STACKS_DISPELLED, GetSpellValue()->EffectBasePoints[EFFECT_1]);
             }
@@ -1525,11 +1526,7 @@ class TwilightCutterSelector
 
         bool operator()(Unit* unit)
         {
-            if (unit->IsInBetween(_caster, _cutterCaster, 4.0f))
-                return false;
-
-            sLog->outError("%s is inbetween, do damage!", unit->GetName());
-            return true;
+            return !unit->IsInBetween(_caster, _cutterCaster, 4.0f);
         }
 
     private:
@@ -1548,16 +1545,21 @@ class spell_halion_twilight_cutter : public SpellScriptLoader
 
             void RemoveNotBetween(std::list<Unit*>& targets)
             {
+                if (targets.empty())
+                    return;
+
                 Unit* caster = GetCaster();
                 if (Aura* cutter = caster->GetAura(SPELL_TWILIGHT_CUTTER))
                 {
                     if (Unit* cutterCaster = cutter->GetCaster())
+                    {
                         targets.remove_if(TwilightCutterSelector(caster, cutterCaster));
-                    else
-                        sLog->outError("No cutterCaster");
+                        return;
+                    }
                 }
-                else
-                    sLog->outError("No cutter");
+
+                // In case cutter caster werent found for some reason
+                targets.clear();
             }
 
             void Register()
