@@ -96,9 +96,6 @@ enum Spells
     SPELL_TWILIGHT_CUTTER_TRIGGERED     = 74769,
     SPELL_TWILIGHT_PULSE_PERIODIC       = 78861,
     SPELL_TRACK_ROTATION                = 74758, // NPC_ORB_CARRIER -> NPC_ORB_ROTATION_FOCUS
-
-    // Living Inferno
-    SPELL_BLAZING_AURA                  = 75885,
 };
 
 enum Events
@@ -307,7 +304,7 @@ class boss_halion : public CreatureScript
                 if (!(events.GetPhaseMask() & PHASE_ONE_MASK))
                     me->SetHealth(instance->GetData(DATA_HALION_SHARED_HEALTH));
 
-                if ((!UpdateVictim() && (events.GetPhaseMask() & (PHASE_ONE_MASK | PHASE_THREE_MASK))) || me->HasUnitState(UNIT_STAT_CASTING))
+                if ((!UpdateVictim() && (events.GetPhaseMask() & (PHASE_ONE_MASK | PHASE_THREE_MASK))) || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 // Events won't be updated under phase two.
@@ -510,7 +507,7 @@ class boss_twilight_halion : public CreatureScript
             {
                 me->SetHealth(_instance->GetData(DATA_HALION_SHARED_HEALTH));
 
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_CASTING))
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -1056,7 +1053,7 @@ class npc_orb_carrier : public CreatureScript
                 //! However, refreshing it looks bad, so just cast the spell if
                 //! we are not channeling it. Targeting will be handled by
                 //! conditions.
-                if (!me->HasUnitState(UNIT_STAT_CASTING))
+                if (!me->HasUnitState(UNIT_STATE_CASTING))
                     DoCast(me, SPELL_TRACK_ROTATION, false);
             }
 
@@ -1131,21 +1128,39 @@ class npc_living_ember : public CreatureScript
         {
             npc_living_emberAI(Creature* creature) : ScriptedAI(creature) { }
 
-            void JustSummoned(Creature /*summoner*/)
+            void Reset()
             {
-                _berserkingTimer = 2 * MINUTE * IN_MILLISECONDS;
-                me->SetInCombatWithZone();
+                _hasEnraged = false;
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                _events.Reset();
+                _events.ScheduleEvent(EVENT_EMBER_ENRAGE, 20000);
             }
 
             void UpdateAI(uint32 const diff)
             {
-                if (_berserkingTimer < diff)
+                if (!UpdateVictim())
+                    return;
+
+                _events.Update(diff);
+
+                if (!me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                if (!_hasEnraged && _events.ExecuteEvent() == EVENT_EMBER_ENRAGE)
+                {
+                    _hasEnraged = true;
                     DoCast(me, SPELL_BERSERK);
-                else _berserkingTimer -= diff;
+                }
+
+                DoMeleeAttackIfReady();
             }
 
         private:
-            uint32 _berserkingTimer;
+            EventMap _events;
+            bool _hasEnraged;
         };
 
         CreatureAI* GetAI(Creature* creature) const
