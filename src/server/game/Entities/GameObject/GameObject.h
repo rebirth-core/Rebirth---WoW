@@ -609,7 +609,7 @@ enum LootState
 };
 
 class Unit;
-class ModelInstance_Overriden;
+class GameObjectModel;
 
 // 5 sec for bobber catch
 #define FISHING_BOBBER_READY_TIME 5
@@ -704,7 +704,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         GameobjectTypes GetGoType() const { return GameobjectTypes(GetByteValue(GAMEOBJECT_BYTES_1, 1)); }
         void SetGoType(GameobjectTypes type) { SetByteValue(GAMEOBJECT_BYTES_1, 1, type); }
         GOState GetGoState() const { return GOState(GetByteValue(GAMEOBJECT_BYTES_1, 0)); }
-        void SetGoState(GOState state) { SetByteValue(GAMEOBJECT_BYTES_1, 0, state); }
+        void SetGoState(GOState state);
         uint8 GetGoArtKit() const { return GetByteValue(GAMEOBJECT_BYTES_1, 2); }
         void SetGoArtKit(uint8 artkit);
         uint8 GetGoAnimProgress() const { return GetByteValue(GAMEOBJECT_BYTES_1, 3); }
@@ -796,7 +796,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         std::string GetAIName() const;
         void SetDisplayId(uint32 displayid);
         
-        ModelInstance_Overriden * m_model;
+        GameObjectModel * m_model;
     protected:
         bool AIM_Initialize();
         uint32      m_spellId;

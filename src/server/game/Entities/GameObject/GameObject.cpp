@@ -30,7 +30,7 @@
 #include "CreatureAISelector.h"
 #include "Group.h"
 
-#include "GameobjectModel.h"
+#include "GameObjectModel.h"
 #include "DynamicTree.h"
 
 GameObject::GameObject() : WorldObject(false), m_goValue(new GameObjectValue), m_AI(NULL), m_model(NULL)
@@ -131,8 +131,11 @@ void GameObject::AddToWorld()
             m_zoneScript->OnGameObjectCreate(this);
 
         sObjectAccessor->AddObject(this);
-        if (m_model)
+        bool startOpen = (GetGoType() == GAMEOBJECT_TYPE_DOOR || GetGoType() == GAMEOBJECT_TYPE_BUTTON ? GetGOInfo()->door.startOpen : false);
+        if (m_model/* && (GetGoType() == GAMEOBJECT_TYPE_DOOR || GetGoType() == GAMEOBJECT_TYPE_BUTTON ? !GetGOInfo()->door.startOpen : true)*/)
             GetMap()->Insert(*m_model);
+        if (startOpen)
+            EnableCollision(false);
         WorldObject::AddToWorld();
     }
 }
@@ -147,7 +150,7 @@ void GameObject::RemoveFromWorld()
 
         RemoveFromOwner();
         if (m_model)
-            if (GetMap()->Contains(*m_model)) // Its possible that it was already removed when the object was activated, and it has not been yet added back
+            if (GetMap()->Contains(*m_model))
                 GetMap()->Remove(*m_model);
         WorldObject::RemoveFromWorld();
         sObjectAccessor->RemoveObject(this);
@@ -210,14 +213,14 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMa
 
     SetDisplayId(goinfo->displayId);
 
+    m_model = GameObjectModel::Create(*this);
     // GAMEOBJECT_BYTES_1, index at 0, 1, 2 and 3
-    SetGoState(go_state);
     SetGoType(GameobjectTypes(goinfo->type));
+    SetGoState(go_state);
 
     SetGoArtKit(0);                                         // unknown what this is
     SetByteValue(GAMEOBJECT_BYTES_1, 2, artKit);
     
-    m_model = ModelInstance_Overriden::construct(*this);
 
     switch (goinfo->type)
     {
@@ -1883,16 +1886,34 @@ void GameObject::SetDestructibleState(GameObjectDestructibleState state, Player*
     }
 }
 
-void GameObject::SetLootState(LootState s, Unit* unit)
+void GameObject::SetLootState(LootState state, Unit* unit)
 {
-    m_lootState = s;
-    AI()->OnStateChanged(s, unit);
+    m_lootState = state;
+    AI()->OnStateChanged(state, unit);
     if (m_model)
     {
-        if (s == GO_ACTIVATED)
-            GetMap()->Remove(*m_model); // Remove from the LoS checks when activated, for example, doors
-        else if (s == GO_READY)
-            GetMap()->Insert(*m_model); // Insert for LoS checks on reset
+        // startOpen determines whether we are going to add or remove the LoS on activation
+        bool startOpen = (GetGoType() == GAMEOBJECT_TYPE_DOOR || GetGoType() == GAMEOBJECT_TYPE_BUTTON ? GetGOInfo()->door.startOpen : false);
+        if (state == GO_ACTIVATED)
+            EnableCollision(startOpen);
+        else if (state == GO_READY)
+            EnableCollision(!startOpen);
+    }
+}
+
+void GameObject::SetGoState(GOState state)
+{
+    SetByteValue(GAMEOBJECT_BYTES_1, 0, state);
+    if (m_model)
+    {
+        if (!IsInWorld())
+            return;
+        // startOpen determines whether we are going to add or remove the LoS on activation
+        bool startOpen = (GetGoType() == GAMEOBJECT_TYPE_DOOR || GetGoType() == GAMEOBJECT_TYPE_BUTTON ? GetGOInfo()->door.startOpen : false);
+        if (state == GO_STATE_ACTIVE)
+            EnableCollision(startOpen);
+        else if (state == GO_STATE_READY)
+            EnableCollision(!startOpen);
     }
 }
 
@@ -1910,8 +1931,13 @@ void GameObject::SetPhaseMask(uint32 newPhaseMask, bool update)
 
 void GameObject::EnableCollision(bool enable)
 {
-    if (m_model)
-        m_model->enable(enable ? GetPhaseMask() : 0);
+    if (!m_model)
+        return;
+    
+    /*if (enable && !GetMap()->Contains(*m_model))
+        GetMap()->Insert(*m_model);*/
+
+    m_model->enable(enable ? GetPhaseMask() : 0);
 }
 
 void GameObject::UpdateModel()
@@ -1919,9 +1945,10 @@ void GameObject::UpdateModel()
     if (!IsInWorld())
         return;
     if (m_model)
-        GetMap()->Remove(*m_model);
+        if (GetMap()->Contains(*m_model))
+            GetMap()->Remove(*m_model);
     delete m_model;
-    m_model = ModelInstance_Overriden::construct(*this);
+    m_model = GameObjectModel::Create(*this);
     if (m_model)
         GetMap()->Insert(*m_model);
 }
