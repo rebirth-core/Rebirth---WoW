@@ -2458,7 +2458,7 @@ namespace Trinity
 
                 float x, y, z;
 
-                if (!c->isAlive() || c->HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) ||
+                if (!c->isAlive() || c->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED) ||
                     !c->GetMotionMaster()->GetDestination(x, y, z))
                 {
                     x = c->GetPositionX();
@@ -2526,7 +2526,7 @@ void WorldObject::GetNearPoint(WorldObject const* /*searcher*/, float &x, float 
 {
     GetNearPoint2D(x, y, distance2d+searcher_size, absAngle);
     z = GetPositionZ();
-    UpdateGroundPositionZ(x, y, z);
+    UpdateAllowedPositionZ(x, y, z);
 
     /*
     // if detection disabled, return first point

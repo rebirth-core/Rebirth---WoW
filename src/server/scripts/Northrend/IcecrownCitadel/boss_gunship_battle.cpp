@@ -769,6 +769,18 @@ class npc_muradin_gunship : public CreatureScript
 
         bool OnGossipSelect(Player* player, Creature* pCreature, uint32 /*sender*/, uint32 action)
         {
+			QueryResult checkDisabled = WorldDatabase.PQuery("SELECT disabled FROM unstable_encounters WHERE boss_id = 1");
+			uint32 disabled;
+			char str_err[200];
+
+			if(checkDisabled)
+			{
+                Field *field = checkDisabled->Fetch();
+                disabled = field[0].GetUInt32();
+			}
+			else
+				disabled = 1;
+
             InstanceScript* instance = pCreature->GetInstanceScript();
             player->PlayerTalkClass->ClearMenus();
             player->CLOSE_GOSSIP_MENU();
@@ -776,11 +788,17 @@ class npc_muradin_gunship : public CreatureScript
             if (action == GOSSIP_ACTION_INFO_DEF+2)
                 pCreature->MonsterSay("I'll wait for the raid leader.", LANG_UNIVERSAL, player->GetGUID());
 
-            if (action == 1001)
+            if (action == 1001 && disabled == 0)
             {
                 pCreature->AI()->DoAction(ACTION_INTRO_START);
                 pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             }
+			else if (action == 1001 && disabled == 1)
+			{
+				sprintf(str_err,"Dieser Boss Encounter ist zurzeit deaktiviert! Bitte wende dich an den Support um mehr zu erfahren.");
+				player->MonsterWhisper(str_err,player->GetGUID(),true);
+			}
+
             return true;
         }
 
@@ -951,7 +969,7 @@ class npc_muradin_gunship : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
                 
                 if (!HealthAbovePct(75))
@@ -1049,7 +1067,7 @@ class npc_muradin_gunship : public CreatureScript
                             {
                                 pSaurfang->AI()->Talk(SAY_BOARDING_SKYBREAKER_SAURFANG);
                             }
-                            if(Creature* Sergante = skybreaker->AddNPCPassengerInInstance(NPC_GB_KORKRON_SERGANTE, -15.51547f, -0.160213f, 20.87252f, 1.56211f))
+                            if(Creature* Sergante = skybreaker->AddNPCPassengerInInstance(NPC_GB_KORKRON_SERGANTE, -15.51547f, -0.160213f, 26.87252f, 1.56211f))
                             {
                                 Sergante->CastSpell(Sergante, SPELL_TELEPORT_VISUAL, true);
                             }
@@ -1060,7 +1078,7 @@ class npc_muradin_gunship : public CreatureScript
                         case EVENT_BOARDING_REAVERS_MARINE:
                             if(count <= SummonCount)
                             {
-                                if(Creature* Reavers = skybreaker->AddNPCPassengerInInstance(NPC_GB_KORKRON_REAVERS, -15.51547f, -0.160213f, 20.87252f, 1.56211f))
+                                if(Creature* Reavers = skybreaker->AddNPCPassengerInInstance(NPC_GB_KORKRON_REAVERS, -15.51547f, -0.160213f, 26.87252f, 1.56211f))
                                 {
                                     Reavers->CastSpell(Reavers, SPELL_TELEPORT_VISUAL, true);
                                     events.ScheduleEvent(EVENT_BOARDING_REAVERS_MARINE, 21000 / SummonCount);
@@ -1333,7 +1351,7 @@ class npc_korkron_axethrower_rifleman : public CreatureScript
                 if (_instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
                 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
                     
                 me->AI()->AttackStart(SelectRandomPlayerInTheMaps(me->GetMap()));
@@ -1439,7 +1457,7 @@ class npc_sergeant : public CreatureScript
                 if(_instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
                     
                 events.Update(diff);
@@ -1570,7 +1588,7 @@ class npc_marine_or_reaver : public CreatureScript
                 if(_instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -1713,7 +1731,7 @@ class npc_gunship_mage : public CreatureScript
                 if(_instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
                     
                 if (me->GetGUID() == _instance->GetData64(DATA_GB_BATTLE_MAGE))
@@ -1846,7 +1864,7 @@ class npc_mortar_soldier_or_rocketeer : public CreatureScript
                 if(_instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
                     
                 events.Update(diff);
@@ -1906,9 +1924,22 @@ class npc_zafod_boombox : public CreatureScript
 
         bool OnGossipHello(Player* pPlayer, Creature* pCreature)
         {
+		    QueryResult result = WorldDatabase.PQuery("SELECT disabled FROM unstable_encounters WHERE boss_id = 1");
+		    uint32 disabled = 1;
+
+		    if(result)
+		    {
+			  Field *field = result->Fetch();
+			  disabled = field[0].GetUInt32();
+		    }
+		    else
+		      disabled = 1;
+
             // Maybe this isn't blizzlike but I can't find any spell in the DBCs
-            if (pPlayer->GetItemCount(49278, false) == 0)
+            if (pPlayer->GetItemCount(49278, false) == 0 && disabled == 0)
                 pPlayer->ADD_GOSSIP_ITEM(0, "Yeah, I'm sure safety is your top priority. Give me a rocket pack.", 631, 1);
+			else
+				pPlayer->ADD_GOSSIP_ITEM(0, "Die Luftschiff Schlacht ist zurzeit dekativiert. Bitte wende dich an den Support!.", 631, 0);
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             return true;
         }
@@ -1940,6 +1971,11 @@ class npc_zafod_boombox : public CreatureScript
                     return false;
                 }
             }
+			else if (action == 0)
+			{
+				pCreature->MonsterWhisper("Die Luftschiff Schlacht ist zurzeit dekativiert. Bitte wende dich an den Support!", player->GetGUIDLow());
+				return true;
+			}
 
             return true;
         }
@@ -1972,6 +2008,18 @@ class npc_saurfang_gunship : public CreatureScript
 
         bool OnGossipSelect(Player* player, Creature* pCreature, uint32 /*sender*/, uint32 action)
         {
+			QueryResult checkDisabled = WorldDatabase.PQuery("SELECT disabled FROM unstable_encounters WHERE boss_id = 1");
+			uint32 disabled;
+			char str_err[200];
+
+			if(checkDisabled)
+			{
+                Field *field = checkDisabled->Fetch();
+                disabled = field[0].GetUInt32();
+			}
+			else
+				disabled = 1;
+
             InstanceScript* instance = pCreature->GetInstanceScript();
             player->PlayerTalkClass->ClearMenus();
             player->CLOSE_GOSSIP_MENU();
@@ -1979,11 +2027,17 @@ class npc_saurfang_gunship : public CreatureScript
             if (action == GOSSIP_ACTION_INFO_DEF+2)
                 pCreature->MonsterSay("I'll wait for the raid leader.", LANG_UNIVERSAL, player->GetGUID());
 
-            if (action == 1001)
+            if (action == 1001 && disabled == 0)
             {
                 pCreature->AI()->DoAction(ACTION_INTRO_START);
                 pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             }
+			else if (action == 1001 && disabled == 1)
+			{
+				sprintf(str_err,"Dieser Boss Encounter ist zurzeit deaktiviert! Bitte wende dich an den Support um mehr zu erfahren.");
+				player->MonsterWhisper(str_err,player->GetGUID(),true);
+			}
+
             return true;
         }
         struct npc_saurfang_gunshipAI : public ScriptedAI
@@ -2149,7 +2203,7 @@ class npc_saurfang_gunship : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
                     
                 if(_instance->GetBossState(DATA_GUNSHIP_EVENT) == IN_PROGRESS)
@@ -2229,7 +2283,7 @@ class npc_saurfang_gunship : public CreatureScript
                              {
                                  pSaurfang->AI()->Talk(SAY_BOARDING_SKYBREAKER_MURADIN);
                              }
-                             if (Creature* Sergante = orgrimmar->AddNPCPassengerInInstance(NPC_GB_SKYBREAKER_SERGANTE, 15.03016f, -7.00016f, 37.70952f, 1.55138f))
+                             if (Creature* Sergante = orgrimmar->AddNPCPassengerInInstance(NPC_GB_SKYBREAKER_SERGANTE, 15.03016f, -7.00016f, 43.70952f, 1.55138f))
                              {
                                  Sergante->CastSpell(Sergante, SPELL_TELEPORT_VISUAL, true);
                              }
@@ -2239,7 +2293,7 @@ class npc_saurfang_gunship : public CreatureScript
                         case EVENT_BOARDING_REAVERS_MARINE:
                             if(count <= SummonCount)
                             {
-                                if(Creature* Marine = orgrimmar->AddNPCPassengerInInstance(NPC_GB_SKYBREAKER_MARINE, 15.03016f, -7.00016f, 37.70952f, 1.55138f))
+                                if(Creature* Marine = orgrimmar->AddNPCPassengerInInstance(NPC_GB_SKYBREAKER_MARINE, 15.03016f, -7.00016f, 43.70952f, 1.55138f))
                                 {
                                     Marine->CastSpell(Marine, SPELL_TELEPORT_VISUAL, true);
                                     count++;
@@ -2498,7 +2552,7 @@ class npc_korkron_primalist: public CreatureScript
                 if (!instance)
                     return;
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -2617,7 +2671,7 @@ class npc_korkron_defender: public CreatureScript
                 if (!instance)
                     return;
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -2730,7 +2784,7 @@ class npc_skybreaker_vindicator: public CreatureScript
                 if (!instance)
                     return;
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -2837,7 +2891,7 @@ class npc_skybreaker_protector: public CreatureScript
                 if (!instance)
                     return;
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -2960,7 +3014,7 @@ class npc_icc_spire_frostwyrm: public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);

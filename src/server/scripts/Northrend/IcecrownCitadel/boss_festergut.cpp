@@ -111,13 +111,6 @@ class boss_festergut : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
-                if (!instance->CheckRequiredBosses(DATA_FESTERGUT, who->ToPlayer()))
-                {
-                    EnterEvadeMode();
-                    instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
-                    return;
-                }
-
                 me->setActive(true);
                 Talk(SAY_AGGRO);
                 if (Creature* gasDummy = me->FindNearestCreature(NPC_GAS_DUMMY, 100.0f, true))
@@ -169,7 +162,7 @@ class boss_festergut : public CreatureScript
 
                 events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 while (uint32 eventId = events.ExecuteEvent())
@@ -305,7 +298,7 @@ class npc_stinky_icc : public CreatureScript
 
                 _events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 while (uint32 eventId = _events.ExecuteEvent())
