@@ -161,7 +161,7 @@ void AggroAllPlayers(Creature* source)
             {
                 if (Creature* vehicle = player->GetVehicleBase()->ToCreature())
                 {
-                    source->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                    source->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_NPC);
                     source->SetReactState(REACT_AGGRESSIVE);
                     source->SetInCombatWith(vehicle);
                     player->SetInCombatWith(source);
@@ -171,7 +171,7 @@ void AggroAllPlayers(Creature* source)
             }
             else if (player->isAlive())
             {
-                source->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                source->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_NPC);
                 source->SetReactState(REACT_AGGRESSIVE);
                 source->SetInCombatWith(player);
                 player->SetInCombatWith(source);
@@ -267,7 +267,7 @@ class npc_faction_champion_toc5 : public CreatureScript
 
                 _events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 while (uint32 eventId = _events.ExecuteEvent())
@@ -592,7 +592,7 @@ class boss_grand_champion_toc5 : public CreatureScript
 
                 _events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 while (uint32 eventId = _events.ExecuteEvent())

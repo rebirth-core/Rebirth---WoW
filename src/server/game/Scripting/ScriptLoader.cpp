@@ -489,6 +489,7 @@ void AddSC_ruby_sanctum();
 void AddSC_boss_baltharus_the_warborn();
 void AddSC_boss_saviana_ragefire();
 void AddSC_boss_general_zarithrian();
+void AddSC_boss_halion();
 
 void AddSC_dalaran();
 void AddSC_borean_tundra();
@@ -501,7 +502,6 @@ void AddSC_storm_peaks();
 void AddSC_zuldrak();
 void AddSC_crystalsong_forest();
 void AddSC_isle_of_conquest();
-void AddSC_Argen_Tournament();
 //outland
 void AddSC_boss_exarch_maladaar();           //Auchindoun Auchenai Crypts
 void AddSC_boss_shirrak_the_dead_watcher();
@@ -1201,6 +1201,7 @@ void AddNorthrendScripts()
     AddSC_boss_baltharus_the_warborn();
     AddSC_boss_saviana_ragefire();
     AddSC_boss_general_zarithrian();
+    AddSC_boss_halion();
 
     AddSC_dalaran();
     AddSC_borean_tundra();
@@ -1213,7 +1214,6 @@ void AddNorthrendScripts()
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
     AddSC_isle_of_conquest();
-    AddSC_Argen_Tournament();
 	AddSC_wintergrasp();
 #endif
 }

@@ -43,7 +43,7 @@ enum Events
 {
     // General Zarithrian
     EVENT_CLEAVE                    = 1,
-    EVENT_INTIDMDATING_ROAR         = 2,
+    EVENT_INTIMIDATING_ROAR         = 2,
     EVENT_SUMMON_ADDS               = 3,
     // Onyx Flamecaller
     EVENT_BLAST_NOVA                = 4,
@@ -52,7 +52,7 @@ enum Events
 
 uint32 const MAX_PATH_FLAMECALLER_WAYPOINTS = 12;
 
-Position const FlamecallerWaypoints[MAX_PATH_FLAMECALLER_WAYPOINTS*2] =
+Position const FlamecallerWaypoints[MAX_PATH_FLAMECALLER_WAYPOINTS * 2] =
 {
     // East
     {3042.971f, 419.8809f, 86.94320f, 0.0f},
@@ -97,7 +97,7 @@ class boss_general_zarithrian : public CreatureScript
             {
                 _Reset();
                 if (instance->GetBossState(DATA_SAVIANA_RAGEFIRE) == DONE && instance->GetBossState(DATA_BALTHARUS_THE_WARBORN) == DONE)
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -106,7 +106,7 @@ class boss_general_zarithrian : public CreatureScript
                 Talk(SAY_AGGRO);
                 events.Reset();
                 events.ScheduleEvent(EVENT_CLEAVE, 15000);
-                events.ScheduleEvent(EVENT_INTIDMDATING_ROAR, 42000);
+                events.ScheduleEvent(EVENT_INTIMIDATING_ROAR, 42000);
                 events.ScheduleEvent(EVENT_SUMMON_ADDS, 40000);
             }
 
@@ -148,7 +148,7 @@ class boss_general_zarithrian : public CreatureScript
 
                 events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 while (uint32 eventId = events.ExecuteEvent())
@@ -165,9 +165,9 @@ class boss_general_zarithrian : public CreatureScript
                             events.ScheduleEvent(EVENT_SUMMON_ADDS, 42000);
                             break;
                         }
-                        case EVENT_INTIDMDATING_ROAR:
+                        case EVENT_INTIMIDATING_ROAR:
                             DoCast(me, SPELL_INTIMIDATING_ROAR, true);
-                            events.ScheduleEvent(EVENT_INTIDMDATING_ROAR, 42000);
+                            events.ScheduleEvent(EVENT_INTIMIDATING_ROAR, 42000);
                         case EVENT_CLEAVE:
                             DoCastVictim(SPELL_CLEAVE_ARMOR);
                             events.ScheduleEvent(EVENT_CLEAVE, 15000);
@@ -257,7 +257,7 @@ class npc_onyx_flamecaller : public CreatureScript
 
                 _events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 while (uint32 eventId = _events.ExecuteEvent())

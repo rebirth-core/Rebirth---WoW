@@ -710,9 +710,6 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         uint8 GetGoAnimProgress() const { return GetByteValue(GAMEOBJECT_BYTES_1, 3); }
         void SetGoAnimProgress(uint8 animprogress) { SetByteValue(GAMEOBJECT_BYTES_1, 3, animprogress); }
         static void SetGoArtKit(uint8 artkit, GameObject* go, uint32 lowguid = 0);
-        
-        void SetPhaseMask(uint32 newPhaseMask, bool update);
-        void EnableCollision(bool enable);
 
         void Use(Unit* user);
 
@@ -794,9 +791,11 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         GameObjectAI* AI() const { return m_AI; }
 
         std::string GetAIName() const;
+		
         void SetDisplayId(uint32 displayid);
         
         GameObjectModel * m_model;
+
     protected:
         bool AIM_Initialize();
         uint32      m_spellId;
@@ -826,7 +825,6 @@ class GameObject : public WorldObject, public GridObject<GameObject>
     private:
         void RemoveFromOwner();
         void SwitchDoorOrButton(bool activate, bool alternative = false);
-        void UpdateModel();                                 // updates model in case displayId were changed
 
         //! Object distance/size - overridden from Object::_IsWithinDist. Needs to take in account proper GO size.
         bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool /*is3D*/) const

@@ -1226,8 +1226,6 @@ void World::LoadConfigSettings(bool reload)
     sScriptMgr->OnConfigLoad(reload);
 }
 
-extern void LoadGameObjectModelList();
-
 /// Initialize the World
 void World::SetInitialWorldSettings()
 {
@@ -1306,9 +1304,6 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading spell custom attributes...");
     sSpellMgr->LoadSpellCustomAttr();
 
-    sLog->outString("Loading GameObject models...");
-    LoadGameObjectModelList();
-    
     sLog->outString("Loading Script Names...");
     sObjectMgr->LoadScriptNames();
 

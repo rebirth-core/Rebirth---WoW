@@ -65,7 +65,6 @@ GameObject::~GameObject()
 {
     delete m_goValue;
     delete m_AI;
-    delete m_model;
     //if (m_uint32Values)                                      // field array can be not exist if GameOBject not loaded
     //    CleanupsBeforeDelete();
 }
@@ -152,6 +151,7 @@ void GameObject::RemoveFromWorld()
         if (m_model)
             if (GetMap()->Contains(*m_model))
                 GetMap()->Remove(*m_model);
+
         WorldObject::RemoveFromWorld();
         sObjectAccessor->RemoveObject(this);
     }
@@ -211,7 +211,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMa
     // set name for logs usage, doesn't affect anything ingame
     SetName(goinfo->name);
 
-    SetDisplayId(goinfo->displayId);
+    SetUInt32Value(GAMEOBJECT_DISPLAYID, goinfo->displayId);
 
     m_model = GameObjectModel::Create(*this);
     // GAMEOBJECT_BYTES_1, index at 0, 1, 2 and 3
@@ -220,7 +220,6 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMa
 
     SetGoArtKit(0);                                         // unknown what this is
     SetByteValue(GAMEOBJECT_BYTES_1, 2, artKit);
-    
 
     switch (goinfo->type)
     {
@@ -1648,7 +1647,6 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
     if (Unit* owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
-		trigger->SetLevel(owner->getLevel());
         // needed for GO casts for proper target validation checks
         trigger->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner->GetGUID());
         trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, owner->GetGUID());
@@ -1656,7 +1654,6 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
     else
     {
         trigger->setFaction(14);
-		trigger->SetLevel(target ? target->getLevel() : 255);
         // Set owner guid for target if no owner avalible - needed by trigger auras
         // - trigger gets despawned and there's no caster avalible (see AuraEffect::TriggerSpell())
         trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, target ? target->GetGUID() : 0);
@@ -1800,7 +1797,7 @@ void GameObject::SetDestructibleState(GameObjectDestructibleState state, Player*
     {
         case GO_DESTRUCTIBLE_INTACT:
             RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_DAMAGED | GO_FLAG_DESTROYED);
-            SetDisplayId(m_goInfo->displayId);
+            SetUInt32Value(GAMEOBJECT_DISPLAYID, m_goInfo->displayId);
             if (setHealth)
             {
                 m_goValue->Building.Health = m_goValue->Building.MaxHealth;
@@ -1822,8 +1819,11 @@ void GameObject::SetDestructibleState(GameObjectDestructibleState state, Player*
             if (DestructibleModelDataEntry const* modelData = sDestructibleModelDataStore.LookupEntry(m_goInfo->building.destructibleData))
                 if (modelData->DamagedDisplayId)
                     modelId = modelData->DamagedDisplayId;
-            SetDisplayId(modelId);
 
+            SetDisplayId(modelId);
+			if (m_goInfo->entry != 190378 && m_goInfo->entry != 190377 && m_goInfo->entry != 190373 && m_goInfo->entry != 190221)
+                    SetUInt32Value(GAMEOBJECT_DISPLAYID, modelId);
+					
             if (setHealth)
             {
                 m_goValue->Building.Health = m_goInfo->building.damagedNumHits;
@@ -1855,7 +1855,7 @@ void GameObject::SetDestructibleState(GameObjectDestructibleState state, Player*
             if (DestructibleModelDataEntry const* modelData = sDestructibleModelDataStore.LookupEntry(m_goInfo->building.destructibleData))
                 if (modelData->DestroyedDisplayId)
                     modelId = modelData->DestroyedDisplayId;
-            SetDisplayId(modelId);
+            SetUInt32Value(GAMEOBJECT_DISPLAYID, modelId);
 
             if (setHealth)
             {
@@ -1873,7 +1873,7 @@ void GameObject::SetDestructibleState(GameObjectDestructibleState state, Player*
             if (DestructibleModelDataEntry const* modelData = sDestructibleModelDataStore.LookupEntry(m_goInfo->building.destructibleData))
                 if (modelData->RebuildingDisplayId)
                     modelId = modelData->RebuildingDisplayId;
-            SetDisplayId(modelId);
+            SetUInt32Value(GAMEOBJECT_DISPLAYID, modelId);
 
             // restores to full health
             if (setHealth)
