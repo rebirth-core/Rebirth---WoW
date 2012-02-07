@@ -2698,31 +2698,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
                     break;
                 case SPELL_AURA_PERIODIC_HEAL:
+                case SPELL_AURA_PERIODIC_DAMAGE:
                 case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
-				case SPELL_AURA_PERIODIC_LEECH: 
+                case SPELL_AURA_PERIODIC_LEECH:
+                case SPELL_AURA_PERIODIC_MANA_LEECH:
                 case SPELL_AURA_PERIODIC_HEALTH_FUNNEL:
                 case SPELL_AURA_PERIODIC_ENERGIZE:
-				case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
                 case SPELL_AURA_OBS_MOD_HEALTH:
                 case SPELL_AURA_OBS_MOD_POWER:
                 case SPELL_AURA_POWER_BURN:
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NO_INITIAL_THREAT;
-                    break;
-                case SPELL_AURA_PERIODIC_MANA_LEECH:
-                case SPELL_AURA_PERIODIC_DAMAGE:
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_BINARY;
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NO_INITIAL_THREAT;
-                    break;
-            }
-
-            switch (spellInfo->Effects[j].Mechanic)
-            {
-                case MECHANIC_SNARE:
-                case MECHANIC_ROOT:
-                case MECHANIC_INTERRUPT:
-                case MECHANIC_SILENCE:
-                case MECHANIC_HORROR:
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_BINARY;
                     break;
             }
 
@@ -2736,6 +2721,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_EFFECT_HEAL:
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_DIRECT_DAMAGE;
                     break;
+                case SPELL_EFFECT_POWER_DRAIN:
+                case SPELL_EFFECT_POWER_BURN:
                 case SPELL_EFFECT_HEAL_MAX_HEALTH:
                 case SPELL_EFFECT_HEALTH_LEECH:
                 case SPELL_EFFECT_HEAL_PCT:
@@ -2750,16 +2737,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_EFFECT_JUMP_DEST:
                 case SPELL_EFFECT_LEAP_BACK:
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CHARGE;
-                    break;
-                case SPELL_EFFECT_DISPEL:
-                case SPELL_EFFECT_STEAL_BENEFICIAL_BUFF:
-                case SPELL_AURA_PERIODIC_MANA_LEECH:
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_BINARY;
-                    break;
-                case SPELL_EFFECT_POWER_DRAIN:
-                case SPELL_EFFECT_POWER_BURN:
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NO_INITIAL_THREAT;
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_BINARY;
                     break;
                 case SPELL_EFFECT_PICKPOCKET:
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_PICKPOCKET;
@@ -2795,17 +2772,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 }
             }
-        }
-
-        switch (spellInfo->Mechanic)
-        {
-            case MECHANIC_FEAR:
-            case MECHANIC_CHARM:
-            case MECHANIC_SNARE:
-            case MECHANIC_FREEZE:
-            case MECHANIC_BANISH:
-                spellInfo->AttributesCu |= SPELL_ATTR0_CU_BINARY;
-                break;
         }
 
         if (!spellInfo->_IsPositiveEffect(EFFECT_0, false))
@@ -2945,6 +2911,23 @@ void SpellMgr::LoadSpellCustomAttr()
             case 69293: // Wing Buffet
             case 74439: // Machine Gun
             case 63278: // Mark of the Faceless (General Vezax)
+            case 62544: // Thrust (Argent Tournament)
+            case 64588: // Thrust (Argent Tournament)
+            case 66479: // Thrust (Argent Tournament)
+            case 68505: // Thrust (Argent Tournament)
+            case 62709: // Counterattack! (Argent Tournament)
+            case 62626: // Break-Shield (Argent Tournament, Player)
+            case 64590: // Break-Shield (Argent Tournament, Player)
+            case 64342: // Break-Shield (Argent Tournament, NPC)
+            case 64686: // Break-Shield (Argent Tournament, NPC)
+            case 65147: // Break-Shield (Argent Tournament, NPC)
+            case 68504: // Break-Shield (Argent Tournament, NPC)
+            case 62874: // Charge (Argent Tournament, Player)
+            case 68498: // Charge (Argent Tournament, Player)
+            case 64591: // Charge (Argent Tournament, Player)
+            case 63003: // Charge (Argent Tournament, NPC)
+            case 63010: // Charge (Argent Tournament, NPC)
+            case 68321: // Charge (Argent Tournament, NPC)
             case 72255: // Mark of the Fallen Champion (Deathbringer Saurfang)
             case 72444: // Mark of the Fallen Champion (Deathbringer Saurfang)
             case 72445: // Mark of the Fallen Champion (Deathbringer Saurfang)
@@ -3031,7 +3014,8 @@ void SpellMgr::LoadDbcDataCorrections()
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
                 spellInfo->EffectImplicitTargetB[0] = 0;
                 break;
-			case 63665: // Charge (Argent Tournament emote on riders)
+
+            case 63665: // Charge (Argent Tournament emote on riders)
             case 31447: // Mark of Kaz'rogal (needs target selection script)
             case 31298: // Sleep (needs target selection script)
             case 51904: // Summon Ghouls On Scarlet Crusade (this should use conditions table, script for this spell needs to be fixed)
@@ -3040,11 +3024,6 @@ void SpellMgr::LoadDbcDataCorrections()
             case 29200: // Purify Helboar Meat
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
                 spellInfo->EffectImplicitTargetB[0] = 0;
-                break;
-			case 68282: // Charge (Trial of the champion)
-
-            case 62960: // Charge (Argent tournament fields)
-                spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
                 break;
             case 31344: // Howl of Azgalor
                 spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_100_YARDS; // 100yards instead of 50000?!

@@ -28,8 +28,7 @@ npc_arete
 EndContentData */
 
 #include "ScriptPCH.h"
-#include "SpellAuraEffects.h"
-#include "ScriptMgr.h"
+
 /*######
 ## npc_arete
 ######*/
@@ -115,63 +114,132 @@ public:
     }
 };
 
-
 /*######
-## npc_alorah_and_grimmin
+## npc_squire_david
 ######*/
 
-enum ealorah_and_grimmin
+enum eSquireDavid
 {
-    SPELL_CHAIN                     = 68341,
-    NPC_FJOLA_LIGHTBANE             = 36065,
-    NPC_EYDIS_DARKBANE              = 36066,
-    NPC_PRIESTESS_ALORAH            = 36101,
-    NPC_PRIEST_GRIMMIN              = 36102
+    QUEST_THE_ASPIRANT_S_CHALLENGE_H                    = 13680,
+    QUEST_THE_ASPIRANT_S_CHALLENGE_A                    = 13679,
+
+    NPC_ARGENT_VALIANT                                  = 33448,
+
+    GOSSIP_TEXTID_SQUIRE                                = 14407
 };
 
-class npc_alorah_and_grimmin : public CreatureScript
+#define GOSSIP_SQUIRE_ITEM_1 "I am ready to fight!"
+#define GOSSIP_SQUIRE_ITEM_2 "How do the Argent Crusader raiders fight?"
+
+class npc_squire_david : public CreatureScript
 {
 public:
-    npc_alorah_and_grimmin() : CreatureScript("npc_alorah_and_grimmin") { }
+    npc_squire_david() : CreatureScript("npc_squire_david") { }
 
-    struct npc_alorah_and_grimminAI : public ScriptedAI
+    bool OnGossipHello(Player* player, Creature* creature)
     {
-        npc_alorah_and_grimminAI(Creature* creature) : ScriptedAI(creature) {}
+        if (player->GetQuestStatus(QUEST_THE_ASPIRANT_S_CHALLENGE_H) == QUEST_STATUS_INCOMPLETE ||
+            player->GetQuestStatus(QUEST_THE_ASPIRANT_S_CHALLENGE_A) == QUEST_STATUS_INCOMPLETE)//We need more info about it.
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SQUIRE_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SQUIRE_ITEM_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+        }
 
-        bool uiCast;
+        player->SEND_GOSSIP_MENU(GOSSIP_TEXTID_SQUIRE, creature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        player->PlayerTalkClass->ClearMenus();
+        if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
+        {
+            player->CLOSE_GOSSIP_MENU();
+            creature->SummonCreature(NPC_ARGENT_VALIANT, 8575.451f, 952.472f, 547.554f, 0.38f);
+        }
+        return true;
+    }
+};
+
+/*######
+## npc_argent_valiant
+######*/
+
+enum eArgentValiant
+{
+    SPELL_CHARGE                = 63010,
+    SPELL_SHIELD_BREAKER        = 65147,
+
+    NPC_ARGENT_VALIANT_CREDIT   = 24108
+};
+
+class npc_argent_valiant : public CreatureScript
+{
+public:
+    npc_argent_valiant() : CreatureScript("npc_argent_valiant") { }
+
+    struct npc_argent_valiantAI : public ScriptedAI
+    {
+        npc_argent_valiantAI(Creature* creature) : ScriptedAI(creature)
+        {
+            creature->GetMotionMaster()->MovePoint(0, 8599.258f, 963.951f, 547.553f);
+            creature->setFaction(35); //wrong faction in db?
+        }
+
+        uint32 uiChargeTimer;
+        uint32 uiShieldBreakerTimer;
 
         void Reset()
         {
-            uiCast = false;
+            uiChargeTimer = 7000;
+            uiShieldBreakerTimer = 10000;
         }
 
-        void UpdateAI(const uint32 /*uiDiff*/)
+        void MovementInform(uint32 uiType, uint32 /*uiId*/)
         {
-            if (uiCast)
+            if (uiType != POINT_MOTION_TYPE)
                 return;
-            uiCast = true;
-            Creature* target = NULL;
 
-            switch (me->GetEntry())
+            me->setFaction(14);
+        }
+
+        void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
+        {
+            if (uiDamage > me->GetHealth() && pDoneBy->GetTypeId() == TYPEID_PLAYER)
             {
-                case NPC_PRIESTESS_ALORAH:
-                    target = me->FindNearestCreature(NPC_EYDIS_DARKBANE, 10.0f);
-                    break;
-                case NPC_PRIEST_GRIMMIN:
-                    target = me->FindNearestCreature(NPC_FJOLA_LIGHTBANE, 10.0f);
-                    break;
+                uiDamage = 0;
+                CAST_PLR(pDoneBy)->KilledMonsterCredit(NPC_ARGENT_VALIANT_CREDIT, 0);
+                me->setFaction(35);
+                me->DespawnOrUnsummon(5000);
+                me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
+                EnterEvadeMode();
             }
-            if (target)
-                DoCast(target, SPELL_CHAIN);
+        }
 
+        void UpdateAI(const uint32 uiDiff)
+        {
             if (!UpdateVictim())
                 return;
+
+            if (uiChargeTimer <= uiDiff)
+            {
+                DoCastVictim(SPELL_CHARGE);
+                uiChargeTimer = 7000;
+            } else uiChargeTimer -= uiDiff;
+
+            if (uiShieldBreakerTimer <= uiDiff)
+            {
+                DoCastVictim(SPELL_SHIELD_BREAKER);
+                uiShieldBreakerTimer = 10000;
+            } else uiShieldBreakerTimer -= uiDiff;
+
+            DoMeleeAttackIfReady();
         }
     };
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_alorah_and_grimminAI(creature);
+        return new npc_argent_valiantAI(creature);
     }
 };
 
@@ -222,10 +290,213 @@ public:
     }
 };
 
+/*######
+## npc_vereth_the_cunning
+######*/
+
+enum eVerethTheCunning
+{
+    NPC_GEIST_RETURN_BUNNY_KC   = 31049,
+    NPC_LITHE_STALKER           = 30894,
+    SPELL_SUBDUED_LITHE_STALKER = 58151,
+};
+
+class npc_vereth_the_cunning : public CreatureScript
+{
+public:
+    npc_vereth_the_cunning() : CreatureScript("npc_vereth_the_cunning") { }
+
+    struct npc_vereth_the_cunningAI : public ScriptedAI
+    {
+        npc_vereth_the_cunningAI(Creature* creature) : ScriptedAI(creature) {}
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            ScriptedAI::MoveInLineOfSight(who);
+
+            if (who->GetEntry() == NPC_LITHE_STALKER && me->IsWithinDistInMap(who, 10.0f))
+            {
+                if (Unit* owner = who->GetCharmer())
+                {
+                    if (who->HasAura(SPELL_SUBDUED_LITHE_STALKER))
+                        {
+                            owner->ToPlayer()->KilledMonsterCredit(NPC_GEIST_RETURN_BUNNY_KC, 0);
+                            who->ToCreature()->DisappearAndDie();
+
+                    }
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_vereth_the_cunningAI(creature);
+    }
+};
+
+/*######
+* npc_tournament_training_dummy
+######*/
+enum TournamentDummy
+{
+    NPC_CHARGE_TARGET         = 33272,
+    NPC_MELEE_TARGET          = 33229,
+    NPC_RANGED_TARGET         = 33243,
+
+    SPELL_CHARGE_CREDIT       = 62658,
+    SPELL_MELEE_CREDIT        = 62672,
+    SPELL_RANGED_CREDIT       = 62673,
+
+    SPELL_PLAYER_THRUST       = 62544,
+    SPELL_PLAYER_BREAK_SHIELD = 62626,
+    SPELL_PLAYER_CHARGE       = 62874,
+
+    SPELL_RANGED_DEFEND       = 62719,
+    SPELL_CHARGE_DEFEND       = 64100,
+    SPELL_VULNERABLE          = 62665,
+
+    SPELL_COUNTERATTACK       = 62709,
+
+    EVENT_DUMMY_RECAST_DEFEND = 1,
+    EVENT_DUMMY_RESET         = 2,
+};
+
+class npc_tournament_training_dummy : public CreatureScript
+{
+    public:
+        npc_tournament_training_dummy(): CreatureScript("npc_tournament_training_dummy"){}
+
+        struct npc_tournament_training_dummyAI : Scripted_NoMovementAI
+        {
+            npc_tournament_training_dummyAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
+
+            EventMap events;
+            bool isVulnerable;
+
+            void Reset()
+            {
+                me->SetControlled(true, UNIT_STATE_STUNNED);
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                isVulnerable = false;
+
+                // Cast Defend spells to max stack size
+                switch (me->GetEntry())
+                {
+                    case NPC_CHARGE_TARGET:
+                        DoCast(SPELL_CHARGE_DEFEND);
+                        break;
+                    case NPC_RANGED_TARGET:
+                        me->CastCustomSpell(SPELL_RANGED_DEFEND, SPELLVALUE_AURA_STACK, 3, me);
+                        break;
+                }
+
+                events.Reset();
+                events.ScheduleEvent(EVENT_DUMMY_RECAST_DEFEND, 5000);
+            }
+
+            void EnterEvadeMode()
+            {
+                if (!_EnterEvadeMode())
+                    return;
+
+                Reset();
+            }
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                damage = 0;
+                events.RescheduleEvent(EVENT_DUMMY_RESET, 10000);
+            }
+
+            void SpellHit(Unit* caster, SpellInfo const* spell)
+            {
+                switch (me->GetEntry())
+                {
+                    case NPC_CHARGE_TARGET:
+                        if (spell->Id == SPELL_PLAYER_CHARGE)
+                            if (isVulnerable)
+                                DoCast(caster, SPELL_CHARGE_CREDIT, true);
+                        break;
+                    case NPC_MELEE_TARGET:
+                        if (spell->Id == SPELL_PLAYER_THRUST)
+                        {
+                            DoCast(caster, SPELL_MELEE_CREDIT, true);
+
+                            if (Unit* target = caster->GetVehicleBase())
+                                DoCast(target, SPELL_COUNTERATTACK, true);
+                        }
+                        break;
+                    case NPC_RANGED_TARGET:
+                        if (spell->Id == SPELL_PLAYER_BREAK_SHIELD)
+                            if (isVulnerable)
+                                DoCast(caster, SPELL_RANGED_CREDIT, true);
+                        break;
+                }
+
+                if (spell->Id == SPELL_PLAYER_BREAK_SHIELD)
+                    if (!me->HasAura(SPELL_CHARGE_DEFEND) && !me->HasAura(SPELL_RANGED_DEFEND))
+                        isVulnerable = true;
+            }
+
+            void UpdateAI(uint32 const diff)
+            {
+                events.Update(diff);
+
+                switch (events.ExecuteEvent())
+                {
+                    case EVENT_DUMMY_RECAST_DEFEND:
+                        switch (me->GetEntry())
+                        {
+                            case NPC_CHARGE_TARGET:
+                            {
+                                if (!me->HasAura(SPELL_CHARGE_DEFEND))
+                                    DoCast(SPELL_CHARGE_DEFEND);
+                                break;
+                            }
+                            case NPC_RANGED_TARGET:
+                            {
+                                Aura* defend = me->GetAura(SPELL_RANGED_DEFEND);
+                                if (!defend || defend->GetStackAmount() < 3 || defend->GetDuration() <= 8000)
+                                    DoCast(SPELL_RANGED_DEFEND);
+                                break;
+                            }
+                        }
+                        isVulnerable = false;
+                        events.ScheduleEvent(EVENT_DUMMY_RECAST_DEFEND, 5000);
+                        break;
+                    case EVENT_DUMMY_RESET:
+                        if (UpdateVictim())
+                        {
+                            EnterEvadeMode();
+                            events.ScheduleEvent(EVENT_DUMMY_RESET, 10000);
+                        }
+                        break;
+                }
+
+                if (!UpdateVictim())
+                    return;
+
+                if (!me->HasUnitState(UNIT_STATE_STUNNED))
+                    me->SetControlled(true, UNIT_STATE_STUNNED);
+            }
+
+            void MoveInLineOfSight(Unit* /*who*/){}
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_tournament_training_dummyAI(creature);
+        }
+
+};
 
 void AddSC_icecrown()
 {
     new npc_arete;
-    new npc_alorah_and_grimmin;
+    new npc_squire_david;
+    new npc_argent_valiant;
     new npc_guardian_pavilion;
+    new npc_vereth_the_cunning;
+    new npc_tournament_training_dummy;
 }

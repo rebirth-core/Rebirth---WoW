@@ -45,7 +45,7 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
     float destZ = creature.GetPositionZ();
     creature.UpdateAllowedPositionZ(destX, destY, destZ);
 
-    creature.AddUnitState(UNIT_STAT_ROAMING_MOVE);
+    creature.AddUnitState(UNIT_STATE_ROAMING_MOVE);
 
     Movement::MoveSplineInit init(creature);
     init.MoveTo(destX, destY, destZ, true);
@@ -71,7 +71,7 @@ void RandomMovementGenerator<Creature>::Initialize(Creature &creature)
     if (!wander_distance)
         wander_distance = creature.GetRespawnRadius();
 
-    creature.AddUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    creature.AddUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
     _setRandomLocation(creature);
 }
 
@@ -85,7 +85,7 @@ RandomMovementGenerator<Creature>::Reset(Creature &creature)
 template<>
 void RandomMovementGenerator<Creature>::Finalize(Creature &creature)
 {
-    creature.ClearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    creature.ClearUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
     creature.SetWalk(false);
 }
 
@@ -93,10 +93,10 @@ template<>
 bool
 RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 diff)
 {
-    if (creature.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
+    if (creature.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
     {
         i_nextMoveTime.Reset(0);  // Expire the timer
-        creature.ClearUnitState(UNIT_STAT_ROAMING_MOVE);
+        creature.ClearUnitState(UNIT_STATE_ROAMING_MOVE);
         return true;
     }
 

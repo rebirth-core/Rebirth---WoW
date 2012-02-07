@@ -34,14 +34,14 @@ void FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
     if (!&owner)
         return;
 
-    if (owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
+    if (owner.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
         return;
 
     float x, y, z;
     if (!_getPoint(owner, x, y, z))
         return;
 
-    owner.AddUnitState(UNIT_STAT_FLEEING_MOVE);
+    owner.AddUnitState(UNIT_STATE_FLEEING_MOVE);
 
     PathFinderMovementGenerator path(&owner);
     path.setPathLengthLimit(30.0f);
@@ -116,6 +116,7 @@ void FleeingMovementGenerator<T>::Initialize(T &owner)
         return;
 
     owner.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
+
     owner.AddUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
     owner.StopMoving();
 
@@ -126,7 +127,7 @@ template<>
 void FleeingMovementGenerator<Player>::Finalize(Player &owner)
 {
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-    owner.ClearUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
+    owner.ClearUnitState(UNIT_STATE_FLEEING|UNIT_STATE_FLEEING_MOVE);
 }
 
 template<>
@@ -151,9 +152,9 @@ FleeingMovementGenerator<T>::Update(T &owner, const uint32 &time_diff)
 {
     if (!&owner || !owner.isAlive())
         return false;
-    if (owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
+    if (owner.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
     {
-        owner.ClearUnitState(UNIT_STAT_FLEEING_MOVE);
+        owner.ClearUnitState(UNIT_STATE_FLEEING_MOVE);
         return true;
     }
 
@@ -178,7 +179,7 @@ template bool FleeingMovementGenerator<Creature>::Update(Creature &, const uint3
 void TimedFleeingMovementGenerator::Finalize(Unit &owner)
 {
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-    owner.ClearUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
+    owner.ClearUnitState(UNIT_STATE_FLEEING|UNIT_STATE_FLEEING_MOVE);
     if (Unit* victim = owner.getVictim())
     {
         if (owner.isAlive())
@@ -194,9 +195,9 @@ bool TimedFleeingMovementGenerator::Update(Unit & owner, const uint32 time_diff)
     if (!owner.isAlive())
         return false;
 
-    if (owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
+    if (owner.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
     {
-        owner.ClearUnitState(UNIT_STAT_FLEEING_MOVE);
+        owner.ClearUnitState(UNIT_STATE_FLEEING_MOVE);
         return true;
     }
 
