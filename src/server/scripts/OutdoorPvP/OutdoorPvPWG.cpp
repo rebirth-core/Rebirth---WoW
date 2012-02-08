@@ -1655,6 +1655,24 @@ void OutdoorPvPWG::UpdateClock()
 	// Announce 10 minutes left
 	if ((m_timer > 600000) && (m_timer < 601000) && (m_wartime == false)) 
        sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_10);
+
+    //Rebirth-WoW Custom Code by Enzeh
+    uint32 team = 0;
+    uint32 inWar = 0;
+
+    if (isWarTime())
+       inWar = 1;
+    else
+       inWar = 0;
+
+    if (getDefenderTeam() == TEAM_ALLIANCE)
+       team = 1;
+
+    else if (getDefenderTeam() == TEAM_HORDE)
+       team = 2;
+
+    if (timer % 10 == 0 || inWar == 0 && timer <= 60)
+       LoginDatabase.PExecute("UPDATE rebirth_wintergrasp_timer SET timer = '%u' , team = %u, inWar = %u WHERE id = 1", timer, team, inWar);
 }
 
 bool OutdoorPvPWG::Update(uint32 diff)
