@@ -117,6 +117,7 @@ class event_npc : public CreatureScript
           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wann findet das naechste Event statt?", GOSSIP_SENDER_MAIN, 2);
           if (isActive())
               pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleportiere mich zum Event!", GOSSIP_SENDER_MAIN, 3);
+          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Eventbelohnungen kaufen!", GOSSIP_SENDER_MAIN, 4);
           pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
 
         	return true;
@@ -137,6 +138,21 @@ class event_npc : public CreatureScript
             case 3:
                 TeleportToEvent(pPlayer, pCreature);
                 break;
+            case 4:
+                QueryResult result = WorldDatabase.PQuery("SELECT id, name FROM rebirth_event_reward_categorie");
+                if (result)
+                {
+                    do
+                    {
+                        Field* field = result->Fetch();
+                        int catId = field[0].GetInt32();
+                        std::string catName = field[1].GetCString();
+                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, catName.c_str(), GOSSIP_SENDER_MAIN, catId+100);
+                    } while (result->NextRow());
+                    pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
+                }
+                break;
+
             }
             return true;
        }
