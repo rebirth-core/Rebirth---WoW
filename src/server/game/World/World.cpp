@@ -1211,9 +1211,10 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_MAXPLAYERS]  = ConfigMgr::GetIntDefault("OutdoorPvP.Wintergrasp.MaxPlayers", 100);
 
     //Rebirth-WoW
-    m_bool_configs[CONFIG_REBIRTH_WGSTATS_ENABLED]         = ConfigMgr::GetBoolDefault("Rebirth.WGStats.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_WGSTATS_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.WGStats.Enabled", false);
     m_int_configs[CONFIG_REBIRTH_WGSTATS_UPDATE_INTERVAL] = ConfigMgr::GetIntDefault("Rebirth.WGStats.Update.Interval", 60);
-
+    m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_ITEMS_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Items.Enabled", false);
 	
     sScriptMgr->OnConfigLoad(reload);
 }
