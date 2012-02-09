@@ -74,12 +74,49 @@ class event_npc : public CreatureScript
                 OnGossipHello(player, creature);
                 player->MonsterWhisper(str_info,player->GetGUID(),true);
             }
-       }
+        }
+
+        void TeleportToEvent(Player* player, Creature* creature)
+        {
+            QueryResult result = LoginDatabase.PQuery("SELECT x, y, z, map, reqLevel FROM rebirth_next_event WHERE active = 1");
+            if (result)
+            {
+                Field* field = result->Fetch();
+                float x = field[0].GetFloat();
+                float y = field[1].GetFloat();
+                float z = field[2].GetFloat();
+                int map = field[3].GetInt32();
+                int reqLevel = field[4].GetInt32();
+
+                if (player->getLevel() >= reqLevel)
+                    player->TeleportTo(map, x, y, z, 0.0f, 0);
+                else
+                {
+                    char str_info[200];
+                    sprintf(str_info,"Deine Stufe ist zu niedrig um an diesem Event teilnehmen zu koennen!");
+                    player->PlayerTalkClass->ClearMenus();
+                    OnGossipHello(player, creature);
+                    player->MonsterWhisper(str_info,player->GetGUID(),true);
+                }
+
+            }
+        }
+
+        bool isActive()
+        {
+            QueryResult result = LoginDatabase.PQuery("SELECT * FROM rebirth_next_event WHERE active = 1");
+            if (result)
+                return true;
+            else
+                return false;
+        }
 
     	bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     	{
           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Event Punkte habe ich?", GOSSIP_SENDER_MAIN, 1);
           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wann findet das naechste Event statt?", GOSSIP_SENDER_MAIN, 2);
+          if (isActive())
+              pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleportiere mich zum Event!", GOSSIP_SENDER_MAIN, 3);
           pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
 
         	return true;
@@ -96,6 +133,9 @@ class event_npc : public CreatureScript
                 break;
             case 2:
                 RequestNextEvents(pPlayer, pCreature);
+                break;
+            case 3:
+                TeleportToEvent(pPlayer, pCreature);
                 break;
             }
             return true;
