@@ -2417,7 +2417,7 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
         target->VisitNearbyObject(target->GetMap()->GetVisibilityRange(), searcher);
         for (UnitList::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         {
-            if (!(*iter)->HasUnitState(UNIT_STAT_CASTING))
+            if (!(*iter)->HasUnitState(UNIT_STATE_CASTING))
                 continue;
 
             for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
@@ -2448,7 +2448,7 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
                                                             // blizz like 2.0.x
         target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
 
-        target->AddUnitState(UNIT_STAT_DIED);
+        target->AddUnitState(UNIT_STATE_DIED);
     }
     else
     {
@@ -2465,7 +2465,7 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
                                                             // blizz like 2.0.x
         target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
 
-        target->ClearUnitState(UNIT_STAT_DIED);
+        target->ClearUnitState(UNIT_STATE_DIED);
     }
 }
 
@@ -2852,16 +2852,9 @@ void AuraEffect::HandleAuraAllowFlight(AuraApplication const* aurApp, uint8 mode
         // allow flying
         WorldPacket data;
         if (apply)
-        {
-            static_cast<Player*>(target)->SetCanFly(true);
-            static_cast<Player*>(target)->m_anti_BeginFallZ=INVALID_HEIGHT;
             data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
-        }
         else
-        {
             data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
-            static_cast<Player*>(target)->SetCanFly(false);
-        }
         data.append(target->GetPackGUID());
         data << uint32(0);                                      // unk
         player->SendDirectMessage(&data);
@@ -2908,11 +2901,7 @@ void AuraEffect::HandleAuraFeatherFall(AuraApplication const* aurApp, uint8 mode
 
     WorldPacket data;
     if (apply)
-    {
         data.Initialize(SMSG_MOVE_FEATHER_FALL, 8+4);
-        if (target->GetTypeId() == TYPEID_PLAYER)
-            static_cast<Player*>(target)->m_anti_BeginFallZ=INVALID_HEIGHT;
-    }
     else
         data.Initialize(SMSG_MOVE_NORMAL_FALL, 8+4);
     data.append(target->GetPackGUID());
@@ -3042,7 +3031,7 @@ void AuraEffect::HandleModConfuse(AuraApplication const* aurApp, uint8 mode, boo
 
     Unit* target = aurApp->GetTarget();
 
-    target->SetControlled(apply, UNIT_STAT_CONFUSED);
+    target->SetControlled(apply, UNIT_STATE_CONFUSED);
 }
 
 void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -3052,7 +3041,7 @@ void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool a
 
     Unit* target = aurApp->GetTarget();
 
-    target->SetControlled(apply, UNIT_STAT_FLEEING);
+    target->SetControlled(apply, UNIT_STATE_FLEEING);
 }
 
 void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -3062,7 +3051,7 @@ void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bo
 
     Unit* target = aurApp->GetTarget();
 
-    target->SetControlled(apply, UNIT_STAT_STUNNED);
+    target->SetControlled(apply, UNIT_STATE_STUNNED);
 }
 
 void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -3072,7 +3061,7 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
 
     Unit* target = aurApp->GetTarget();
 
-    target->SetControlled(apply, UNIT_STAT_ROOT);
+    target->SetControlled(apply, UNIT_STATE_ROOT);
 }
 
 void AuraEffect::HandlePreventFleeing(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -3083,7 +3072,7 @@ void AuraEffect::HandlePreventFleeing(AuraApplication const* aurApp, uint8 mode,
     Unit* target = aurApp->GetTarget();
 
     if (target->HasAuraType(SPELL_AURA_MOD_FEAR))
-        target->SetControlled(!(apply), UNIT_STAT_FLEEING);
+        target->SetControlled(!(apply), UNIT_STATE_FLEEING);
 }
 
 /***************************/
@@ -3261,15 +3250,9 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
             {
                 WorldPacket data;
                 if (apply)
-                {
-                    static_cast<Player*>(target)->SetCanFly(true);
                     data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
-                }
                 else
-                {
                     data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
-                    static_cast<Player*>(target)->SetCanFly(false);
-                }
                 data.append(player->GetPackGUID());
                 data << uint32(0);                                      // unknown
                 player->SendDirectMessage(&data);
@@ -3482,7 +3465,7 @@ void AuraEffect::HandleAuraModSchoolImmunity(AuraApplication const* aurApp, uint
     if (GetSpellInfo()->Mechanic == MECHANIC_BANISH)
     {
         if (apply)
-            target->AddUnitState(UNIT_STAT_ISOLATED);
+            target->AddUnitState(UNIT_STATE_ISOLATED);
         else
         {
             bool banishFound = false;
@@ -3494,7 +3477,7 @@ void AuraEffect::HandleAuraModSchoolImmunity(AuraApplication const* aurApp, uint
                     break;
                 }
             if (!banishFound)
-                target->ClearUnitState(UNIT_STAT_ISOLATED);
+                target->ClearUnitState(UNIT_STATE_ISOLATED);
         }
     }
 
@@ -6201,7 +6184,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     if (!caster || !target->isAlive())
         return;
 
-    if (target->HasUnitState(UNIT_STAT_ISOLATED) || target->IsImmunedToDamage(GetSpellInfo()))
+    if (target->HasUnitState(UNIT_STATE_ISOLATED) || target->IsImmunedToDamage(GetSpellInfo()))
     {
         SendTickImmune(target, caster);
         return;
@@ -6342,7 +6325,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) c
     if (!caster || !caster->isAlive() || !target->isAlive())
         return;
 
-    if (target->HasUnitState(UNIT_STAT_ISOLATED) || target->IsImmunedToDamage(GetSpellInfo()))
+    if (target->HasUnitState(UNIT_STATE_ISOLATED) || target->IsImmunedToDamage(GetSpellInfo()))
     {
         SendTickImmune(target, caster);
         return;
@@ -6408,7 +6391,7 @@ void AuraEffect::HandlePeriodicHealthFunnelAuraTick(Unit* target, Unit* caster) 
     if (!caster || !caster->isAlive() || !target->isAlive())
         return;
 
-    if (target->HasUnitState(UNIT_STAT_ISOLATED))
+    if (target->HasUnitState(UNIT_STATE_ISOLATED))
     {
         SendTickImmune(target, caster);
         return;
@@ -6436,7 +6419,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster) const
     if (!caster || !target->isAlive())
         return;
 
-    if (target->HasUnitState(UNIT_STAT_ISOLATED))
+    if (target->HasUnitState(UNIT_STATE_ISOLATED))
     {
         SendTickImmune(target, caster);
         return;
@@ -6552,7 +6535,7 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster) con
     if (!caster || !caster->isAlive() || !target->isAlive() || target->getPowerType() != powerType)
         return;
 
-    if (target->HasUnitState(UNIT_STAT_ISOLATED) || target->IsImmunedToDamage(GetSpellInfo()))
+    if (target->HasUnitState(UNIT_STATE_ISOLATED) || target->IsImmunedToDamage(GetSpellInfo()))
     {
         SendTickImmune(target, caster);
         return;
@@ -6652,7 +6635,7 @@ void AuraEffect::HandleObsModPowerAuraTick(Unit* target, Unit* caster) const
     if (!target->isAlive() || !target->GetMaxPower(powerType))
         return;
 
-    if (target->HasUnitState(UNIT_STAT_ISOLATED))
+    if (target->HasUnitState(UNIT_STATE_ISOLATED))
     {
         SendTickImmune(target, caster);
         return;
@@ -6683,7 +6666,7 @@ void AuraEffect::HandlePeriodicEnergizeAuraTick(Unit* target, Unit* caster) cons
     if (!target->isAlive() || !target->GetMaxPower(powerType))
         return;
 
-    if (target->HasUnitState(UNIT_STAT_ISOLATED))
+    if (target->HasUnitState(UNIT_STATE_ISOLATED))
     {
         SendTickImmune(target, caster);
         return;
@@ -6715,7 +6698,7 @@ void AuraEffect::HandlePeriodicPowerBurnAuraTick(Unit* target, Unit* caster) con
     if (!caster || !target->isAlive() || target->getPowerType() != powerType)
         return;
 
-    if (target->HasUnitState(UNIT_STAT_ISOLATED) || target->IsImmunedToDamage(GetSpellInfo()))
+    if (target->HasUnitState(UNIT_STATE_ISOLATED) || target->IsImmunedToDamage(GetSpellInfo()))
     {
         SendTickImmune(target, caster);
         return;
