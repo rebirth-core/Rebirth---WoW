@@ -1671,7 +1671,7 @@ void OutdoorPvPWG::UpdateClock()
     else if (getDefenderTeam() == TEAM_HORDE)
        team = 2;
 
-    if (timer % 10 == 0 || inWar == 0 && timer <= 60)
+    if (timer % 60 == 0)
        LoginDatabase.PExecute("UPDATE rebirth_wintergrasp_timer SET timer = '%u' , team = %u, inWar = %u WHERE id = 1", timer, team, inWar);
 }
 
