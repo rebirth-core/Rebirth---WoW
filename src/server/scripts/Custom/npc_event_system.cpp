@@ -10,10 +10,31 @@ class event_npc : public CreatureScript
     	{
     	}
 
-		void RequestEventPoints(Player* player, Creature* creature)
-		{
+        void RequestEventPoints(Player* player, Creature* creature)
+        {
+            QueryResult result = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", player->GetSession()->GetAccountId());
 
-		}
+            if (result)
+            {
+                Field* field = result->Fetch();
+                uint32 eventPunkte = field[0].GetUInt32();
+                char str_info[200];
+                sprintf(str_info,"Du hast %u Event Punkte!", eventPunkte);
+                player->PlayerTalkClass->ClearMenus();
+                OnGossipHello(player, creature);
+                player->MonsterWhisper(str_info,player->GetGUID(),true);
+            }
+
+            else if (!result)
+            {
+                char str_info[200];
+                sprintf(str_info,"Es ist ein Fehler aufgetreten. Bitte wende dich an einen Administrator und melde FehlerID 100!");
+                player->PlayerTalkClass->ClearMenus();
+                OnGossipHello(player, creature);
+                player->MonsterWhisper(str_info,player->GetGUID(),true);
+            }
+
+        }
 
     	bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     	{
