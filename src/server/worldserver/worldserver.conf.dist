@@ -3240,3 +3240,21 @@ OutdoorPvP.Wintergrasp.MaxPlayers = 100
 
 #
 ###################################################################################################
+
+###################################################################################################
+#   Rebirth.WGStats.Enabled
+#       Ist für das Eintragen der Tausendwinter Stats in die Datenbank da.
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.WGStats.Enabled = 1
+
+#
+#   Rebirth.WGStats.Update.Interval
+#      Dies ist der Intervall (in Sekunden) in dem die Tausendwinter Stats in die Datenbank geschrieben werden
+#      Default (60 Sekunden)
+
+Rebirth.WGStats.Update.Interval = 60
+
+#
+###################################################################################################
