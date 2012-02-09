@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -236,7 +236,7 @@ class boss_mimiron : public CreatureScript
 
                 _Reset();
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
-                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
+               // me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
                 me->SetVisible(true);
                 me->ExitVehicle();
                 me->GetMotionMaster()->MoveTargetedHome();
@@ -870,7 +870,7 @@ public:
             switch (action)
             {
                 case DO_START_ENCOUNTER:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_IMMUNE_TO_NPC);
                     me->SetReactState(REACT_AGGRESSIVE);
                     phase = PHASE_LEVIATHAN_SOLO;
                     events.SetPhase(PHASE_LEVIATHAN_SOLO);
@@ -903,7 +903,7 @@ public:
             _DoAggroPulse(diff);
             events.Update(diff);
 
-            if (me->HasUnitState(UNIT_STAT_CASTING) || me->HasUnitState(UNIT_STAT_STUNNED))
+            if (me->HasUnitState(UNIT_STATE_CASTING) || me->HasUnitState(UNIT_STATE_STUNNED))
                 return;
 
             if (phase == PHASE_LEVIATHAN_SOLO || phase == PHASE_LEVIATHAN_ASSEMBLED)
@@ -1157,7 +1157,7 @@ public:
             switch (action)
             {
                 case DO_START_VX001:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_IMMUNE_TO_NPC);
                     phase = PHASE_VX001_SOLO;
                     events.SetPhase(PHASE_VX001_SOLO);
                     DoZoneInCombat();
@@ -1233,13 +1233,13 @@ public:
                     if (Creature* leviathan = me->GetVehicleCreatureBase())
                     {
                         float orient = leviathan->GetOrientation();
-                        leviathan->SetFacing(orient + (direction ? M_PI/60 : -M_PI/60));
+                        leviathan->SetFacingTo(orient + (direction ? M_PI/60 : -M_PI/60));
                         me->SetOrientation(orient + (direction ? M_PI/60 : -M_PI/60));
                     }
                     else
                     {
                         float orient = me->GetOrientation();
-                        me->SetFacing(orient + (direction ? M_PI/60 : -M_PI/60));
+                        me->SetFacingTo(orient + (direction ? M_PI/60 : -M_PI/60));
                         float x, y, z;
                         z = me->GetPositionZ();
                         me->GetNearPoint2D(x, y, 10.0f, me->GetOrientation());
@@ -1254,7 +1254,7 @@ public:
             _DoAggroPulse(diff);
             events.Update(diff);
 
-            if (me->HasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             if (phase == PHASE_VX001_SOLO || phase == PHASE_VX001_ASSEMBLED)
@@ -1275,7 +1275,7 @@ public:
                             {
                                 float orient = float(2*M_PI * rand_norm());
                                 leviathan->CastSpell(leviathan, 14821, true); // temporary
-                                leviathan->SetFacing(orient);
+                                leviathan->SetFacingTo(orient);
                                 leviathan->SetOrientation(orient);
                                 me->SetOrientation(orient);
                             }
@@ -1474,7 +1474,7 @@ public:
             switch (action)
             {
                 case DO_START_AERIAL:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_IMMUNE_TO_NPC);
                     me->SetReactState(REACT_AGGRESSIVE);
                     phase = PHASE_AERIAL_SOLO;
                     events.SetPhase(PHASE_AERIAL_SOLO);
@@ -1519,7 +1519,7 @@ public:
             _DoAggroPulse(diff);
             events.Update(diff);
 
-            if (me->HasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             if (phase == PHASE_AERIAL_SOLO || phase == PHASE_AERIAL_ASSEMBLED)
@@ -1852,7 +1852,7 @@ class npc_mimiron_flame_trigger : public CreatureScript
             {
                 _instance = creature->GetInstanceScript();
                 _flameTimer = 2000;
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
                 me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);

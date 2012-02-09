@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -399,7 +399,7 @@ class boss_xt002 : public CreatureScript
                 if (Creature* heart = me->SummonCreature(NPC_XT002_HEART, *me, TEMPSUMMON_TIMED_DESPAWN, 30*IN_MILLISECONDS))
                 {
                     heart->EnterVehicle(me, 1);
-                    heart->ClearUnitState(UNIT_STAT_ONVEHICLE); // Hack
+                    heart->ClearUnitState(UNIT_STATE_ONVEHICLE); // Hack
                     heart->SetInCombatWithZone();
                     heart->CastSpell(heart, SPELL_EXPOSED_HEART, true);
                 }

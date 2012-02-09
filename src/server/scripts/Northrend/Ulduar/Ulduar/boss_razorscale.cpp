@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -682,10 +682,10 @@ class npc_expedition_commander : public CreatureScript
                             Phase = 4;
                             break;
                         case 4:
-                            for (uint8 n = 0; n < RAID_MODE<uint8>(2, 4); ++n)
-                                Engineer[n]->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
-                            for (uint8 n = 0; n < 4; ++n)
-                                Defender[n]->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY2H);
+                            //for (uint8 n = 0; n < RAID_MODE<uint8>(2, 4); ++n)
+                                //Engineer[n]->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
+                            //for (uint8 n = 0; n < 4; ++n)
+                              //  Defender[n]->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY2H);
                             me->MonsterYell(SAY_AGGRO_2, LANG_UNIVERSAL, 0);
                             AttackStartTimer = 16000;
                             Phase = 5;

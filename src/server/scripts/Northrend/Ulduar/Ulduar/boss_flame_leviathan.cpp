@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -404,7 +404,7 @@ class boss_flame_leviathan : public CreatureScript
                 events.Update(diff);
                 _DoAggroPulse(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 if (!Pursued && me->getVictim() && !me->getVictim()->HasAura(SPELL_PURSUED) && !me->HasAura(SPELL_SYSTEMS_SHUTDOWN))
@@ -1266,7 +1266,7 @@ class npc_leviathan_player_vehicle : public CreatureScript
                 _instance = creature->GetInstanceScript();
 
                 if (VehicleSeatEntry* vehSeat = const_cast<VehicleSeatEntry*>(sVehicleSeatStore.LookupEntry(3013)))
-                    vehSeat->m_flags &= ~VEHICLE_SEAT_FLAG_UNK11;
+                    vehSeat->m_flags &= ~0x00000400;
             }
 
             void PassengerBoarded(Unit* unit, int8 seat, bool apply)
@@ -1861,7 +1861,7 @@ class spell_systems_shutdown : public SpellScriptLoader
                     return;
 
                 //! This could probably in the SPELL_EFFECT_SEND_EVENT handler too:
-                owner->AddUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
+                owner->AddUnitState(UNIT_STATE_STUNNED | UNIT_STATE_ROOT);
                 owner->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
                 owner->RemoveAurasDueToSpell(SPELL_GATHERING_SPEED);
             }
@@ -1872,7 +1872,7 @@ class spell_systems_shutdown : public SpellScriptLoader
                 if (!owner)
                     return;
 
-                owner->ClearUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
+                owner->ClearUnitState(UNIT_STATE_STUNNED | UNIT_STATE_ROOT);
                 owner->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
             }
 
