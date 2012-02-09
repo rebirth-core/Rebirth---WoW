@@ -71,6 +71,8 @@ class rebirth_commandscript : public CommandScript
         }
 };
 
+
+
 void AddSC_rebirth_commandscript()
 {
     new rebirth_commandscript();
