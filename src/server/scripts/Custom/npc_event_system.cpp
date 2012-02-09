@@ -36,10 +36,50 @@ class event_npc : public CreatureScript
 
         }
 
+        void RequestNextEvents(Player* player, Creature* creature)
+        {
+            QueryResult result = LoginDatabase.PQuery("SELECT FROM_UNIXTIME(date), type, reqLevel FROM rebirth_next_event WHERE date > UNIX_TIMESTAMP()");
+
+            if (result)
+            {
+                do
+                {
+                     Field* field = result->Fetch();
+                     std::string eventType = "";
+                     std::string date = field[0].GetCString();
+                     uint32 type = field[1].GetUInt32();
+                     uint32 reqLevel = field[2].GetUInt32();
+
+                     if (type == 0)
+                         eventType = "PvP";
+                     else if (type == 1)
+                         eventType = "PvE";
+                     else if (type == 2)
+                         eventType = "Fun";
+                     else
+                         eventType = "Sonstiges";
+
+                     char str_info[200];
+                     sprintf(str_info,"Event Info: Datum: %s || Typ: %s || Empfohlenes Level: %u",date.c_str(),eventType.c_str(),reqLevel);
+                     player->PlayerTalkClass->ClearMenus();
+                     OnGossipHello(player, creature);
+                     player->MonsterWhisper(str_info,player->GetGUID(),true);
+                } while (result->NextRow());
+            }
+            else
+            {
+                char str_info[200];
+                sprintf(str_info,"Es ist zurzeit kein Event in Planung!");
+                player->PlayerTalkClass->ClearMenus();
+                OnGossipHello(player, creature);
+                player->MonsterWhisper(str_info,player->GetGUID(),true);
+            }
+       }
+
     	bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     	{
-          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Event Punkte habe ich?", GOSSIP_SENDER_MAIN, 1000);
-		  
+          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Event Punkte habe ich?", GOSSIP_SENDER_MAIN, 1);
+          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wann findet das naechste Event statt?", GOSSIP_SENDER_MAIN, 2);
           pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
 
         	return true;
@@ -49,14 +89,17 @@ class event_npc : public CreatureScript
     	{
         	pPlayer->PlayerTalkClass->ClearMenus();
        	 
-        	switch (uiAction)
-        	{
-        	case 1000:
-            	RequestEventPoints(pPlayer, pCreature);
-            	break;
-        	}
-        	return true;
-    	}
+            switch (uiAction)
+            {
+            case 1:
+                RequestEventPoints(pPlayer, pCreature);
+                break;
+            case 2:
+                RequestNextEvents(pPlayer, pCreature);
+                break;
+            }
+            return true;
+       }
 
 };
 
