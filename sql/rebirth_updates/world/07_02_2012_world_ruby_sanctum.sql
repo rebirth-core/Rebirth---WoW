@@ -91,11 +91,11 @@ INSERT INTO `creature_text` (`entry`,`groupid`,`id`,`text`,`type`,`language`,`pr
 (40146,5,0, 'The orbiting spheres pulse with dark energy!',42,0,100,0,0,0, 'Halion');
 
 -- Spawns
-SET @OGUID = xx; -- Set by TDB team (Need 1)
+SET @OGUID = 10134821; -- Set by TDB team (Need 1)
 INSERT INTO `gameobject` (`guid`,`id`, `map`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`) VALUES
 (@OGUID,203624,724,15,0x20,3154.99,535.637,72.887,3.14159,0,0,0,0,120,0,0); -- GO_TWILIGHT_FLAME_RING
 
-SET @GUID = xx; -- Set by TDB team (Need 2) -- FFS Kaelima I don't have those, dont modify that !
+SET @GUID = 10134822; -- Set by TDB team (Need 2) -- FFS Kaelima I don't have those, dont modify that !
 DELETE FROM `creature` WHERE `id` IN (40081, 40091);
 INSERT INTO `creature` (`guid`,`id`,`map`,`spawnMask`,`phaseMask`,`modelid`,`equipment_id`,`position_x`,`position_y`,`position_z`,`orientation`,`spawntimesecs`,`spawndist`,`currentwaypoint`,`curhealth`,`curmana`,`MovementType`,`npcflag`,`unit_flags`,`dynamicflags`) VALUES
 (@GUID,40091,724,1,20,0,0,3113.711,533.5382,72.96869,1.936719,300,0,0,1,0,0,0,0,0), -- Orb Rotation Focus

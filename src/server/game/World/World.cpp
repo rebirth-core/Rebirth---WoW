@@ -1210,6 +1210,10 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_MINLEVEL]  = ConfigMgr::GetIntDefault("OutdoorPvP.Wintergrasp.Minlevel", 74);
     m_int_configs[CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_MAXPLAYERS]  = ConfigMgr::GetIntDefault("OutdoorPvP.Wintergrasp.MaxPlayers", 100);
 
+    //Rebirth-WoW
+    m_bool_configs[CONFIG_REBIRTH_WGSTATS_ENABLED]         = ConfigMgr::GetBoolDefault("Rebirth.WGStats.Enabled", false);
+    m_int_configs[CONFIG_REBIRTH_WGSTATS_UPDATE_INTERVAL] = ConfigMgr::GetIntDefault("Rebirth.WGStats.Update.Interval", 60);
+
 	
     sScriptMgr->OnConfigLoad(reload);
 }

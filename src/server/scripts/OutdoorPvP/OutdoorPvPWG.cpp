@@ -1657,22 +1657,26 @@ void OutdoorPvPWG::UpdateClock()
        sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_10);
 
     //Rebirth-WoW Custom Code by Enzeh
-    uint32 team = 0;
-    uint32 inWar = 0;
+    
+    if (sWorld->getBoolConfig(CONFIG_REBIRTH_WGSTATS_ENABLED))
+    {
+       uint32 team = 0;
+       uint32 inWar = 0;
 
-    if (isWarTime())
-       inWar = 1;
-    else
-       inWar = 0;
+       if (isWarTime())
+          inWar = 1;
+       else
+          inWar = 0;
 
-    if (getDefenderTeam() == TEAM_ALLIANCE)
-       team = 1;
+       if (getDefenderTeam() == TEAM_ALLIANCE)
+          team = 1;
 
-    else if (getDefenderTeam() == TEAM_HORDE)
-       team = 2;
+       else if (getDefenderTeam() == TEAM_HORDE)
+          team = 2;
 
-    if (timer % 10 == 0 || inWar == 0 && timer <= 60)
-       LoginDatabase.PExecute("UPDATE rebirth_wintergrasp_timer SET timer = '%u' , team = %u, inWar = %u WHERE id = 2", timer, team, inWar);
+       if (timer % sWorld->getIntConfig(CONFIG_REBIRTH_WGSTATS_UPDATE_INTERVAL) == 0)
+          LoginDatabase.PExecute("UPDATE rebirth_wintergrasp_timer SET timer = '%u' , team = %u, inWar = %u WHERE id = 2", timer, team, inWar);
+    }
 }
 
 bool OutdoorPvPWG::Update(uint32 diff)
