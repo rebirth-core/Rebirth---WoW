@@ -3194,4 +3194,11 @@ Rebirth.WGStats.Enabled = 1
 Rebirth.WGStats.Update.Interval = 60
 
 #
+#   Rebirth.WGStats.Update.Interval
+#      Hier wird die ID definiert, die der Datensatz in der Table bekommt
+#      Default (1)
+
+Rebirth.WGStats.Data.Id = 1
+
+#
 ###################################################################################################

@@ -1675,7 +1675,7 @@ void OutdoorPvPWG::UpdateClock()
           team = 2;
 
        if (timer % sWorld->getIntConfig(CONFIG_REBIRTH_WGSTATS_UPDATE_INTERVAL) == 0)
-          LoginDatabase.PExecute("UPDATE rebirth_wintergrasp_timer SET timer = '%u' , team = %u, inWar = %u WHERE id = 2", timer, team, inWar);
+           LoginDatabase.PExecute("REPLACE rebirth_wintergrasp_timer SET timer = '%u' , team = %u, inWar = %u, id = %u", timer, team, inWar, sWorld->getIntConfig(CONFIG_REBIRTH_WGSTATS_DATA_ID));
     }
 }
 

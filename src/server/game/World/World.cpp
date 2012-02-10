@@ -1212,6 +1212,7 @@ void World::LoadConfigSettings(bool reload)
 
     //Rebirth-WoW
     m_bool_configs[CONFIG_REBIRTH_WGSTATS_ENABLED]         = ConfigMgr::GetBoolDefault("Rebirth.WGStats.Enabled", false);
+    m_int_configs[CONFIG_REBIRTH_WGSTATS_DATA_ID] = ConfigMgr::GetIntDefault("Rebirth.WGStats.Data.Id", 1);
     m_int_configs[CONFIG_REBIRTH_WGSTATS_UPDATE_INTERVAL] = ConfigMgr::GetIntDefault("Rebirth.WGStats.Update.Interval", 60);
 
 	
