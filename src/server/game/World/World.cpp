@@ -1214,7 +1214,9 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_REBIRTH_WGSTATS_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.WGStats.Enabled", false);
     m_int_configs[CONFIG_REBIRTH_WGSTATS_UPDATE_INTERVAL] = ConfigMgr::GetIntDefault("Rebirth.WGStats.Update.Interval", 60);
     m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Enabled", false);
-    m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_ITEMS_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Items.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.NextEvent.Info.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_TELEPORT_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Teleport.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Rewards.Enabled", false);
 	
     sScriptMgr->OnConfigLoad(reload);
 }

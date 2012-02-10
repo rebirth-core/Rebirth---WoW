@@ -113,14 +113,18 @@ class event_npc : public CreatureScript
 
     	bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     	{
-          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Event Punkte habe ich?", GOSSIP_SENDER_MAIN, 1);
-          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wann findet das naechste Event statt?", GOSSIP_SENDER_MAIN, 2);
-          if (isActive())
-              pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleportiere mich zum Event!", GOSSIP_SENDER_MAIN, 3);
-          pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Eventbelohnungen kaufen!", GOSSIP_SENDER_MAIN, 4);
-          pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
-
-        	return true;
+          if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_ENABLED));
+          {
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Event Punkte habe ich?", GOSSIP_SENDER_MAIN, 1);
+            if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED))
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wann finden die naechsten Events statt?", GOSSIP_SENDER_MAIN, 2);
+            if (isActive() && sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_TELEPORT_ENABLED))
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleportiere mich zum Event!", GOSSIP_SENDER_MAIN, 3);
+            if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED))
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Eventbelohnungen kaufen!", GOSSIP_SENDER_MAIN, 4);
+            pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
+          }
+          return true;
     	}
 
     	bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 , uint32 uiAction)
