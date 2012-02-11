@@ -1,3 +1,5 @@
+UPDATE creature_template SET VehicleId=0 WHERE entry IN (28319, 32629);
+
 -- Missing spell
 DELETE FROM `spell_dbc` WHERE `id`=70507;
 INSERT INTO `spell_dbc` (`Id`,`Attributes`,`AttributesEx`,`AttributesEx2`,`CastingTimeIndex`,`ProcChance`,`DurationIndex`,`RangeIndex`,`StackAmount`,`Effect1`,`EffectBasePoints1`,`EffectImplicitTargetA1`,`EffectApplyAuraName1`,`DmgMultiplier1`,`Comment`) VALUES
