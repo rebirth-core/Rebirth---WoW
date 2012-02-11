@@ -7089,6 +7089,18 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool pvpt
         return true;
     }
 
+    if (uVictim)
+    {
+        if(uVictim->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (GetSession()->GetRemoteAddress() == uVictim->ToPlayer()->GetSession()->GetRemoteAddress() && uVictim->GetMap()->IsBattlegroundOrArena() == false && sWorld->getBoolConfig(CONFIG_REBIRTH_PVP_ANTIFARM_ENABLED) == true)
+            {
+                ChatHandler(this).PSendSysMessage("Du kannst keine Ehre von einem Spieler erhalten, der die gleiche IP Adresse wie du hat!");
+                return false;
+            }
+        }
+    }
+
     // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
     if (HasAura(SPELL_AURA_PLAYER_INACTIVE))
         return false;

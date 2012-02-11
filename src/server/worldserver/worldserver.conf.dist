@@ -3201,4 +3201,13 @@ Rebirth.WGStats.Update.Interval = 60
 Rebirth.WGStats.Data.Id = 1
 
 #
+#   Rebirth.PvP.AntiFarm.Enabled
+#      Wenn aktiviert, erhalten Spieler für den Kill an anderen Spielern mit der selben IP Adresse keine Ehre.
+#      Davon ausgenommen sind Arenen und Battlegrounds
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.PvP.AntiFarm.Enabled = 1
+
+#
 ###################################################################################################
