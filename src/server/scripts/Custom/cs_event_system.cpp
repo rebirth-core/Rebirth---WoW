@@ -91,8 +91,8 @@ class rebirth_commandscript : public CommandScript
             {
                 { "addpoints", SEC_MODERATOR, true, &HandleAddPointsCommand, "", NULL },
                 { "removepoints", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
-				{ "addreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
-				//{ "delreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
+                { "addreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
+                //{ "delreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 { NULL, 0, false, NULL, "", NULL }
             };
 		
