@@ -76,6 +76,21 @@ class rebirth_commandscript : public CommandScript
             return true;
         }
 
+        static bool HandleSetCostCommand(ChatHandler* handler, const char* args)
+        {
+            if (!*args)
+               return false;
+            char* arg1 = strtok((char*)args, " ");
+            char* arg2 = strtok(NULL, " ");
+
+            int id = atoi(arg1);
+            int cost = atoi(arg2);
+
+            WorldDatabase.PExecute("UPDATE rebirth_event_rewards SET cost = %d WHERE id = %d",cost,id);
+            handler->PSendSysMessage("Preis von ID %d wurde auf %d Eventpunkte gesetzt.",id, cost);
+            return true;
+        }
+
         ChatCommand* GetCommands() const
         {
 
@@ -87,12 +102,19 @@ class rebirth_commandscript : public CommandScript
                 { NULL, 0, false, NULL, "", NULL }
             };
 
+            static ChatCommand RebirthSetCommandTable[] =
+            {
+                { "title", SEC_MODERATOR, true, &HandleSetCostCommand, "", NULL },
+                { NULL, 0, false, NULL, "", NULL }
+            };
+
             static ChatCommand RebirthSubSubCommandTable[] =
             {
                 { "addpoints", SEC_MODERATOR, true, &HandleAddPointsCommand, "", NULL },
                 { "removepoints", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
                 { "addreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 //{ "delreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
+                { "set", SEC_MODERATOR, true, NULL, "", RebirthSetCommandTable  },
                 { NULL, 0, false, NULL, "", NULL }
             };
 		
