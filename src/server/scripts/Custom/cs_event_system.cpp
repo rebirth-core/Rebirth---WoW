@@ -80,14 +80,25 @@ class rebirth_commandscript : public CommandScript
         {
             if (!*args)
                return false;
+
             char* arg1 = strtok((char*)args, " ");
             char* arg2 = strtok(NULL, " ");
 
             int id = atoi(arg1);
             int cost = atoi(arg2);
 
+            QueryResult result = WorldDatabase.PQuery("SELECT cost FROM rebirth_event_rewards WHERE id = %d", id);
+            if (!result)
+            {
+                handler->PSendSysMessage("Event Reward mit der ID %d nicht gefunden!", id);
+                return false;
+            }
+
+            Field* field = result->Fetch();
+            int oldCost = field[0].GetInt32();
+
             WorldDatabase.PExecute("UPDATE rebirth_event_rewards SET cost = %d WHERE id = %d",cost,id);
-            handler->PSendSysMessage("Preis von ID %d wurde auf %d Eventpunkte gesetzt.",id, cost);
+            handler->PSendSysMessage("Preis von ID %d wurde von %d auf %d Eventpunkte gesetzt.",id, oldCost,cost);
             return true;
         }
 
@@ -104,7 +115,7 @@ class rebirth_commandscript : public CommandScript
 
             static ChatCommand RebirthSetCommandTable[] =
             {
-                { "title", SEC_MODERATOR, true, &HandleSetCostCommand, "", NULL },
+                { "cost", SEC_MODERATOR, true, &HandleSetCostCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
