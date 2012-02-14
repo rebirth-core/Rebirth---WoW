@@ -91,7 +91,7 @@ class rebirth_commandscript : public CommandScript
             if (!result)
             {
                 handler->PSendSysMessage("Event Reward mit der ID %d nicht gefunden!", id);
-                return false;
+                return true;
             }
 
             Field* field = result->Fetch();
@@ -99,6 +99,32 @@ class rebirth_commandscript : public CommandScript
 
             WorldDatabase.PExecute("UPDATE rebirth_event_rewards SET cost = %d WHERE id = %d",cost,id);
             handler->PSendSysMessage("Preis von ID %d wurde von %d auf %d Eventpunkte gesetzt.",id, oldCost,cost);
+            return true;
+        }
+
+        static bool HandleSetCountCommand(ChatHandler* handler, const char* args)
+        {
+            if (!*args)
+               return false;
+
+            char* arg1 = strtok((char*)args, " ");
+            char* arg2 = strtok(NULL, " ");
+
+            int id = atoi(arg1);
+            int count = atoi(arg2);
+
+            QueryResult result = WorldDatabase.PQuery("SELECT param2 FROM rebirth_event_rewards WHERE id = %d AND type = 0 OR id = %d AND type = 1", id, id);
+            if (!result)
+            {
+                handler->PSendSysMessage("Event Reward mit der ID %d nicht gefunden oder ist kein Item oder Ehrenpunkte!", id);
+                return true;
+            }
+
+            Field* field = result->Fetch();
+            int oldCount = field[0].GetInt32();
+
+            WorldDatabase.PExecute("UPDATE rebirth_event_rewards SET param2 = %d WHERE id = %d",count,id);
+            handler->PSendSysMessage("Count von ID %d wurde von %d auf %d gesetzt.",id, oldCount,count);
             return true;
         }
 
@@ -116,6 +142,7 @@ class rebirth_commandscript : public CommandScript
             static ChatCommand RebirthSetCommandTable[] =
             {
                 { "cost", SEC_MODERATOR, true, &HandleSetCostCommand, "", NULL },
+                { "count", SEC_MODERATOR, true, &HandleSetCountCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
