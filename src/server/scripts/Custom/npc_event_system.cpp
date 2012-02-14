@@ -206,6 +206,21 @@ class event_npc : public CreatureScript
                            case 0:
                                if (cost >= pEP)
                                {
+                                   Item* item = pPlayer->GetItemByEntry(param1);
+                                   if (pPlayer->HasItemCount(param1, 1, true))
+                                   {
+                                       if (item->GetTemplate()->MaxCount <= pPlayer->GetItemCount(param1, true, 0))
+                                       {
+                                           char str_info[200];
+                                           sprintf(str_info,"Du hast bereits die maximale Anzahl dieses Gegenstands erreicht. Du kannst keine weiteren aufnehmen!");
+                                           pPlayer->PlayerTalkClass->ClearMenus();
+                                           OnGossipHello(pPlayer, pCreature);
+                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+
+                                           return true;
+                                       }
+                                   }
+
                                    pPlayer->AddItem(param1, param2);
                                    LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                }
