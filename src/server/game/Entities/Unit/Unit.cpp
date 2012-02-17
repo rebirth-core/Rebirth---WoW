@@ -146,9 +146,10 @@ _hitMask(hitMask), _spell(spell), _damageInfo(damageInfo), _healInfo(healInfo)
 #endif
 Unit::Unit(bool isWorldObject): WorldObject(isWorldObject),
 m_movedPlayer(NULL), m_lastSanctuaryTime(0), IsAIEnabled(false), NeedChangeAI(false),
-m_ControlledByPlayer(false), i_AI(NULL), i_disabledAI(NULL), m_procDeep(0),
-m_removedAurasCount(0), i_motionMaster(this), m_ThreatManager(this), m_vehicle(NULL),
-m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE), m_HostileRefManager(this), movespline(new Movement::MoveSpline())
+m_ControlledByPlayer(false), movespline(new Movement::MoveSpline()), i_AI(NULL),
+i_disabledAI(NULL), m_procDeep(0), m_removedAurasCount(0), i_motionMaster(this),
+m_ThreatManager(this), m_vehicle(NULL), m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE),
+m_HostileRefManager(this)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -7010,8 +7011,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
                     WeaponAttackType attType = WeaponAttackType(player->GetAttackBySlot(castItem->GetSlot()));
                     if ((attType != BASE_ATTACK && attType != OFF_ATTACK)
-                        || attType == BASE_ATTACK && procFlag & PROC_FLAG_DONE_OFFHAND_ATTACK
-                        || attType == OFF_ATTACK && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK)
+                        || (attType == BASE_ATTACK && procFlag & PROC_FLAG_DONE_OFFHAND_ATTACK)
+                        || (attType == OFF_ATTACK && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK))
                          return false;
 
                     // Now compute real proc chance...
@@ -7307,8 +7308,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 Player* player = ToPlayer();
                 WeaponAttackType attType = WeaponAttackType(player->GetAttackBySlot(castItem->GetSlot()));
                 if ((attType != BASE_ATTACK && attType != OFF_ATTACK)
-                    || attType == BASE_ATTACK && procFlag & PROC_FLAG_DONE_OFFHAND_ATTACK
-                    || attType == OFF_ATTACK && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK)
+                    || (attType == BASE_ATTACK && procFlag & PROC_FLAG_DONE_OFFHAND_ATTACK)
+                    || (attType == OFF_ATTACK && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK))
                     return false;
 
                 float fire_onhit = float(CalculatePctF(dummySpell->Effects[EFFECT_0]. CalcValue(), 1.0f));
@@ -12148,6 +12149,26 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell) co
         || target->GetReactionTo(this) > REP_NEUTRAL)
         return false;
 
+    // Not all neutral creatures can be attacked
+    if (GetReactionTo(target) == REP_NEUTRAL &&
+        target->GetReactionTo(this) == REP_NEUTRAL)
+    {
+        if  (
+            !(target->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER) &&
+            !(target->GetTypeId() == TYPEID_UNIT && GetTypeId() == TYPEID_UNIT)
+            )
+        {
+            Player const* player = target->GetTypeId() == TYPEID_PLAYER ? target->ToPlayer() : ToPlayer();
+            Unit const* creature = target->GetTypeId() == TYPEID_UNIT ? target : this;
+
+            if (FactionTemplateEntry const* factionTemplate = creature->getFactionTemplateEntry())
+                if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction))
+                    if (FactionState const* repState = player->GetReputationMgr().GetState(factionEntry))
+                        if (!(repState->Flags & FACTION_FLAG_AT_WAR))
+                            return false;
+        }
+    }
+
     Creature const* creatureAttacker = ToCreature();
     if (creatureAttacker && creatureAttacker->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_UNK26)
         return false;
@@ -12665,7 +12686,6 @@ void Unit::setDeathState(DeathState s)
 {
     // death state needs to be updated before RemoveAllAurasOnDeath() calls HandleChannelDeathItem(..) so that
     // it can be used to check creation of death items (such as soul shards).
-    DeathState oldDeathState = m_deathState;
     m_deathState = s;
 
     if (s != ALIVE && s != JUST_ALIVED)
@@ -12704,14 +12724,6 @@ void Unit::setDeathState(DeathState s)
     }
     else if (s == JUST_ALIVED)
         RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE); // clear skinnable for creature and player (at battleground)
-
-    if (oldDeathState != ALIVE && s == ALIVE)
-    {
-        // Reset display id on resurection - needed by corpse explosion to cleanup after display change
-        // TODO: fix this
-        if (!HasAuraType(SPELL_AURA_TRANSFORM))
-            SetDisplayId(GetNativeDisplayId());
-    }
 }
 
 /*########################################
@@ -14643,7 +14655,7 @@ void Unit::SendMovementFlagUpdate()
 {
     WorldPacket data;
     BuildHeartBeatMsg(&data);
-    SendMessageToSet(&data, true);
+    SendMessageToSet(&data, false);
 }
 
 bool Unit::IsSitState() const
@@ -16863,7 +16875,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
     bool success = false;
     uint32 spellClickEntry = GetVehicleKit() ? GetVehicleKit()->GetCreatureEntry() : GetEntry();
     SpellClickInfoMapBounds clickPair = sObjectMgr->GetSpellClickInfoMapBounds(spellClickEntry);
-    for (SpellClickInfoMap::const_iterator itr = clickPair.first; itr != clickPair.second; ++itr)
+    for (SpellClickInfoContainer::const_iterator itr = clickPair.first; itr != clickPair.second; ++itr)
     {
         if (itr->second.IsFitToRequirements(clicker, this))
         {
@@ -17052,9 +17064,7 @@ void Unit::_ExitVehicle(Position const* exitPosition)
     if (Player* player = ToPlayer())
         player->ResummonPetTemporaryUnSummonedIfAny();
 
-    WorldPacket data2;
-    BuildHeartBeatMsg(&data2);
-    SendMessageToSet(&data2, true);
+    SendMovementFlagUpdate();
 
     if (vehicle->GetBase()->HasUnitTypeMask(UNIT_MASK_MINION))
         if (((Minion*)vehicle->GetBase())->GetOwner() == this)

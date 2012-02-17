@@ -971,6 +971,8 @@ void World::LoadConfigSettings(bool reload)
     if (m_int_configs[CONFIG_QUEST_HIGH_LEVEL_HIDE_DIFF] > MAX_LEVEL)
         m_int_configs[CONFIG_QUEST_HIGH_LEVEL_HIDE_DIFF] = MAX_LEVEL;
     m_bool_configs[CONFIG_QUEST_IGNORE_RAID] = ConfigMgr::GetBoolDefault("Quests.IgnoreRaid", false);
+    m_bool_configs[CONFIG_QUEST_IGNORE_AUTO_ACCEPT] = ConfigMgr::GetBoolDefault("Quests.IgnoreAutoAccept", false);
+    m_bool_configs[CONFIG_QUEST_IGNORE_AUTO_COMPLETE] = ConfigMgr::GetBoolDefault("Quests.IgnoreAutoComplete", false);
 
     m_int_configs[CONFIG_RANDOM_BG_RESET_HOUR] = ConfigMgr::GetIntDefault("Battleground.Random.ResetHour", 6);
     if (m_int_configs[CONFIG_RANDOM_BG_RESET_HOUR] > 23)
@@ -1210,9 +1212,16 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_MINLEVEL]  = ConfigMgr::GetIntDefault("OutdoorPvP.Wintergrasp.Minlevel", 74);
     m_int_configs[CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_MAXPLAYERS]  = ConfigMgr::GetIntDefault("OutdoorPvP.Wintergrasp.MaxPlayers", 100);
 
+    //Rebirth-WoW
+    m_bool_configs[CONFIG_REBIRTH_WGSTATS_ENABLED]         = ConfigMgr::GetBoolDefault("Rebirth.WGStats.Enabled", false);
+    m_int_configs[CONFIG_REBIRTH_WGSTATS_DATA_ID] = ConfigMgr::GetIntDefault("Rebirth.WGStats.Data.Id", 1);
+    m_int_configs[CONFIG_REBIRTH_WGSTATS_UPDATE_INTERVAL] = ConfigMgr::GetIntDefault("Rebirth.WGStats.Update.Interval", 60);
+
 	
     sScriptMgr->OnConfigLoad(reload);
 }
+
+extern void LoadGameObjectModelList();
 
 /// Initialize the World
 void World::SetInitialWorldSettings()
@@ -1292,6 +1301,9 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading spell custom attributes...");
     sSpellMgr->LoadSpellCustomAttr();
 
+    sLog->outString("Loading GameObject models...");
+    LoadGameObjectModelList();
+    
     sLog->outString("Loading Script Names...");
     sObjectMgr->LoadScriptNames();
 

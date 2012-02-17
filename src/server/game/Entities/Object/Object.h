@@ -51,7 +51,7 @@ enum TypeMask
     TYPEMASK_OBJECT         = 0x0001,
     TYPEMASK_ITEM           = 0x0002,
     TYPEMASK_CONTAINER      = 0x0006,                       // TYPEMASK_ITEM | 0x0004
-    TYPEMASK_UNIT           = 0x0008,   //creature or player
+    TYPEMASK_UNIT           = 0x0008, // creature
     TYPEMASK_PLAYER         = 0x0010,
     TYPEMASK_GAMEOBJECT     = 0x0020,
     TYPEMASK_DYNAMICOBJECT  = 0x0040,
@@ -784,9 +784,9 @@ class WorldObject : public Object, public WorldLocation
 
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
         GameObject* FindNearestGameObject(uint32 entry, float range) const;
-		Player*     FindNearestPlayer(float range, bool alive = true);
-        std::list<Player*>  GetNearestPlayersList(float range, bool alive = true);
         void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
+        Player*     FindNearestPlayer(float range, bool alive = true);
+        std::list<Player*>  GetNearestPlayersList(float range, bool alive = true);
         void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
 
         void DestroyForNearbyPlayers();
