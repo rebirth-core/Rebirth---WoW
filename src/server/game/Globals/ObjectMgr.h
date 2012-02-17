@@ -835,14 +835,6 @@ class ObjectMgr
         QuestRelationBounds GetCreatureQuestInvolvedRelationBounds(uint32 creature_entry)
         {
             return _creatureQuestInvolvedRelations.equal_range(creature_entry);
-        QuestRelationBounds GetCreatureQuestRelationBounds(uint32 creature_entry)
-        {
-            return _creatureQuestRelations.equal_range(creature_entry);
-        }
-
-        QuestRelationBounds GetCreatureQuestInvolvedRelationBounds(uint32 creature_entry)
-        {
-            return _creatureQuestInvolvedRelations.equal_range(creature_entry);
         }
 
         void LoadGameObjectScripts();
