@@ -123,10 +123,13 @@ class MapManager
 
         void LoadTransports();
         void LoadTransportNPCs();
+
         //Load transport to instance
         Transport* LoadTransportInMap(Map* instance, uint32 goEntry, uint32 period);
-
         void UnLoadTransportFromMap(Transport* t);
+        void LoadTransportForPlayers(Player* player);
+        void UnLoadTransportForPlayers(Player* player);
+
         typedef std::set<Transport*> TransportSet;
         TransportSet m_Transports;
 
