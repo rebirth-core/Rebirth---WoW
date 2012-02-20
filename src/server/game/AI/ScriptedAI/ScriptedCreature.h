@@ -27,6 +27,7 @@
 #define CAST_PLR(a)     (dynamic_cast<Player*>(a))
 #define CAST_CRE(a)     (dynamic_cast<Creature*>(a))
 #define CAST_AI(a, b)   (dynamic_cast<a*>(b))
+#define MAX_AGGRO_PULSE_TIMER            5000
 
 class InstanceScript;
 
@@ -233,6 +234,12 @@ struct ScriptedAI : public CreatureAI
         return heroic25;
     }
 
+     void SetImmuneToPushPullEffects(bool set)
+     {
+         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, set);
+         me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, set);
+     }
+
     private:
         Difficulty _difficulty;
         uint32 _evadeCheckCooldown;
@@ -256,6 +263,7 @@ class BossAI : public ScriptedAI
         virtual ~BossAI() {}
 
         InstanceScript* const instance;
+		uint32 inFightAggroCheck_Timer;
         BossBoundaryMap const* GetBoundary() const { return _boundary; }
 
         void JustSummoned(Creature* summon);
@@ -279,6 +287,7 @@ class BossAI : public ScriptedAI
         void _EnterCombat();
         void _JustDied();
         void _JustReachedHome() { me->setActive(false); }
+		void _DoAggroPulse(const uint32 diff);
 
         bool CheckInRoom()
         {

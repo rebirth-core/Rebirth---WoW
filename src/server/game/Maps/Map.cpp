@@ -223,7 +223,6 @@ i_scriptLock(false)
 
     //lets initialize visibility distance for map
     Map::InitVisibilityDistance();
-
     sScriptMgr->OnCreateMap(this);
 }
 
@@ -2710,3 +2709,4 @@ void Map::UpdateIteratorBack(Player* player)
     if (m_mapRefIter == player->GetMapRef())
         m_mapRefIter = m_mapRefIter->nocheck_prev();
 }
+
