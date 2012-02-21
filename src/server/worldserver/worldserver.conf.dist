@@ -3194,7 +3194,7 @@ Rebirth.WGStats.Enabled = 1
 Rebirth.WGStats.Update.Interval = 60
 
 #
-#   Rebirth.WGStats.Update.Interval
+#   Rebirth.WGStats.Data.Id
 #      Hier wird die ID definiert, die der Datensatz in der Table bekommt
 #      Default (1)
 
@@ -3208,6 +3208,14 @@ Rebirth.WGStats.Data.Id = 1
 #                0 = Disable
 
 Rebirth.PvP.AntiFarm.Enabled = 1
+
+#
+#   Rebirth.Arena.Stats.Enabled
+#      Diese Option ist für das WoWArmory von RebirthWoW.
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.Arena.Stats.Enabled = 1
 
 #
 ###################################################################################################
