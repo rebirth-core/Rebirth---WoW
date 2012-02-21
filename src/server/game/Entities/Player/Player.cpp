@@ -18744,6 +18744,10 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt8(index++, IsInWorld() ? 1 : 0);
         // Index
         stmt->setUInt32(index++, GetGUIDLow());
+
+       //Rebirth WoWArmory
+       if(sWorld->getBoolConfig(CONFIG_REBIRTH_ARENA_STATS_ENABLED))
+          CharacterDatabase.PExecute("REPLACE INTO arena_team_stats (arenateamid, rating, games, wins, played, wins2, rank) SELECT arenateamid, rating, weekgames, weekwins, seasongames, seasonwins, rank FROM arena_team");
     }
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
