@@ -23,6 +23,14 @@
 #include "MapManager.h"
 #include "ruby_sanctum.h"
 
+/*
+TODO:
+- Look over how threat should be treaten (apparently there's a creature (entry 40151) that keeps 200 threat on both Halion's)
+- See if corporeality code can be improved
+- Script adds and surrounding trash
+*/
+
+
 enum Texts
 {
     SAY_INTRO                        = 0, // Meddlesome insects! You are too late. The Ruby Sanctum is lost!
@@ -177,7 +185,7 @@ enum OrbCarrierSeats
     SEAT_WEST             = 3,
 };
 
-Position const HalionSpawnPos = {3156.67f,  533.8108f, 72.98822f, 3.159046f};
+Position const HalionSpawnPos = {3156.67f, 533.8108f, 72.98822f, 3.159046f};
 
 struct CorporealityData
 {
@@ -216,6 +224,7 @@ class boss_halion : public CreatureScript
             {
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
                 instance->SetData(DATA_HALION_SHARED_HEALTH, me->GetMaxHealth());
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 _Reset();
             }
 
@@ -258,7 +267,6 @@ class boss_halion : public CreatureScript
 
             void JustReachedHome()
             {
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
                 instance->DoCastSpellOnPlayers(SPELL_LEAVE_TWILIGHT_REALM);
 
@@ -281,12 +289,12 @@ class boss_halion : public CreatureScript
                     events.SetPhase(PHASE_TWO);
                     events.DelayEvents(2600); // 2.5 sec + 0.1 sec lag
 
-                    Talk(SAY_PHASE_TWO);
-
+                    // Stop cast and stop attacking current target
                     me->CastStop();
-                    DoCast(me, SPELL_TWILIGHT_PHASING);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->AttackStop();
 
+                    Talk(SAY_PHASE_TWO);
+                    DoCast(me, SPELL_TWILIGHT_PHASING);
                     if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
                         controller->AI()->DoAction(ACTION_PHASE_TWO);
                 }
@@ -488,7 +496,7 @@ class boss_twilight_halion : public CreatureScript
                 {
                     halion->CastSpell(halion, corporealityReference[5].materialRealmSpell, false); // 50% corporeality
                     halion->RemoveAurasDueToSpell(SPELL_TWILIGHT_PHASING);
-                    halion->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    halion->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     halion->AI()->SetData(DATA_FIGHT_PHASE, PHASE_THREE);
                 }
 
@@ -604,14 +612,9 @@ class npc_halion_controller : public CreatureScript
                     case ACTION_PHASE_TWO:
                     {
                         _events.ScheduleEvent(EVENT_SHADOW_PULSARS_SHOOT, 10000); // Fix the timer
-
                         me->GetMap()->SummonCreature(NPC_TWILIGHT_HALION, HalionSpawnPos);
-
                         if (Creature* rotationFocus = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_ORB_ROTATION_FOCUS)))
                             rotationFocus->AI()->DoAction(ACTION_BEGIN_ROTATION);
-
-                        if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
-                            halion->CastSpell(halion->GetPositionX(), halion->GetPositionY(), halion->GetPositionZ(), SPELL_SUMMON_TWILIGHT_PORTAL, true);
                         break;
                     }
                     case ACTION_PHASE_THREE:
@@ -1536,6 +1539,34 @@ class spell_halion_enter_twilight_realm : public SpellScriptLoader
         }
 };
 
+class spell_halion_twilight_phasing : public SpellScriptLoader
+{
+    public:
+        spell_halion_twilight_phasing() : SpellScriptLoader("spell_halion_twilight_phasing") { }
+
+        class spell_halion_twilight_phasing_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_halion_twilight_phasing_SpellScript);
+
+            void Phase()
+            {
+                Unit* caster = GetCaster();
+                caster->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                caster->CastSpell(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), SPELL_SUMMON_TWILIGHT_PORTAL, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_halion_twilight_phasing_SpellScript::Phase);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_halion_twilight_phasing_SpellScript();
+        }
+};
+
 class TwilightCutterSelector
 {
     public:
@@ -1610,5 +1641,6 @@ void AddSC_boss_halion()
     new spell_halion_soul_consumption();
     new spell_halion_leave_twilight_realm();
     new spell_halion_enter_twilight_realm();
+    new spell_halion_twilight_phasing();
     new spell_halion_twilight_cutter();
 }
