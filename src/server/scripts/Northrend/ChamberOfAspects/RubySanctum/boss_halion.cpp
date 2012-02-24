@@ -1640,7 +1640,7 @@ public:
     bool OnGossipHello(Player* player, Creature* portal)
     {
         uint32 members = player->GetGroup()->GetMembersCount();
-        PLAYERS_IN_NORMAL_PHASE = members;
+        PLAYERS_IN_NORMAL_PHASE = members - PLAYERS_IN_TWILIGHT_PHASE;
 
         if (PLAYERS_IN_TWILIGHT_PHASE + 1 < members)
         {
