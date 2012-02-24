@@ -3312,4 +3312,13 @@ Rebirth.PvP.AntiFarm.Enabled = 1
 Rebirth.Arena.Stats.Enabled = 1
 
 #
+#   Rebirth.Ulduar.Beta.Enabled
+#      Über diese Option können die Ulduar Boss ab 
+#      der Vorkammer von Ulduar aktiviert werden.
+#                1 = Enable
+#      Default:  0 = Disable
+
+Rebirth.Ulduar.Beta.Enabled = 0
+
+#
 ###################################################################################################

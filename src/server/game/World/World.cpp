@@ -1230,6 +1230,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_REBIRTH_WGSTATS_UPDATE_INTERVAL] = ConfigMgr::GetIntDefault("Rebirth.WGStats.Update.Interval", 60);
     m_bool_configs[CONFIG_REBIRTH_PVP_ANTIFARM_ENABLED] = ConfigMgr::GetIntDefault("Rebirth.PvP.AntiFarm.Enabled", true);
     m_bool_configs[CONFIG_REBIRTH_ARENA_STATS_ENABLED] = ConfigMgr::GetIntDefault("Rebirth.Arena.Stats.Enabled", true);
+    m_bool_configs[CONFIG_REBIRTH_ULDUAR_BETA_ENABLED] = ConfigMgr::GetIntDefault("Rebirth.Ulduar.Beta.Enabled", false);
 	
     sScriptMgr->OnConfigLoad(reload);
 }
