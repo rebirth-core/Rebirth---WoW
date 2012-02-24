@@ -22,6 +22,7 @@
 #include "Vehicle.h"
 #include "MapManager.h"
 #include "ruby_sanctum.h"
+#include "Group.h"
 
 enum Texts
 {
@@ -218,6 +219,10 @@ enum TwilightPortals
     PORTAL_ENTER_TWILIGHT_REALM          = 123200,
     PORTAL_LEAVE_TWILIGHT_REALM          = 123201,
 };
+
+uint32 PLAYERS_IN_TWILIGHT_PHASE         = 0;
+uint32 PLAYERS_IN_NORMAL_PHASE           = 0;
+
 
 bool PHASE_THREE_PORTALS_SPAWNED,
      PHASE_THREE_ATTACK;
@@ -1632,8 +1637,17 @@ public:
 
     bool OnGossipHello(Player* player, Creature* portal)
     {
-        portal->CastSpell(player, SPELL_TWILIGHT_AURA, true);
-        portal->CastSpell(player, SPELL_TWILIGHT_PHASING, true);
+        uint32 members = player->GetGroup()->GetMembersCount();
+        PLAYERS_IN_NORMAL_PHASE = members;
+
+        if (PLAYERS_IN_TWILIGHT_PHASE + 1 < members)
+        {
+            portal->CastSpell(player, SPELL_TWILIGHT_AURA, true);
+            portal->CastSpell(player, SPELL_TWILIGHT_PHASING, true);
+            PLAYERS_IN_NORMAL_PHASE--;
+            PLAYERS_IN_TWILIGHT_PHASE++;
+        }
+
         return true;
     }
 
@@ -1646,7 +1660,13 @@ public:
 
     bool OnGossipHello(Player* player, Creature* portal)
     {
-        portal->CastSpell(player, SPELL_LEAVE_TWILIGHT_REALM, true);
+        uint32 members = player->GetGroup()->GetMembersCount();
+        if (PLAYERS_IN_NORMAL_PHASE + 1 < members)
+        {
+            portal->CastSpell(player, SPELL_LEAVE_TWILIGHT_REALM, true);
+            PLAYERS_IN_NORMAL_PHASE++;
+            PLAYERS_IN_TWILIGHT_PHASE--;
+        }
         return true;
     }
 
