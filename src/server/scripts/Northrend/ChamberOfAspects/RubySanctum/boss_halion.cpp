@@ -240,6 +240,8 @@ class boss_halion : public CreatureScript
             {
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
                 instance->SetData(DATA_HALION_SHARED_HEALTH, me->GetMaxHealth());
+                PLAYERS_IN_TWILIGHT_PHASE = 0;
+                PLAYERS_IN_NORMAL_PHASE = 0;
                 _Reset();
             }
 
