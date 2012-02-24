@@ -3288,11 +3288,28 @@ Rebirth.WGStats.Enabled = 1
 Rebirth.WGStats.Update.Interval = 60
 
 #
-#   Rebirth.WGStats.Update.Interval
+#   Rebirth.WGStats.Data.Id
 #      Hier wird die ID definiert, die der Datensatz in der Table bekommt
 #      Default (1)
 
 Rebirth.WGStats.Data.Id = 1
+
+#
+#   Rebirth.PvP.AntiFarm.Enabled
+#      Wenn aktiviert, erhalten Spieler für den Kill an anderen Spielern mit der selben IP Adresse keine Ehre.
+#      Davon ausgenommen sind Arenen und Battlegrounds
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.PvP.AntiFarm.Enabled = 1
+
+#
+#   Rebirth.Arena.Stats.Enabled
+#      Diese Option ist für das WoWArmory von RebirthWoW.
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.Arena.Stats.Enabled = 1
 
 #
 ###################################################################################################

@@ -20,10 +20,10 @@
 #include "OutdoorPvPWG.h"
 #include "Vehicle.h"
 
-#define GOSSIP_HELLO_DEMO1  "Build catapult."
-#define GOSSIP_HELLO_DEMO2  "Build demolisher."
-#define GOSSIP_HELLO_DEMO3  "Build siege engine."
-#define GOSSIP_HELLO_DEMO4  "I cannot build more!"
+#define GOSSIP_HELLO_DEMO1  "Katapult bauen."
+#define GOSSIP_HELLO_DEMO2  "Verwuester bauen."
+#define GOSSIP_HELLO_DEMO3  "Belagerungsmaschine bauen."
+#define GOSSIP_HELLO_DEMO4  "Ich kann nichts mehr bauen!"
 #define GOSSIP_HELLO_SPIRIT1  "Guide me to the Fortress Graveyard."
 #define GOSSIP_HELLO_SPIRIT2  "Guide me to the Sunken Ring Graveyard."
 #define GOSSIP_HELLO_SPIRIT3  "Guide me to the Broken Temple Graveyard."
@@ -51,7 +51,7 @@ bool OnGossipHello(Player* pPlayer, Creature* pCreature)
        {
            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_DEMO1, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF);
            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_DEMO2, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+1);
-           //pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_DEMO3, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+2);
+           pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_DEMO3, GOSSIP_SENDER_MAIN,   GOSSIP_ACTION_INFO_DEF+2);
        }
    }
    else

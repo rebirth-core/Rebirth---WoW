@@ -1657,7 +1657,6 @@ void OutdoorPvPWG::UpdateClock()
        sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_10);
 
     //Rebirth-WoW Custom Code by Enzeh
-    
     if (sWorld->getBoolConfig(CONFIG_REBIRTH_WGSTATS_ENABLED))
     {
        uint32 team = 0;
