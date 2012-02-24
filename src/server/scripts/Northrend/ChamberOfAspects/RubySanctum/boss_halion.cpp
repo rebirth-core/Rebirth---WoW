@@ -93,6 +93,7 @@ enum Spells
     // Misc
     SPELL_TWILIGHT_DIVISION             = 75063,    // Phase spell from phase 2 to phase 3
     SPELL_LEAVE_TWILIGHT_REALM          = 74812,
+    SPELL_TWILIGHT_AURA                 = 74807,
     SPELL_TWILIGHT_PHASING              = 74808,    // Phase spell from phase 1 to phase 2
     SPELL_SUMMON_TWILIGHT_PORTAL        = 74809,    // Summons go 202794
     SPELL_TWILIGHT_MENDING              = 75509,
@@ -203,9 +204,19 @@ CorporealityData const corporealityReference[MAX_CORPOREALITY_STATE] =
     {100, 74831, 74836},
 };
 
-const Position PortalLocation[1] =
+const Position PortalLocation[6] =
 {
-    {3156.35f, 518.738f, 72.9f, 0}
+    {3156.35f, 518.738f, 72.9f, 0},
+    {3156.35f, 518.738f, 72.9f, 0},   //Phase 3: Portal zum Verlassen des Zwielichtreichs. ToDo: Fix Coords
+    {3156.35f, 518.738f, 72.9f, 0},   //Phase 3: Portal zum Verlassen des Zwielichtreichs. ToDo: Fix Coords
+    {3156.35f, 518.738f, 72.9f, 0},   //Phase 3: Portal zum Betreten des Zwielichtreichs. ToDo: Fix Coords
+    {3156.35f, 518.738f, 72.9f, 0},   //Phase 3: Portal zum Betreten des Zwielichtreichs. ToDo: Fix Coords
+};
+
+enum TwilightPortals
+{
+    PORTAL_ENTER_TWILIGHT_REALM          = 123200,
+    PORTAL_LEAVE_TWILIGHT_REALM          = 123201,
 };
 
 class boss_halion : public CreatureScript
@@ -287,7 +298,7 @@ class boss_halion : public CreatureScript
                     events.DelayEvents(2600); // 2.5 sec + 0.1 sec lag
 
                     Talk(SAY_PHASE_TWO);
-                    Creature* portal = DoSummon(123200, PortalLocation[0], 30000, TEMPSUMMON_TIMED_DESPAWN);
+                    Creature* portal = DoSummon(PORTAL_ENTER_TWILIGHT_REALM, PortalLocation[0], 30000, TEMPSUMMON_TIMED_DESPAWN);
                     
                     me->CastStop();
                     DoCast(me, SPELL_TWILIGHT_PHASING);
@@ -477,6 +488,17 @@ class boss_twilight_halion : public CreatureScript
                     me->CastStop();
                     DoCast(me, SPELL_TWILIGHT_DIVISION);
                     Talk(SAY_PHASE_THREE);
+                    Creature* leaveOne = DoSummon(PORTAL_LEAVE_TWILIGHT_REALM, PortalLocation[1], 900000, TEMPSUMMON_TIMED_DESPAWN);
+                    DoCast(leaveOne, SPELL_TWILIGHT_AURA);
+                    DoCast(leaveOne, SPELL_TWILIGHT_PHASING);
+
+                    Creature* leaveTwo = DoSummon(PORTAL_LEAVE_TWILIGHT_REALM, PortalLocation[2], 900000, TEMPSUMMON_TIMED_DESPAWN);
+                    DoCast(leaveTwo, SPELL_TWILIGHT_AURA);
+                    DoCast(leaveTwo, SPELL_TWILIGHT_PHASING);
+
+                    Creature* joinOne = DoSummon(PORTAL_ENTER_TWILIGHT_REALM, PortalLocation[3], 900000, TEMPSUMMON_TIMED_DESPAWN);
+                    Creature* joinTwo = DoSummon(PORTAL_ENTER_TWILIGHT_REALM, PortalLocation[4], 900000, TEMPSUMMON_TIMED_DESPAWN);
+
                 }
 
                 if (events.GetPhaseMask() & PHASE_THREE_MASK)
@@ -1604,8 +1626,21 @@ public:
 
     bool OnGossipHello(Player* player, Creature* portal)
     {
-        portal->CastSpell(player, 74807, true);
-        portal->CastSpell(player, 74808, true);
+        portal->CastSpell(player, SPELL_TWILIGHT_AURA, true);
+        portal->CastSpell(player, SPELL_TWILIGHT_PHASING, true);
+        return true;
+    }
+
+};
+
+class npc_halion_leave_twilight_realm : public CreatureScript
+{
+public:
+    npc_halion_leave_twilight_realm() : CreatureScript("npc_halion_leave_twilight_realm") { }
+
+    bool OnGossipHello(Player* player, Creature* portal)
+    {
+        //ToDo: Script Portal
         return true;
     }
 
@@ -1632,4 +1667,5 @@ void AddSC_boss_halion()
     new spell_halion_enter_twilight_realm();
     new spell_halion_twilight_cutter();
     new npc_halion_enter_twilight_realm();
+    new npc_halion_leave_twilight_realm();
 }
