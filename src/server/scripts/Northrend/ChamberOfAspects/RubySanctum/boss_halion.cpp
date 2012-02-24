@@ -203,6 +203,11 @@ CorporealityData const corporealityReference[MAX_CORPOREALITY_STATE] =
     {100, 74831, 74836},
 };
 
+const Position PortalLocation[1] =
+{
+    {3156.35f, 518.738f, 72.9f, 0}
+};
+
 class boss_halion : public CreatureScript
 {
     public:
@@ -282,7 +287,8 @@ class boss_halion : public CreatureScript
                     events.DelayEvents(2600); // 2.5 sec + 0.1 sec lag
 
                     Talk(SAY_PHASE_TWO);
-
+                    Creature* portal = DoSummon(123200, PortalLocation[0], 30000, TEMPSUMMON_TIMED_DESPAWN);
+                    
                     me->CastStop();
                     DoCast(me, SPELL_TWILIGHT_PHASING);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -610,8 +616,8 @@ class npc_halion_controller : public CreatureScript
                         if (Creature* rotationFocus = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_ORB_ROTATION_FOCUS)))
                             rotationFocus->AI()->DoAction(ACTION_BEGIN_ROTATION);
 
-                        if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
-                            halion->CastSpell(halion->GetPositionX(), halion->GetPositionY(), halion->GetPositionZ(), SPELL_SUMMON_TWILIGHT_PORTAL, true);
+                        //if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
+                        //    halion->CastSpell(halion->GetPositionX(), halion->GetPositionY(), halion->GetPositionZ(), SPELL_SUMMON_TWILIGHT_PORTAL, true);
                         break;
                     }
                     case ACTION_PHASE_THREE:
@@ -1591,6 +1597,20 @@ class spell_halion_twilight_cutter : public SpellScriptLoader
         }
 };
 
+class npc_halion_enter_twilight_realm : public CreatureScript
+{
+public:
+    npc_halion_enter_twilight_realm() : CreatureScript("npc_halion_enter_twilight_realm") { }
+
+    bool OnGossipHello(Player* player, Creature* portal)
+    {
+        portal->CastSpell(player, 74807, true);
+        portal->CastSpell(player, 74808, true);
+        return true;
+    }
+
+};
+
 void AddSC_boss_halion()
 {
     new boss_halion();
@@ -1611,4 +1631,5 @@ void AddSC_boss_halion()
     new spell_halion_leave_twilight_realm();
     new spell_halion_enter_twilight_realm();
     new spell_halion_twilight_cutter();
+    new npc_halion_enter_twilight_realm();
 }
