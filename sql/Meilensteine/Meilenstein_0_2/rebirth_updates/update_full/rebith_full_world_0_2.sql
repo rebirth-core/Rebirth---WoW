@@ -1930,4 +1930,4 @@ VALUES
 (40423, 33470, 100, 1, 1, 1, 1);
 
 -- Fixe die Mechanice_imune_Mask der Bosse in Rubinsanktum
-UPDATE `creature_template` SET `mechanic_immune_mask`=617299839 WHERE `entry`IN 39747, 39751, 39746, 39863;
+UPDATE `creature_template` SET `mechanic_immune_mask`=617299839 WHERE `entry`IN (39747, 39751, 39746, 39863);
