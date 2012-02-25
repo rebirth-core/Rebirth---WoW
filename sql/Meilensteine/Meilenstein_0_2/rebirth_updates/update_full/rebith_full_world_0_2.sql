@@ -25,9 +25,9 @@ DELETE FROM `creature_model_info` WHERE `modelid`=28831;
 INSERT INTO `creature_model_info` (`modelid`, `bounding_radius`, `combat_reach`, `gender`, `modelid_other_gender`) VALUES
 (28831, 0.5, 7, 2, 0);
 DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` IN (33432,33651);
-INSERT INTO `npc_spellclick_spells` (`npc_entry`,`spell_id`,`quest_start`,`quest_start_active`,`quest_end`,`cast_flags`,`aura_required`,`aura_forbidden`,`user_type`) VALUES
-(33432,46598,0,0,0,1,0,0,0), -- Leviatan MKII - Ride Vehicle Hardcoded
-(33651,46598,0,0,0,1,0,0,0); -- VX 001 - Ride Vehicle Hardcoded
+INSERT INTO `npc_spellclick_spells` (`npc_entry`,`spell_id`,`cast_flags`) VALUES
+(33432,46598,1), -- Leviatan MKII - Ride Vehicle Hardcoded
+(33651,46598,1); -- VX 001 - Ride Vehicle Hardcoded
 
 -- VX-001
 UPDATE `creature_template` SET `mechanic_immune_mask` = 650854235, `flags_extra` = 1, `vehicleid` = 371, `ScriptName` = 'boss_vx_001' WHERE `entry` = 33651;
@@ -123,8 +123,10 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `comm
 
 -- Charge Orb
 DELETE FROM conditions WHERE SourceEntry = 62016;
-INSERT INTO `conditions` VALUES
-('13','0','62016','0','18','1','33378','0','0','',NULL);
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) 
+VALUES 
+(13, 0, 62016, 0, 0, 18, 1, 33378, 0, 0, 0, 0, '', NULL);
+
 UPDATE `creature_template` SET `unit_flags` = 33685508 WHERE `entry` = 33378;
 
 -- Gate
@@ -1844,3 +1846,88 @@ VALUES
 ( 34274, 33401, 0.1, 64, 0, 1, 1 ), -- Frigid Mail Gloves, item level: 132, quality: POOR//GREY, mode: Unknown 64
 ( 34274, 36610, 0.1, 64, 0, 1, 1 ) -- Plagued Pike, item level: 174, quality: UNCOMMON//GREEN, mode: Unknown 64
 ;
+DELETE FROM creature_template WHERE entry IN (123200, 123201);
+INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction_A`, `faction_H`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `mindmg`, `maxdmg`, `dmgschool`, `attackpower`, `dmg_multiplier`, `baseattacktime`, `rangeattacktime`, `unit_class`, `unit_flags`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `minrangedmg`, `maxrangedmg`, `rangedattackpower`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `resistance1`, `resistance2`, `resistance3`, `resistance4`, `resistance5`, `resistance6`, `spell1`, `spell2`, `spell3`, `spell4`, `spell5`, `spell6`, `spell7`, `spell8`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `Health_mod`, `Mana_mod`, `Armor_mod`, `RacialLeader`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `movementId`, `RegenHealth`, `equipment_id`, `mechanic_immune_mask`, `flags_extra`, `ScriptName`, `WDBVerified`) 
+VALUES 
+(123200, 0, 0, 0, 0, 0, 29074, 0, 0, 0, 'Twilight Portal', NULL, 'Interact', 0, 81, 81, 0, 35, 35, 1, 1, 1.14286, 2, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 10, 1049608, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 'npc_halion_enter_twilight_realm', 1),
+(123201, 0, 0, 0, 0, 0, 29074, 0, 0, 0, 'Twilight Portal', NULL, 'Interact', 0, 81, 81, 0, 35, 35, 1, 1, 1.14286, 2, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 10, 1049608, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 'npc_halion_leave_twilight_realm', 1);
+UPDATE `creature_model_info` SET `combat_reach`='10.4' WHERE `modelid`='31952';
+UPDATE creature_template SET unit_flags = 0 WHERE entry IN (32874,32872,32873);REPLACE INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction_A`, `faction_H`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `mindmg`, `maxdmg`, `dmgschool`, `attackpower`, `dmg_multiplier`, `baseattacktime`, `rangeattacktime`, `unit_class`, `unit_flags`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `minrangedmg`, `maxrangedmg`, `rangedattackpower`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `resistance1`, `resistance2`, `resistance3`, `resistance4`, `resistance5`, `resistance6`, `spell1`, `spell2`, `spell3`, `spell4`, `spell5`, `spell6`, `spell7`, `spell8`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `Health_mod`, `Mana_mod`, `Armor_mod`, `RacialLeader`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `movementId`, `RegenHealth`, `equipment_id`, `mechanic_immune_mask`, `flags_extra`, `ScriptName`, `WDBVerified`)
+ VALUES
+(40423, 40424, 0, 0, 0, 0, 27226, 0, 0, 0, 'Charscale Commander', '', '', 0, 82, 82, 2, 103, 103, 0, 1.6, 1.42857, 1, 1, 550, 750, 0, 642, 10, 2000, 0, 1, 32832, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'SmartAI', 0, 3, 80, 1, 1, 0, 0, 0, 0, 0, 0, 0, 150, 1, 2472, 0, 0, '', 12340),
+(40421, 40422, 0, 0, 0, 0, 12891, 0, 0, 0, 'Charscale Elite', '', '', 0, 82, 82, 2, 103, 103, 0, 1.6, 1.42857, 1, 1, 529, 729, 0, 642, 10, 1250, 0, 1, 32832, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'SmartAI', 0, 3, 80, 1, 1, 0, 0, 0, 0, 0, 0, 0, 150, 1, 2471, 0, 0, '', 12340),
+(40419, 40420, 0, 0, 0, 0, 14308, 0, 0, 0, 'Charscale Assaulter', '', '', 0, 82, 82, 2, 103, 103, 0, 1.6, 1.42857, 1, 1, 600, 800, 0, 642, 10, 2000, 0, 1, 32832, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'SmartAI', 0, 3, 50, 1, 1, 0, 0, 0, 0, 0, 0, 0, 150, 1, 2470, 0, 0, '', 12340),
+(40417, 40418, 0, 0, 0, 0, 27227, 0, 0, 0, 'Charscale Invoker', '', '', 0, 82, 82, 2, 103, 103, 0, 1.6, 1.42857, 1, 1, 500, 700, 0, 642, 10, 2000, 0, 8, 32832, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'SmartAI', 0, 3, 50, 12, 1, 0, 0, 0, 0, 0, 0, 0, 150, 1, 2469, 0, 0, '', 12340);
+INSERT INTO `disables` (`sourceType`, `entry`, `flags`) 
+VALUES 
+('0', '62016', '2');
+
+UPDATE `creature_template` SET `AIName`='SmartAI', `ScriptName`='' WHERE `entry` IN (40419, 40421, 40417, 40423);
+
+DELETE FROM smart_scripts WHERE entryorguid IN (40419, 40421, 40417, 40423);
+INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) 
+VALUES 
+(40417, 0, 0, 0, 0, 0, 100, 0, 15000, 30000, 30000, 30000, 11, 75413, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 'Rubinsanktum - Flammenwelle - Herbeirufer der Schmorschuppen'),
+(40417, 0, 1, 0, 0, 0, 100, 0, 4000, 10000, 10000, 10000, 11, 75412, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 'Rubinsanktum - Versengen - Herbeirufer der Schmorschuppen'),
+(40417, 0, 2, 0, 0, 0, 100, 0, 45000, 45000, 45000, 45000, 11, 75416, 16, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Rubinsanktum - Zusammenruf - Herbeirufer der Schmorschuppen'),
+(40419, 0, 1, 0, 0, 0, 100, 0, 15000, 15000, 15000, 15000, 11, 15284, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 'Rubinsanktum - Spalten - Angreifer der Schmorschuppen'),
+(40419, 0, 0, 0, 0, 0, 100, 0, 21000, 21000, 21000, 21000, 11, 75417, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 'Rubinsanktum - Schockwelle - Angreifer der Schmorschuppen'),
+(40419, 0, 2, 0, 0, 0, 100, 0, 60000, 60000, 60000, 60000, 11, 75416, 16, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Rubinsanktum - Zusammenruf - Angreifer der Schmorschuppen'),
+(40421, 0, 0, 0, 0, 0, 100, 0, 10000, 10000, 10000, 10000, 11, 15621, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 'Rubinsanktum - Schädelkracher - Elite der Schmorschuppen'),
+(40423, 0, 0, 0, 0, 0, 100, 0, 22000, 22000, 22000, 22000, 11, 75414, 16, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Rubinsanktum - Sammelruf - Kommandant der Schmorschuppen'),
+(40423, 0, 1, 0, 0, 0, 100, 0, 15000, 15000, 15000, 15000, 11, 13737, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 'Rubinsanktum - Tödlicher Stoß - Kommandant der Schmorschuppen');
+
+-- Ulduar Thorim Kiste
+UPDATE `gameobject_template` SET `flags`=0 WHERE `entry`=194312 LIMIT 1;
+
+-- Rubinsanktum Trash Loot
+INSERT INTO `creature_loot_template` 
+(`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`) 
+VALUES 
+(40423, 1, 100, 1, 0, -40423, 2),
+(40421, 1, 100, 1, 0, -40421, 2),
+(40419, 1, 100, 1, 0, -40419, 2),
+(40417, 1, 100, 1, 0, -40417, 2);
+
+UPDATE `creature_template` SET `lootid`=40419 WHERE `entry`=40419 LIMIT 1;
+INSERT INTO `reference_loot_template`
+ (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`) 
+VALUES 
+(40419, 43852, 100, 1, 1, 1, 1),
+(40419, 33454, 100, 1, 1, 1, 1),
+(40419, 33445, 100, 1, 1, 1, 1),
+(40419, 33448, 100, 1, 1, 1, 1),
+(40419, 33470, 100, 1, 1, 1, 1);
+
+UPDATE `creature_template` SET `lootid`=40421 WHERE `entry`=40421 LIMIT 1;
+INSERT INTO `reference_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`) 
+VALUES 
+(40421, 33470, 100, 1, 1, 1, 1),
+(40421, 43852, 100, 1, 1, 1, 1),
+(40421, 33454, 100, 1, 1, 1, 1),
+(40421, 36389, 100, 1, 1, 1, 1),
+(40421, 33445, 100, 1, 1, 1, 1),
+(40421, 36472, 100, 1, 1, 1, 1),
+(40421, 33379, 100, 1, 1, 1, 1);
+
+UPDATE `creature_template` SET `lootid`=40417 WHERE `entry`=40417 LIMIT 1;
+INSERT INTO `reference_loot_template` 
+(`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`) 
+VALUES 
+(40417, 43852, 100, 1, 1, 1, 1),
+(40417, 33454, 100, 1, 1, 1, 1),
+(40417, 33445, 100, 1, 1, 1, 1),
+(40417, 33368, 100, 1, 1, 1, 1),
+(40417, 33470, 100, 1, 1, 1, 1);
+
+UPDATE `creature_template` SET `lootid`=40423 WHERE `entry`=40423 LIMIT 1;
+INSERT INTO `reference_loot_template` 
+(`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`) 
+VALUES 
+(40423, 43852, 100, 1, 1, 1, 1),
+(40423, 33454, 100, 1, 1, 1, 1),
+(40423, 33445, 100, 1, 1, 1, 1),
+(40423, 33470, 100, 1, 1, 1, 1);
+
+-- Fixe die Mechanice_imune_Mask der Bosse in Rubinsanktum
+UPDATE `creature_template` SET `mechanic_immune_mask`=617299839 WHERE `entry`IN 39747, 39751, 39746, 39863;
