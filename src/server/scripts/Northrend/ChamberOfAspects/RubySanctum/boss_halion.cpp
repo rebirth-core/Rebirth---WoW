@@ -273,8 +273,10 @@ class boss_halion : public CreatureScript
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
                     controller->AI()->DoAction(ACTION_CLEANUP);
 
-                if (Creature* halion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION)))
-                    halion->DespawnOrUnsummon();
+                if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION)))
+                    twilightHalion->DespawnOrUnsummon();
+
+                _JustReachedHome();
             }
 
             Position const* GetMeteorStrikePosition() const { return &_meteorStrikePos; }
@@ -655,12 +657,12 @@ class npc_halion_controller : public CreatureScript
                             DoCast(me, SPELL_COSMETIC_FIRE_PILLAR, true);
                             break;
                         case EVENT_INTRO_PROGRESS_1:
-                            for (uint8 i = DATA_BURNING_TREE_3; i < DATA_BURNING_TREE_4; ++i)
+                            for (uint8 i = DATA_BURNING_TREE_3; i <= DATA_BURNING_TREE_4; ++i)
                                 if (GameObject* tree = ObjectAccessor::GetGameObject(*me, _instance->GetData64(i)))
                                     _instance->HandleGameObject(_instance->GetData64(i), true, tree);
                             break;
                         case EVENT_INTRO_PROGRESS_2:
-                            for (uint8 i = DATA_BURNING_TREE_1; i < DATA_BURNING_TREE_2; ++i)
+                            for (uint8 i = DATA_BURNING_TREE_1; i <= DATA_BURNING_TREE_2; ++i)
                                 if (GameObject* tree = ObjectAccessor::GetGameObject(*me, _instance->GetData64(i)))
                                     _instance->HandleGameObject(_instance->GetData64(i), true, tree);
                             break;
@@ -680,7 +682,6 @@ class npc_halion_controller : public CreatureScript
                             _events.ScheduleEvent(EVENT_SHADOW_PULSARS_SHOOT, 29000);   // 9 sec channel duration, every 20th second
                             break;
                         }
-                        // TODO: Look closer at this
                         case EVENT_CHECK_CORPOREALITY:
                         {
                             bool canUpdate = false;
