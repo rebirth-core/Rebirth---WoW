@@ -985,22 +985,19 @@ class npc_combustion_consumption : public CreatureScript
                     case NPC_COMBUSTION:
                         _explosionSpell = SPELL_FIERY_COMBUSTION_EXPLOSION;
                         _damageSpell = SPELL_COMBUSTION_DAMAGE_AURA;
-                        if (IsHeroic())
-                            me->SetPhaseMask(0x20 | 0x01, true);
-                        else
-                            me->SetPhaseMask(0x20, true);
                         break;
                     case NPC_CONSUMPTION:
                         _explosionSpell = SPELL_SOUL_CONSUMPTION_EXPLOSION;
                         _damageSpell = SPELL_CONSUMPTION_DAMAGE_AURA;
-                        if (IsHeroic())
-                            me->SetPhaseMask(me->GetPhaseMask() | 0x20, true);
+                        me->SetPhaseMask(0x20, true);
                         break;
                     default: // Should never happen
                         _explosionSpell = 0;
                         _damageSpell = 0;
                         break;
                 }
+                if (IsHeroic())
+                    me->SetPhaseMask(0x01 | 0x20, true);
             }
 
             void IsSummonedBy(Unit* summoner)
