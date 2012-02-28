@@ -23935,11 +23935,11 @@ void Player::CompletedAchievement(AchievementEntry const* entry)
     GetAchievementMgr().CompletedAchievement(entry);
 }
 
- bool Player::HasAchieved(uint32 entry)
+ uint32 Player::HasAchieved(uint32 entry)
  {
      if(AchievementEntry const *achievement = sAchievementStore.LookupEntry(entry))
-         return GetAchievementMgr().HasAchieved(achievement);
-     return false;
+         return GetAchievementMgr().HasAchieved(entry);
+     return 0;
  }
 
 void Player::LearnTalent(uint32 talentId, uint32 talentRank)
