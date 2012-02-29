@@ -410,7 +410,10 @@ void Vehicle::RemovePassenger(Unit* unit)
     unit->ClearUnitState(UNIT_STATE_ONVEHICLE);
 
     if (_me->GetTypeId() == TYPEID_UNIT && unit->GetTypeId() == TYPEID_PLAYER && seat->first == 0 && seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL)
+    {
         _me->RemoveCharmedBy(unit);
+        unit->ToPlayer()->SetMover(unit->ToPlayer());
+    }
 
     if (_me->IsInWorld())
     {
