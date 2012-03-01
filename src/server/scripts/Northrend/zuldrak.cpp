@@ -92,7 +92,7 @@ public:
                     if (Creature* pRageclaw = Unit::GetCreature(*me, RageclawGUID))
                     {
                         UnlockRageclaw(pCaster);
-                        pCaster->ToPlayer()->KilledMonster(pRageclaw->GetCreatureInfo(), RageclawGUID);
+                        pCaster->ToPlayer()->KilledMonster(pRageclaw->GetCreatureTemplate(), RageclawGUID);
                         me->DisappearAndDie();
                     }
                     else
@@ -156,7 +156,7 @@ public:
 
                 me->RemoveAurasDueToSpell(SPELL_KNEEL);
 
-                me->setFaction(me->GetCreatureInfo()->faction_H);
+                me->setFaction(me->GetCreatureTemplate()->faction_H);
 
                 DoCast(me, SPELL_UNSHACKLED, true);
                 me->MonsterSay(SAY_RAGECLAW, LANG_UNIVERSAL, 0);
@@ -586,7 +586,7 @@ public:
     {
         npc_orinoko_tuskbreakerAI(Creature* creature) : ScriptedAI(creature)
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
             me->SetReactState(REACT_PASSIVE);
         }
 
@@ -622,7 +622,7 @@ public:
             if (uiType != POINT_MOTION_TYPE)
                 return;
 
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
             me->SetReactState(REACT_AGGRESSIVE);
             me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
             uiBattleShoutTimer  = 7000;
@@ -734,7 +734,7 @@ public:
 
         void Reset()
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
             me->SetReactState(REACT_PASSIVE);
             uiChargeTimer = 15000;
             uiUppercutTimer = 12000;
@@ -747,7 +747,7 @@ public:
             {
                 case 6:
                     me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                     me->SetReactState(REACT_AGGRESSIVE);
                     break;
             }
@@ -914,7 +914,7 @@ public:
     {
         npc_stinkbeardAI(Creature* creature) : npc_escortAI(creature)
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
             me->SetReactState(REACT_PASSIVE);
             Start(true, true, 0, NULL);
             SetDespawnAtEnd(false);
@@ -940,7 +940,7 @@ public:
             switch (uiI)
             {
                 case 7:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                     me->SetReactState(REACT_AGGRESSIVE);
                     me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
                     break;
@@ -1328,7 +1328,7 @@ public:
                             break;
                         case 2:
                             // walk forward
-                            me->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                            me->SetWalk(true);
                             me->GetMotionMaster()->MovePoint(0, me->GetPositionX() + (cos(m_heading) * 10), me->GetPositionY() + (sin(m_heading) * 10), me->GetPositionZ());
                             m_uiTimer = 5000;
                             m_uiPhase = 3;

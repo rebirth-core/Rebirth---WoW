@@ -234,53 +234,53 @@ public:
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
-        npc_arthasAI* pAI = CAST_AI(npc_arthas::npc_arthasAI, creature->AI());
+        npc_arthasAI* ai = CAST_AI(npc_arthas::npc_arthasAI, creature->AI());
 
-        if (!pAI)
+        if (!ai)
             return false;
 
         switch (action)
         {
             case GOSSIP_ACTION_INFO_DEF:
-                pAI->Start(true, true, player->GetGUID(), 0, false, false);
-                pAI->SetDespawnAtEnd(false);
-                pAI->bStepping = false;
-                pAI->uiStep = 1;
+                ai->Start(true, true, player->GetGUID(), 0, false, false);
+                ai->SetDespawnAtEnd(false);
+                ai->bStepping = false;
+                ai->uiStep = 1;
                 break;
             case GOSSIP_ACTION_INFO_DEF+1:
-                pAI->bStepping = true;
-                pAI->uiStep = 24;
+                ai->bStepping = true;
+                ai->uiStep = 24;
                 break;
             case GOSSIP_ACTION_INFO_DEF+2:
-                pAI->SetHoldState(false);
-                pAI->bStepping = false;
-                pAI->uiStep = 61;
+                ai->SetHoldState(false);
+                ai->bStepping = false;
+                ai->uiStep = 61;
                 break;
             case GOSSIP_ACTION_INFO_DEF+3:
-                pAI->SetHoldState(false);
+                ai->SetHoldState(false);
                 break;
             case GOSSIP_ACTION_INFO_DEF+4:
-                pAI->bStepping = true;
-                pAI->uiStep = 84;
+                ai->bStepping = true;
+                ai->uiStep = 84;
                 break;
             case GOSSIP_ACTION_INFO_DEF+5:
-                pAI->bStepping = true;
-                pAI->uiStep = 85;
+                ai->bStepping = true;
+                ai->uiStep = 85;
                 break;
         }
         player->CLOSE_GOSSIP_MENU();
-        pAI->SetDespawnAtFar(true);
+        ai->SetDespawnAtFar(true);
         creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         return true;
     }
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        npc_arthasAI* pAI = CAST_AI(npc_arthas::npc_arthasAI, creature->AI());
+        npc_arthasAI* ai = CAST_AI(npc_arthas::npc_arthasAI, creature->AI());
 
-        if (pAI && pAI->bStepping == false)
+        if (ai && ai->bStepping == false)
         {
-            switch (pAI->uiGossipStep)
+            switch (ai->uiGossipStep)
             {
                 case 0: //This one is a workaround since the very beggining of the script is wrong.
                 {
@@ -414,7 +414,7 @@ public:
                 if (Creature* temp = me->SummonCreature((uint32)RiftAndSpawnsLocations[i][0], RiftAndSpawnsLocations[timeRiftID][1], RiftAndSpawnsLocations[timeRiftID][2], RiftAndSpawnsLocations[timeRiftID][3], RiftAndSpawnsLocations[timeRiftID][4], TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 900000))
                 {
                     guidVector[i-timeRiftID-1] = temp->GetGUID();
-                    temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
+                    temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
                     temp->SetReactState(REACT_PASSIVE);
                     temp->GetMotionMaster()->MovePoint(0, RiftAndSpawnsLocations[i][1], RiftAndSpawnsLocations[i][2], RiftAndSpawnsLocations[i][3]);
                     if ((uint32)RiftAndSpawnsLocations[i][0] == NPC_EPOCH)
@@ -591,11 +591,11 @@ public:
                         }
                         //After waypoint 0
                         case 1:
-                            me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                            me->SetWalk(false);
                             if (Unit* pUther = me->SummonCreature(NPC_UTHER, 1794.357f, 1272.183f, 140.558f, 1.37f, TEMPSUMMON_DEAD_DESPAWN, 180000))
                             {
                                 uiUtherGUID = pUther->GetGUID();
-                                pUther->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                                pUther->SetWalk(false);
                                 pUther->GetMotionMaster()->MovePoint(0, 1897.018f, 1287.487f, 143.481f);
                                 pUther->SetTarget(me->GetGUID());
                                 me->SetTarget(uiUtherGUID);
@@ -680,7 +680,7 @@ public:
                         case 17:
                             if (Creature* pUther = Unit::GetCreature(*me, uiUtherGUID))
                             {
-                                pUther->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                                pUther->SetWalk(true);
                                 pUther->GetMotionMaster()->MovePoint(0, 1794.357f, 1272.183f, 140.558f);
                             }
                             JumpToNextStep(1000);
@@ -689,7 +689,7 @@ public:
                             if (Creature* pJaina = Unit::GetCreature(*me, uiJainaGUID))
                             {
                                 me->SetTarget(uiJainaGUID);
-                                pJaina->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                                pJaina->SetWalk(true);
                                 pJaina->GetMotionMaster()->MovePoint(0, 1794.357f, 1272.183f, 140.558f);
                             }
                             JumpToNextStep(1000);
@@ -755,7 +755,7 @@ public:
                             if (Creature* pCityman = Unit::GetCreature(*me, uiCitymenGUID[0]))
                             {
                                 pCityman->SetTarget(me->GetGUID());
-                                pCityman->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                                pCityman->SetWalk(true);
                                 pCityman->GetMotionMaster()->MovePoint(0, 2088.625f, 1279.191f, 140.743f);
                             }
                             JumpToNextStep(2000);
@@ -929,7 +929,7 @@ public:
                                 if (Unit* pBoss = me->SummonCreature(uiBossID, 2232.19f, 1331.933f, 126.662f, 3.15f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 900000))
                                 {
                                     uiBossGUID = pBoss->GetGUID();
-                                    pBoss->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+                                    pBoss->SetWalk(true);
                                     pBoss->GetMotionMaster()->MovePoint(0, 2194.110f, 1332.00f, 130.00f);
                                 }
                             }
@@ -1003,7 +1003,7 @@ public:
                             {
                                 pDisguised2->UpdateEntry(NPC_INFINITE_HUNTER, 0);
                                 //Make them unattackable
-                                pDisguised2->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
+                                pDisguised2->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
                                 pDisguised2->SetReactState(REACT_PASSIVE);
                             }
                             JumpToNextStep(2000);
@@ -1013,7 +1013,7 @@ public:
                             {
                                 pDisguised1->UpdateEntry(NPC_INFINITE_AGENT, 0);
                                 //Make them unattackable
-                                pDisguised1->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
+                                pDisguised1->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
                                 pDisguised1->SetReactState(REACT_PASSIVE);
                             }
                             JumpToNextStep(2000);
@@ -1023,7 +1023,7 @@ public:
                             {
                                 pDisguised0->UpdateEntry(NPC_INFINITE_ADVERSARY, 0);
                                 //Make them unattackable
-                                pDisguised0->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
+                                pDisguised0->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
                                 pDisguised0->SetReactState(REACT_PASSIVE);
                             }
                             JumpToNextStep(2000);
@@ -1037,7 +1037,7 @@ public:
                             for (uint32 i = 0; i< ENCOUNTER_DRACONIAN_NUMBER; ++i)
                                 if (Creature* temp = Unit::GetCreature(*me, uiInfiniteDraconianGUID[i]))
                                 {
-                                    temp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
+                                    temp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
                                     temp->SetReactState(REACT_AGGRESSIVE);
                                 }
                             JumpToNextStep(5000);
@@ -1095,7 +1095,7 @@ public:
                                     if (Creature* pEpoch = Unit::GetCreature(*me, uiEpochGUID))
                                     {
                                         //Make Epoch attackable
-                                        pEpoch->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
+                                        pEpoch->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
                                         pEpoch->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                                         pEpoch->SetReactState(REACT_AGGRESSIVE);
                                     }
@@ -1150,7 +1150,7 @@ public:
                         case 87:
                             if (Creature* pMalganis = Unit::GetCreature(*me, uiMalganisGUID))
                             {
-                                pMalganis->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_UNK_6 | UNIT_FLAG_PASSIVE | UNIT_FLAG_UNK_15);
+                                pMalganis->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_UNK_6 | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_UNK_15);
                                 pMalganis->SetReactState(REACT_AGGRESSIVE);
                             }
                             JumpToNextStep(1000);

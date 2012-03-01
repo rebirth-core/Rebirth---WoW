@@ -179,7 +179,7 @@ class npc_flash_freeze : public CreatureScript
             npc_flash_freezeAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
-                me->SetDisplayId(me->GetCreatureInfo()->Modelid2);
+                me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
             }
 
@@ -246,7 +246,7 @@ class npc_ice_block : public CreatureScript
             npc_ice_blockAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
-                me->SetDisplayId(me->GetCreatureInfo()->Modelid2);
+                me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
                 targetGUID = 0;
             }
@@ -370,7 +370,7 @@ class boss_hodir : public CreatureScript
                     me->StopMoving();
                     me->GetMotionMaster()->Clear();
                     me->GetMotionMaster()->MoveIdle();
-                    me->SetControlled(true, UNIT_STAT_STUNNED);
+                    me->SetControlled(true, UNIT_STATE_STUNNED);
                     me->CombatStop(true);
 
                     me->setFaction(35);
@@ -387,7 +387,7 @@ class boss_hodir : public CreatureScript
 
                 events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 while (uint32 eventId = events.ExecuteEvent())
@@ -512,7 +512,7 @@ class npc_icicle : public CreatureScript
         {
             npc_icicleAI(Creature* creature) : ScriptedAI(creature)
             {
-                me->SetDisplayId(me->GetCreatureInfo()->Modelid1);
+                me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_PASSIVE);
             }
@@ -560,7 +560,7 @@ class npc_snowpacked_icicle : public CreatureScript
         {
             npc_snowpacked_icicleAI(Creature* creature) : ScriptedAI(creature)
             {
-                me->SetDisplayId(me->GetCreatureInfo()->Modelid2);
+                me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
                 me->SetReactState(REACT_PASSIVE);
             }
@@ -612,12 +612,12 @@ class npc_hodir_priest : public CreatureScript
 
             void UpdateAI(uint32 const diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
                     return;
 
                 events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 if (HealthBelowPct(30))
@@ -688,12 +688,12 @@ class npc_hodir_shaman : public CreatureScript
 
             void UpdateAI(uint32 const diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
                     return;
 
                 events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 while (uint32 eventId = events.ExecuteEvent())
@@ -750,12 +750,12 @@ class npc_hodir_druid : public CreatureScript
 
             void UpdateAI(uint32 const diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
                     return;
 
                 events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 while (uint32 eventId = events.ExecuteEvent())
@@ -825,12 +825,12 @@ class npc_hodir_mage : public CreatureScript
 
             void UpdateAI(uint32 const diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
                     return;
 
                 events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STAT_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 while (uint32 eventId = events.ExecuteEvent())
@@ -881,7 +881,7 @@ class npc_toasty_fire : public CreatureScript
         {
             npc_toasty_fireAI(Creature* creature) : ScriptedAI(creature)
             {
-                me->SetDisplayId(me->GetCreatureInfo()->Modelid2);
+                me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
             }
 
             void Reset()

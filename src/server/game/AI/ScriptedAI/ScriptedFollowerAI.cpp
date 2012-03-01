@@ -38,8 +38,8 @@ void FollowerAI::AttackStart(Unit* who)
         me->SetInCombatWith(who);
         who->SetInCombatWith(me);
 
-        if (me->HasUnitState(UNIT_STAT_FOLLOW))
-            me->ClearUnitState(UNIT_STAT_FOLLOW);
+        if (me->HasUnitState(UNIT_STATE_FOLLOW))
+            me->ClearUnitState(UNIT_STATE_FOLLOW);
 
         if (IsCombatMovementAllowed())
             me->GetMotionMaster()->MoveChase(who);
@@ -55,7 +55,7 @@ bool FollowerAI::AssistPlayerInCombat(Unit* who)
         return false;
 
     //experimental (unknown) flag not present
-    if (!(me->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_AID_PLAYERS))
+    if (!(me->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_AID_PLAYERS))
         return false;
 
     //not a player
@@ -88,7 +88,7 @@ bool FollowerAI::AssistPlayerInCombat(Unit* who)
 
 void FollowerAI::MoveInLineOfSight(Unit* who)
 {
-    if (!me->HasUnitState(UNIT_STAT_STUNNED) && who->isTargetableForAttack() && who->isInAccessiblePlaceFor(me))
+    if (!me->HasUnitState(UNIT_STATE_STUNNED) && who->isTargetableForAttack() && who->isInAccessiblePlaceFor(me))
     {
         if (HasFollowState(STATE_FOLLOW_INPROGRESS) && AssistPlayerInCombat(who))
             return;
@@ -150,8 +150,8 @@ void FollowerAI::JustRespawned()
     if (!IsCombatMovementAllowed())
         SetCombatMovement(true);
 
-    if (me->getFaction() != me->GetCreatureInfo()->faction_A)
-        me->setFaction(me->GetCreatureInfo()->faction_A);
+    if (me->getFaction() != me->GetCreatureTemplate()->faction_A)
+        me->setFaction(me->GetCreatureTemplate()->faction_A);
 
     Reset();
 }
@@ -340,9 +340,9 @@ Player* FollowerAI::GetLeaderForFollower()
 
 void FollowerAI::SetFollowComplete(bool bWithEndEvent)
 {
-    if (me->HasUnitState(UNIT_STAT_FOLLOW))
+    if (me->HasUnitState(UNIT_STATE_FOLLOW))
     {
-        me->ClearUnitState(UNIT_STAT_FOLLOW);
+        me->ClearUnitState(UNIT_STATE_FOLLOW);
 
         me->StopMoving();
         me->GetMotionMaster()->Clear();
@@ -369,9 +369,9 @@ void FollowerAI::SetFollowPaused(bool paused)
     {
         AddFollowState(STATE_FOLLOW_PAUSED);
 
-        if (me->HasUnitState(UNIT_STAT_FOLLOW))
+        if (me->HasUnitState(UNIT_STATE_FOLLOW))
         {
-            me->ClearUnitState(UNIT_STAT_FOLLOW);
+            me->ClearUnitState(UNIT_STATE_FOLLOW);
 
             me->StopMoving();
             me->GetMotionMaster()->Clear();

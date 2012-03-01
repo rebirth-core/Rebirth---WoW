@@ -297,7 +297,7 @@ public:
             SetEquipmentSlots(false, EQUIP_UNEQUIP, EQUIP_UNEQUIP, EQUIP_NO_CHANGE);
 
             //damage
-            const CreatureTemplate* cinfo = me->GetCreatureInfo();
+            const CreatureTemplate* cinfo = me->GetCreatureTemplate();
             me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
             me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
             me->UpdateDamagePhysical(BASE_ATTACK);
@@ -393,7 +393,7 @@ public:
                 EnfeebleResetTimer = 0;
             } else EnfeebleResetTimer -= diff;
 
-            if (me->HasUnitState(UNIT_STAT_STUNNED))      // While shifting to phase 2 malchezaar stuns himself
+            if (me->HasUnitState(UNIT_STATE_STUNNED))      // While shifting to phase 2 malchezaar stuns himself
                 return;
 
             if (me->GetUInt64Value(UNIT_FIELD_TARGET) != me->getVictim()->GetGUID())
@@ -420,7 +420,7 @@ public:
                     SetEquipmentSlots(false, EQUIP_ID_AXE, EQUIP_ID_AXE, EQUIP_NO_CHANGE);
 
                     //damage
-                    const CreatureTemplate* cinfo = me->GetCreatureInfo();
+                    const CreatureTemplate* cinfo = me->GetCreatureTemplate();
                     me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 2*cinfo->mindmg);
                     me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 2*cinfo->maxdmg);
                     me->UpdateDamagePhysical(BASE_ATTACK);

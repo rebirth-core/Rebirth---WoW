@@ -154,18 +154,18 @@ bool ArenaTeam::AddMember(uint64 playerGuid)
     Player::RemovePetitionsAndSigns(playerGuid, GetType());
 
     // Feed data to the struct
-    ArenaTeamMember newmember;
-    newmember.Name             = playerName;
-    newmember.Guid             = playerGuid;
-    newmember.Class            = playerClass;
-    newmember.SeasonGames      = 0;
-    newmember.WeekGames        = 0;
-    newmember.SeasonWins       = 0;
-    newmember.WeekWins         = 0;
-    newmember.PersonalRating   = personalRating;
-    newmember.MatchMakerRating = matchMakerRating;
+    ArenaTeamMember newMember;
+    newMember.Name             = playerName;
+    newMember.Guid             = playerGuid;
+    newMember.Class            = playerClass;
+    newMember.SeasonGames      = 0;
+    newMember.WeekGames        = 0;
+    newMember.SeasonWins       = 0;
+    newMember.WeekWins         = 0;
+    newMember.PersonalRating   = personalRating;
+    newMember.MatchMakerRating = matchMakerRating;
 
-    Members.push_back(newmember);
+    Members.push_back(newMember);
 
     // Save player's arena team membership to db
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ARENA_TEAM_MEMBER);
@@ -295,8 +295,10 @@ void ArenaTeam::SetCaptain(uint64 guid)
     if (newCaptain)
     {
         newCaptain->SetArenaTeamInfoField(GetSlot(), ARENA_TEAM_MEMBER, 0);
+        char const* oldCaptainName = oldCaptain ? oldCaptain->GetName() : "";
+        uint32 oldCaptainLowGuid = oldCaptain ? oldCaptain->GetGUIDLow() : 0;
         sLog->outArena("Player: %s [GUID: %u] promoted player: %s [GUID: %u] to leader of arena team [Id: %u] [Type: %u].",
-                        oldCaptain->GetName(), oldCaptain->GetGUIDLow(), newCaptain->GetName(), newCaptain->GetGUIDLow(), GetId(), GetType());
+                        oldCaptainName, oldCaptainLowGuid, newCaptain->GetName(), newCaptain->GetGUIDLow(), GetId(), GetType());
     }
 }
 
@@ -455,7 +457,7 @@ void ArenaTeam::Inspect(WorldSession* session, uint64 guid)
     session->SendPacket(&data);
 }
 
-void ArenaTeamMember::ModifyPersonalRating(Player* player, int32 mod, uint32 slot)
+void ArenaTeamMember::ModifyPersonalRating(Player* player, int32 mod, uint32 type)
 {
     if (int32(PersonalRating) + mod < 0)
         PersonalRating = 0;
@@ -464,8 +466,8 @@ void ArenaTeamMember::ModifyPersonalRating(Player* player, int32 mod, uint32 slo
 
     if (player)
     {
-        player->SetArenaTeamInfoField(slot, ARENA_TEAM_PERSONAL_RATING, PersonalRating);
-        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_PERSONAL_RATING, PersonalRating, slot);
+        player->SetArenaTeamInfoField(ArenaTeam::GetSlotByType(type), ARENA_TEAM_PERSONAL_RATING, PersonalRating);
+        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_PERSONAL_RATING, PersonalRating, type);
     }
 }
 
@@ -725,7 +727,7 @@ void ArenaTeam::MemberLost(Player* player, uint32 againstMatchmakerRating, int32
         {
             // Update personal rating
             int32 mod = GetRatingMod(itr->PersonalRating, againstMatchmakerRating, false);
-            itr->ModifyPersonalRating(player, mod, GetSlot());
+            itr->ModifyPersonalRating(player, mod, GetType());
 
             // Update matchmaker rating
             itr->ModifyMatchmakerRating(MatchmakerRatingChange, GetSlot());
@@ -751,7 +753,7 @@ void ArenaTeam::OfflineMemberLost(uint64 guid, uint32 againstMatchmakerRating, i
         {
             // update personal rating
             int32 mod = GetRatingMod(itr->PersonalRating, againstMatchmakerRating, false);
-            itr->ModifyPersonalRating(NULL, mod, GetSlot());
+            itr->ModifyPersonalRating(NULL, mod, GetType());
 
             // update matchmaker rating
             itr->ModifyMatchmakerRating(MatchmakerRatingChange, GetSlot());
@@ -773,7 +775,7 @@ void ArenaTeam::MemberWon(Player* player, uint32 againstMatchmakerRating, int32 
         {
             // update personal rating
             int32 mod = GetRatingMod(itr->PersonalRating, againstMatchmakerRating, true);
-            itr->ModifyPersonalRating(player, mod, GetSlot());
+            itr->ModifyPersonalRating(player, mod, GetType());
 
             // update matchmaker rating
             itr->ModifyMatchmakerRating(MatchmakerRatingChange, GetSlot());
