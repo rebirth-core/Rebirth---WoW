@@ -30,6 +30,11 @@ TODO:
 - Script adds and surrounding trash
 */
 
+/*
+Info list
+- NPC 40151 (Combat Stalker) is
+- Controller casts 75396
+*/
 
 enum Texts
 {
@@ -84,6 +89,7 @@ enum Spells
     // Halion Controller
     SPELL_COSMETIC_FIRE_PILLAR          = 76006,
     SPELL_FIERY_EXPLOSION               = 76010,
+    SPELL_REMOVE_WEAKNESSES             = 75396, // @Kaelima: Translate this one from your DBCs, please.
 
     // Meteor Strike
     SPELL_METEOR_STRIKE_COUNTDOWN       = 74641,
@@ -255,10 +261,9 @@ class boss_halion : public CreatureScript
                 _JustDied();
                 Talk(SAY_DEATH);
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
-                instance->DoCastSpellOnPlayers(SPELL_LEAVE_TWILIGHT_REALM);
 
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
-                    controller->AI()->DoAction(ACTION_CLEANUP);
+                    controller->AI()->Reset();
 
                 if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION)))
                     if (twilightHalion->isAlive())
@@ -268,10 +273,9 @@ class boss_halion : public CreatureScript
             void JustReachedHome()
             {
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
-                instance->DoCastSpellOnPlayers(SPELL_LEAVE_TWILIGHT_REALM);
 
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
-                    controller->AI()->DoAction(ACTION_CLEANUP);
+                    controller->AI()->Reset();
 
                 if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION)))
                     twilightHalion->DespawnOrUnsummon();
@@ -481,6 +485,9 @@ class boss_twilight_halion : public CreatureScript
                     me->CastStop();
                     DoCast(me, SPELL_TWILIGHT_DIVISION);
                     Talk(SAY_PHASE_THREE);
+                    //! Stop here, else damage that triggered the phase change will be taken
+                    //! into consideration in the next lines.
+                    return;
                 }
 
                 if (events.GetPhaseMask() & PHASE_THREE_MASK)
@@ -493,10 +500,10 @@ class boss_twilight_halion : public CreatureScript
                 if (spell->Id != SPELL_TWILIGHT_DIVISION)
                     return;
 
-                DoCast(me, corporealityReference[5].twilightRealmSpell); // 50% corporeality
+                DoCast(me, corporealityReference[5].twilightRealmSpell);
                 if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
                 {
-                    halion->CastSpell(halion, corporealityReference[5].materialRealmSpell, false); // 50% corporeality
+                    halion->CastSpell(halion, corporealityReference[5].materialRealmSpell, false);
                     halion->RemoveAurasDueToSpell(SPELL_TWILIGHT_PHASING);
                     halion->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     halion->AI()->SetData(DATA_FIGHT_PHASE, PHASE_THREE);
@@ -591,6 +598,9 @@ class npc_halion_controller : public CreatureScript
             void Reset()
             {
                 me->SetReactState(REACT_PASSIVE);
+                _summons.DespawnAll();
+                _events.Reset();
+                DoCast(me, SPELL_REMOVE_WEANESSES);
             }
 
             void JustSummoned(Creature* who)
@@ -629,17 +639,11 @@ class npc_halion_controller : public CreatureScript
                         _instance->DoUpdateWorldState(WORLDSTATE_CORPOREALITY_TOGGLE, 1);
                         break;
                     }
-                    case ACTION_CLEANUP:
-                    {
-                        _summons.DespawnAll();
-                        _events.Reset();
-                        if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
-                            halion->RemoveGameObject(SPELL_SUMMON_TWILIGHT_PORTAL, true);
-                        break;
-                    }
                     case ACTION_BERSERK:
                     {
                         _events.ScheduleEvent(EVENT_BERSERK, 8 * MINUTE * IN_MILLISECONDS);
+                        //! Only here because this is called when Halion is engaged.
+                        me->SetInCombatWithZone();
                         break;
                     }
                 }
@@ -1565,6 +1569,42 @@ class spell_halion_twilight_phasing : public SpellScriptLoader
         }
 };
 
+class spell_halion_clean_weaknesses : public SpellScriptLoader
+{
+    public:
+        spell_halion_clean_weaknesses() : SpellScriptLoader("spell_halion_clean_weaknesses") { }
+
+        class spell_halion_clean_weaknesses_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_halion_clean_weaknesses_SpellScript);
+
+            bool Validate(SpellInfo const* /*spell*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_CLEAN_WEAKNESSES))
+                    return false;
+                if (!sSpellMgr->GetSpellInfo(SPELL_TWILIGHT_REALM))
+                    return false;
+                return true;
+            }
+
+            void HandleScript()
+            {
+                if (GetHitUnit()->HasAura(GetSpellInfo()->Effects[EFFECT_O].BasePoints))
+                    GetHitUnit()->CastSpell(GetHitUnit(), GetSpellInfo()->Effects[EFFECT_O].BasePoints, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_halion_clean_weaknesses_SpellScript::HandleScript);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_halion_clean_weaknesses_SpellScript();
+        }
+};
+
 class TwilightCutterSelector
 {
     public:
@@ -1641,4 +1681,28 @@ void AddSC_boss_halion()
     new spell_halion_enter_twilight_realm();
     new spell_halion_twilight_phasing();
     new spell_halion_twilight_cutter();
+    new spell_halion_clean_weaknesses();
 }
+
+/*
+ServerToClient: SMSG_SPELLNONMELEEDAMAGELOG (0x0250) Length: 46 Time: 06/30/2010 22:55:05.000 Number: 354005
+Target GUID: Full: 0xF130009BB700E547 Type: Unit Entry: 39863 Low: 58695 <-- Halion
+Caster GUID: Full: 0xF130009CCE00E548 Type: Unit Entry: 40142 Low: 58696 <-- Twilight Halion
+Spell ID: 74810 <-- Not in DBCs.
+Damage: 388
+Overkill: 0
+SchoolMask: 8
+Absorb: 0
+Resist: 0
+Show spellname in log: False
+
+Also
+ServerToClient: SMSG_SPELLNONMELEEDAMAGELOG (0x0250) Length: 46 Time: 06/30/2010 22:39:48.000 Number: 287998
+Target GUID: Full: 0xF130009CCE00DB07 Type: Unit Entry: 40142 Low: 56071 <-- Twilight Halion
+Caster GUID: Full: 0xF130009BB700DB06 Type: Unit Entry: 39863 Low: 56070 <-- Halion
+Spell ID: 74810
+Damage: 1232
+Overkill: 0
+
+WTF is this shit ? Schoolmask changes randomly on this spell. 141 hits on three attempts to kill Halion.
+*/

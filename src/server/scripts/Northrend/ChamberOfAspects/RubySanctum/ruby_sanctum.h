@@ -71,7 +71,7 @@ enum CreaturesIds
     // General Zarithrian
     NPC_GENERAL_ZARITHRIAN                  = 39746,
     NPC_ONYX_FLAMECALLER                    = 39814,
-    NPC_ZARITHRIAN_SPAWN_STALKER             = 39794,
+    NPC_ZARITHRIAN_SPAWN_STALKER            = 39794,
 
     // Saviana Ragefire
     NPC_SAVIANA_RAGEFIRE                    = 39747,
@@ -86,7 +86,7 @@ enum CreaturesIds
     NPC_ORB_ROTATION_FOCUS                  = 40091,
     NPC_SHADOW_ORB_N                        = 40083,
     NPC_SHADOW_ORB_S                        = 40100,
-    NPC_SHADOW_ORB_E                        = 40468, // Not use which entry is east and west.
+    NPC_SHADOW_ORB_E                        = 40468, // Not sure which entry is east and west.
     NPC_SHADOW_ORB_W                        = 40469,
     NPC_METEOR_STRIKE_MARK                  = 40029,
     NPC_METEOR_STRIKE_NORTH                 = 40041,
@@ -96,6 +96,7 @@ enum CreaturesIds
     NPC_METEOR_STRIKE_FLAME                 = 40055,
     NPC_COMBUSTION                          = 40001,
     NPC_CONSUMPTION                         = 40135,
+    NPC_COMBAT_STALKER                      = 40151,
 
     // Xerestrasza
     NPC_XERESTRASZA                         = 40429,
