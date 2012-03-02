@@ -1116,6 +1116,29 @@ class npc_combat_stalker : public CreatureScript
             {
             }
 
+            void Reset()
+            {
+                ScriptedAI::Reset();
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            bool CanAIAttack(Unit const* target) const
+            {
+                if (Creature* creature = target->ToCreature())
+                {
+                    switch (creature->GetEntry())
+                    {
+                        case NPC_HALION:
+                        case NPC_TWILIGHT_HALION:
+                            return true;
+                        default:
+                            break;
+                    }
+                }
+
+                return false;
+            }
+
             void UpdateAI(uint32 const /*diff*/) { }
 
         private:
@@ -1127,7 +1150,6 @@ class npc_combat_stalker : public CreatureScript
             return GetRubySanctumAI<npc_combat_stalkerAI>(creature);
         }
 };
-
 
 class npc_living_inferno : public CreatureScript
 {
