@@ -161,9 +161,12 @@ INSERT INTO `npc_spellclick_spells` (`npc_entry`,`spell_id`,`cast_flags`,`user_t
 -- Conditions
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=13 AND `SourceEntry`=74758;
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=13 AND `SourceEntry`=75509;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=13 AND `SourceEntry`=75866;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`,`SourceEntry`,`ConditionTypeOrReference`,`ConditionValue1`,`ConditionValue2`,`Comment`) VALUES
 (13,74758,18,1,40091, 'Track Rotation can only target Orb Rotation Focus');
 
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`,`SourceGroup`,`SourceEntry`,`ElseGroup`,`ConditionTypeOrReference`,`ConditionValue1`,`ConditionValue2`,`ConditionValue3`,`ErrorTextId`,`ScriptName`,`Comment`) VALUES
 (13,0,75509,0,18,1,39863,0,0, '', 'Twilight Mending can only target Halion'),
-(13,0,75509,0,18,1,40142,0,0, '', 'Twilight Mending can only target Twilight Halion');
+(13,0,75509,0,18,1,40142,0,0, '', 'Twilight Mending can only target Halion'),
+(13,0,75866,0,18,1,40683,0,0, '', 'Blazing Aura can only target Living Embers'),
+(13,0,75866,0,18,1,40684,0,0, '', 'Blazing Aura can only target Living Embers');

@@ -630,11 +630,12 @@ class npc_halion_controller : public CreatureScript
                     case ACTION_PHASE_THREE:
                     {
                         _events.ScheduleEvent(EVENT_CHECK_CORPOREALITY, 20000);
-
                         TwilightDamageTaken = 0;
                         MaterialDamageTaken = 0;
                         materialCorporealityValue = 50;
                         _instance->DoUpdateWorldState(WORLDSTATE_CORPOREALITY_TOGGLE, 1);
+                        _instance->DoUpdateWorldState(WORLDSTATE_CORPOREALITY_MATERIAL, 50);
+                        _instance->DoUpdateWorldState(WORLDSTATE_CORPOREALITY_TWILIGHT, 50);
                         break;
                     }
                     case ACTION_BERSERK:
@@ -689,7 +690,7 @@ class npc_halion_controller : public CreatureScript
                             bool canUpdate = false;
                             if (MaterialDamageTaken != 0 && TwilightDamageTaken != 0)
                             {
-                                // Moar research needed.
+                                // Guessed scaling
                                 if (MaterialDamageTaken >= 1.02f * TwilightDamageTaken)
                                 {
                                     TwilightDamageTaken = 0;
@@ -711,12 +712,15 @@ class npc_halion_controller : public CreatureScript
                             {
                                 if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
                                 {
-                                    Map::PlayerList const &PlList = me->GetMap()->GetPlayers();
-                                    for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
-                                        if (Player* player = i->getSource())
-                                            Talk(EMOTE_REGENERATE, player->GetGUID());
+                                    if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_TWILIGHT_HALION)))
+                                    {
+                                        twilightHalion->CastSpell(halion, SPELL_TWILIGHT_MENDING);
 
-                                    DoCast(halion, SPELL_TWILIGHT_MENDING);
+                                        Map::PlayerList const &PlList = me->GetMap()->GetPlayers();
+                                        for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+                                            if (Player* player = i->getSource())
+                                                Talk(EMOTE_REGENERATE, player->GetGUID());
+                                    }
                                 }
                                 _events.ScheduleEvent(EVENT_CHECK_CORPOREALITY, 15000);
                                 break;
@@ -724,25 +728,19 @@ class npc_halion_controller : public CreatureScript
 
                             if (canUpdate)
                             {
-                                uint32 twilightSpell, physicalSpell;
-
                                 for (uint8 i = 0; i < MAX_CORPOREALITY_STATE; i++)
                                 {
-                                    // Testing the material value is enough.
                                     if (corporealityReference[i].materialPercentage == materialCorporealityValue)
                                     {
-                                        twilightSpell = corporealityReference[i].twilightRealmSpell;
-                                        physicalSpell = corporealityReference[i].materialRealmSpell;
-                                        break; // stop here
-                                    }
-                                }
-
-                                for (uint8 i = DATA_HALION; i <= DATA_TWILIGHT_HALION; i++)
-                                {
-                                    if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(i)))
-                                    {
-                                        RemoveAnyCorporealityBuff(halion);
-                                        halion->CastSpell(halion, (i == DATA_HALION ? physicalSpell : twilightSpell), true);
+                                        for (uint8 j = DATA_HALION; j <= DATA_TWILIGHT_HALION; j++)
+                                        {
+                                            if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(j)))
+                                            {
+                                                RemoveCorporeality(halion);
+                                                halion->CastSpell(halion, (j == DATA_HALION ? corporealityReference[i].materialRealmSpell : corporealityReference[i].twilightRealmSpell), true);
+                                            }
+                                        }
+                                        break; // No need to iterate more
                                     }
                                 }
 
@@ -800,20 +798,25 @@ class npc_halion_controller : public CreatureScript
                 }
             }
 
-            // Move to spell_linked_spell, for God's sake.
-            void RemoveAnyCorporealityBuff(Creature* who)
+        private:
+
+            void RemoveCorporeality(Creature* who)
             {
                 for (uint8 i = 0; i < MAX_CORPOREALITY_STATE; i++)
                 {
-                    if (who->HasAura(74826 + i))
+                    if (who->HasAura(corporealityReference[i].materialRealmSpell))
                     {
-                        who->RemoveAurasDueToSpell(74826 + i);
+                        who->RemoveAurasDueToSpell(corporealityReference[i].materialRealmSpell);
+                        break;
+                    }
+                    if (who->HasAura(corporealityReference[i].twilightRealmSpell))
+                    {
+                        who->RemoveAurasDueToSpell(corporealityReference[i].twilightRealmSpell);
                         break;
                     }
                 }
             }
 
-        private:
             EventMap _events;
             InstanceScript* _instance;
             SummonList _summons;
