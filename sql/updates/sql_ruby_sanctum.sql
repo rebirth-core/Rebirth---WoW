@@ -52,7 +52,7 @@ DELETE FROM `spell_script_names` WHERE `ScriptName`= 'spell_halion_leave_twiligh
 DELETE FROM `spell_script_names` WHERE `ScriptName`= 'spell_halion_enter_twilight_realm';
 DELETE FROM `spell_script_names` WHERE `ScriptName`= 'spell_halion_twilight_phasing';
 DELETE FROM `spell_script_names` WHERE `ScriptName`= 'spell_halion_twilight_cutter';
-DELETE FROM `spell_script_names` WHERE `ScriptName`= 'spell_halion_clean_weaknesses';
+DELETE FROM `spell_script_names` WHERE `ScriptName`= 'spell_halion_clear_debuffs';
 INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 (74641, 'spell_halion_meteor_strike_marker'),
 (74562, 'spell_halion_fiery_combustion'),
@@ -67,7 +67,7 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 (74769, 'spell_halion_twilight_cutter'),
 (77844, 'spell_halion_twilight_cutter'),
 (77845, 'spell_halion_twilight_cutter'),
-(75396, 'spell_halion_clean_weaknesses'),
+(75396, 'spell_halion_clear_debuffs'),
 (77846, 'spell_halion_twilight_cutter');
 
 -- Texts

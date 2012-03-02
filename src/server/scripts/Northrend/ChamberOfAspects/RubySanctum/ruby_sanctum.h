@@ -40,18 +40,17 @@ enum DataTypes
     DATA_XERESTRASZA                        = 5,
     DATA_CRYSTAL_CHANNEL_TARGET             = 6,
     DATA_BALTHARUS_SHARED_HEALTH            = 7,
-    DATA_ZARITHRIAN_SPAWN_STALKER_1          = 8,
-    DATA_ZARITHRIAN_SPAWN_STALKER_2          = 9,
+    DATA_ZARITHRIAN_SPAWN_STALKER_1         = 8,
+    DATA_ZARITHRIAN_SPAWN_STALKER_2         = 9,
     DATA_HALION_CONTROLLER                  = 10,
     DATA_ORB_CARRIER                        = 11,
     DATA_ORB_ROTATION_FOCUS                 = 12,
-    DATA_HALION_SHARED_HEALTH               = 13,
-    DATA_BURNING_TREE_1                     = 14,
-    DATA_BURNING_TREE_2                     = 15,
-    DATA_BURNING_TREE_3                     = 16,
-    DATA_BURNING_TREE_4                     = 17,
-    DATA_FLAME_RING                         = 18,
-    DATA_TWILIGHT_FLAME_RING                = 19,
+    DATA_BURNING_TREE_1                     = 13,
+    DATA_BURNING_TREE_2                     = 14,
+    DATA_BURNING_TREE_3                     = 15,
+    DATA_BURNING_TREE_4                     = 16,
+    DATA_FLAME_RING                         = 17,
+    DATA_TWILIGHT_FLAME_RING                = 18,
 };
 
 enum SharedActions
@@ -127,7 +126,6 @@ enum WorldStatesRS
 enum InstanceSpell
 {
     SPELL_BERSERK                       = 26662,
-    SPELL_TWILIGHT_REALM                = 74807,
 };
 
 template<class AI>

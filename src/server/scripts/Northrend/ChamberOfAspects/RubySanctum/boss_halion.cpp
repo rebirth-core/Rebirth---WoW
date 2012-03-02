@@ -32,8 +32,7 @@ TODO:
 
 /*
 Info list
-- NPC 40151 (Combat Stalker) is
-- Controller casts 75396
+- Twilight Halion seems to be spawned while Halion is spawned.
 */
 
 enum Texts
@@ -70,9 +69,11 @@ enum Spells
     SPELL_MARK_OF_COMBUSTION            = 74567,
     SPELL_FIERY_COMBUSTION_EXPLOSION    = 74607,
     SPELL_FIERY_COMBUSTION_SUMMON       = 74610,
-    SPELL_COMBUSTION_DAMAGE_AURA        = 74629,
 
+    // Combustion & Consumption
     SPELL_SCALE_AURA                    = 70507, // Aura created in spell_dbc.
+    SPELL_COMBUSTION_DAMAGE_AURA        = 74629,
+    SPELL_CONSUMPTION_DAMAGE_AURA       = 74803,
 
     // Twilight Halion
     SPELL_DARK_BREATH                   = 74806,
@@ -81,7 +82,6 @@ enum Spells
     SPELL_SOUL_CONSUMPTION              = 74792,
     SPELL_SOUL_CONSUMPTION_EXPLOSION    = 74799,
     SPELL_SOUL_CONSUMPTION_SUMMON       = 74800,
-    SPELL_CONSUMPTION_DAMAGE_AURA       = 74803,
 
     // Living Inferno
     SPELL_BLAZING_AURA                  = 75885,
@@ -89,7 +89,7 @@ enum Spells
     // Halion Controller
     SPELL_COSMETIC_FIRE_PILLAR          = 76006,
     SPELL_FIERY_EXPLOSION               = 76010,
-    SPELL_REMOVE_WEAKNESSES             = 75396, // @Kaelima: Translate this one from your DBCs, please.
+    SPELL_CLEAR_DEBUFFS                 = 75396,
 
     // Meteor Strike
     SPELL_METEOR_STRIKE_COUNTDOWN       = 74641,
@@ -110,6 +110,9 @@ enum Spells
     SPELL_TWILIGHT_PHASING              = 74808,    // Phase spell from phase 1 to phase 2
     SPELL_SUMMON_TWILIGHT_PORTAL        = 74809,    // Summons go 202794
     SPELL_TWILIGHT_MENDING              = 75509,
+    SPELL_TWILIGHT_REALM                = 74807,
+
+    SPELL_COPY_DAMAGE                   = 74810,
 };
 
 enum Events
@@ -288,14 +291,14 @@ class boss_halion : public CreatureScript
             void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
                 if ((me->GetHealth() - damage) > 0 && (events.GetPhaseMask() & (PHASE_ONE_MASK | PHASE_THREE_MASK)))
-                    instance->SetData(DATA_HALION_SHARED_HEALTH, (me->GetHealth() - damage));
+                    if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION))
+                        me->CastCustomSpell(SPELL_COPY_DAMAGE, SPELLVALUE_BASE_POINT0, damage, twilightHalion, true);
 
                 if (me->HealthBelowPctDamaged(75, damage) && (events.GetPhaseMask() & PHASE_ONE_MASK))
                 {
                     events.SetPhase(PHASE_TWO);
                     events.DelayEvents(2600); // 2.5 sec + 0.1 sec lag
 
-                    // Stop cast and stop attacking current target
                     me->CastStop();
                     me->AttackStop();
 
@@ -310,16 +313,10 @@ class boss_halion : public CreatureScript
                         controller->AI()->SetData(DATA_MATERIAL_DAMAGE_TAKEN, damage);
             }
 
-            bool CanAIAttack(Unit const* victim)
-            {
-                return !victim->HasAura(SPELL_TWILIGHT_REALM);
-            }
+            bool CanAIAttack(Unit const* victim) { return !victim->HasAura(SPELL_TWILIGHT_REALM); }
 
             void UpdateAI(uint32 const diff)
             {
-                if (!(events.GetPhaseMask() & PHASE_ONE_MASK))
-                    me->SetHealth(instance->GetData(DATA_HALION_SHARED_HEALTH));
-
                 if ((!UpdateVictim() && (events.GetPhaseMask() & (PHASE_ONE_MASK | PHASE_THREE_MASK))) || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
@@ -419,7 +416,7 @@ class boss_twilight_halion : public CreatureScript
                 _instance(creature->GetInstanceScript())
             {
                 me->SetPhaseMask(0x20, true); // Should not be visible with phasemask 0x21, so only 0x20
-                me->SetHealth(_instance->GetData(DATA_HALION_SHARED_HEALTH)); // Should be 75%
+                me->SetHealth(uint32(0.75f * me->GetMaxHealth()));
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -475,7 +472,8 @@ class boss_twilight_halion : public CreatureScript
             void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
                 if (me->GetHealth() - damage > 0)
-                    _instance->SetData(DATA_HALION_SHARED_HEALTH, me->GetHealth() - damage);
+                    if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION))
+                        me->CastCustomSpell(SPELL_COPY_DAMAGE, SPELLVALUE_BASE_POINT0, damage, twilightHalion, true);
 
                 if (me->HealthBelowPctDamaged(50, damage) && (events.GetPhaseMask() & PHASE_TWO_MASK))
                 {
@@ -600,7 +598,7 @@ class npc_halion_controller : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
                 _summons.DespawnAll();
                 _events.Reset();
-                DoCast(me, SPELL_REMOVE_WEANESSES);
+                DoCast(me, SPELL_CLEAR_DEBUFFS);
             }
 
             void JustSummoned(Creature* who)
@@ -642,7 +640,7 @@ class npc_halion_controller : public CreatureScript
                     case ACTION_BERSERK:
                     {
                         _events.ScheduleEvent(EVENT_BERSERK, 8 * MINUTE * IN_MILLISECONDS);
-                        //! Only here because this is called when Halion is engaged.
+                        //! Here because this is called when Halion is engaged.
                         me->SetInCombatWithZone();
                         break;
                     }
@@ -1105,6 +1103,31 @@ class npc_orb_carrier : public CreatureScript
             return GetRubySanctumAI<npc_orb_carrierAI>(creature);
         }
 };
+
+class npc_combat_stalker : public CreatureScript
+{
+    public:
+        npc_combat_stalker() : CreatureScript("npc_combat_stalker") { }
+
+        struct npc_combat_stalkerAI : public Scripted_NoMovementAI
+        {
+            npc_combat_stalkerAI(Creature* creature) : Scripted_NoMovementAI(creature),
+                   _instance(creature->GetInstanceScript())
+            {
+            }
+
+            void UpdateAI(uint32 const /*diff*/) { }
+
+        private:
+            InstanceScript* _instance;
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return GetRubySanctumAI<npc_combat_stalkerAI>(creature);
+        }
+};
+
 
 class npc_living_inferno : public CreatureScript
 {
@@ -1569,14 +1592,14 @@ class spell_halion_twilight_phasing : public SpellScriptLoader
         }
 };
 
-class spell_halion_clean_weaknesses : public SpellScriptLoader
+class spell_halion_clear_debuffs : public SpellScriptLoader
 {
     public:
-        spell_halion_clean_weaknesses() : SpellScriptLoader("spell_halion_clean_weaknesses") { }
+        spell_halion_clear_debuffs() : SpellScriptLoader("spell_halion_clear_debuffs") { }
 
-        class spell_halion_clean_weaknesses_SpellScript : public SpellScript
+        class spell_halion_clear_debuffs_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_halion_clean_weaknesses_SpellScript);
+            PrepareSpellScript(spell_halion_clear_debuffs_SpellScript);
 
             bool Validate(SpellInfo const* /*spell*/)
             {
@@ -1587,21 +1610,21 @@ class spell_halion_clean_weaknesses : public SpellScriptLoader
                 return true;
             }
 
-            void HandleScript()
+            void HandleScript(SpellEffIndex effIndex)
             {
-                if (GetHitUnit()->HasAura(GetSpellInfo()->Effects[EFFECT_O].BasePoints))
-                    GetHitUnit()->CastSpell(GetHitUnit(), GetSpellInfo()->Effects[EFFECT_O].BasePoints, true);
+                if (GetHitUnit()->HasAura(GetSpellInfo()->Effects[effIndex].BasePoints))
+                    GetHitUnit()->RemoveAurasDueToSpell(GetSpellInfo()->Effects[effIndex].BasePoints);
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_halion_clean_weaknesses_SpellScript::HandleScript);
+                OnEffectHitTarget += SpellHitFn(spell_halion_clear_debuffs_SpellScript::HandleScript, EFFECT_O, SPELL_EFFECT_SCRIPT_EFFECT);
             }
         };
 
         SpellScript* GetSpellScript() const
         {
-            return new spell_halion_clean_weaknesses_SpellScript();
+            return new spell_halion_clear_debuffs_SpellScript();
         }
 };
 
@@ -1681,7 +1704,7 @@ void AddSC_boss_halion()
     new spell_halion_enter_twilight_realm();
     new spell_halion_twilight_phasing();
     new spell_halion_twilight_cutter();
-    new spell_halion_clean_weaknesses();
+    new spell_halion_clear_debuffs();
 }
 
 /*
