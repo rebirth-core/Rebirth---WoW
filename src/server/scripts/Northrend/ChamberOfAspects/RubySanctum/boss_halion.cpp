@@ -143,6 +143,13 @@ enum Events
 
     // Living Ember
     EVENT_EMBER_ENRAGE          = 17,
+
+    // Misc
+    EVENT_CHECK_THREAT          = 18,
+    // This is all shitty for now. Halion, Twilight Halion, and Halion Controller will check their threat list
+    // every two seconds and if they find out that either one of the NPCs lost aggro on any player, that would
+    // mean that the encounter has to reset. Not yet implemented, this comment block is rather some way for me
+    // to brain a bit about this fubarish stuff.
 };
 
 enum Actions
@@ -267,6 +274,7 @@ class boss_halion : public CreatureScript
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
                     controller->AI()->Reset();
 
+                // This block shouldn't be needed anymore after spell 74810 is working.
                 if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION)))
                     if (twilightHalion->isAlive())
                         twilightHalion->Kill(twilightHalion);
@@ -279,6 +287,7 @@ class boss_halion : public CreatureScript
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
                     controller->AI()->Reset();
 
+                // I strongly begin to believe that both Halions are spawned after Halion's intro is processed.
                 if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION)))
                     twilightHalion->DespawnOrUnsummon();
 
@@ -424,8 +433,8 @@ class boss_twilight_halion : public CreatureScript
                 events.Reset();
                 events.SetPhase(PHASE_TWO);
                 //! All of Twilight Halion's abilities are not phase dependant as he is never on Phase One.
-                //! However, phasemasks are "needed" so that we know on which phase we are when Halion
-                //! takes damage, causing corporeality not to tick in phase two.
+                //! However, phasemasks are "needed" so that we know on which phase we are when Halion takes
+                //! damage, causing corporeality not to tick in phase two.
                 events.ScheduleEvent(EVENT_DARK_BREATH, urand(10000, 15000));
                 events.ScheduleEvent(EVENT_SOUL_CONSUMPTION, 20000);
                 events.ScheduleEvent(EVENT_CLEAVE, urand(8000, 10000));
@@ -453,13 +462,15 @@ class boss_twilight_halion : public CreatureScript
                         killer->Kill(halion);
                 }
 
-                _instance->DoCastSpellOnPlayers(SPELL_LEAVE_TWILIGHT_REALM);
+                if (Creature* controller = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION_CONTROLLER)))
+                    controller->CastSpell(controller, SPELL_CLEAR_DEBUFFS);
                 _instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
             }
 
             void JustReachedHome()
             {
-                // If the Twilight Halion enters evade mode on phase 2, the players in the Physical realm should enter the Twilight Realm to end the fight (i.e. wipe)
+                // If the Twilight Halion enters evade mode on phase 2, the players in the Physical realm
+                // should enter the Twilight Realm to end the fight (i.e. wipe).
                 // As a consequence, the Twilight Halion entering evade mode does not end the encounter.
                 if (events.GetPhaseMask() & PHASE_TWO_MASK)
                     return;
