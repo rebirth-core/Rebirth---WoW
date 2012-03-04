@@ -232,7 +232,6 @@ class boss_halion : public CreatureScript
             void Reset()
             {
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
-                instance->SetData(DATA_HALION_SHARED_HEALTH, me->GetMaxHealth());
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 _Reset();
             }
@@ -291,7 +290,7 @@ class boss_halion : public CreatureScript
             void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
                 if ((me->GetHealth() - damage) > 0 && (events.GetPhaseMask() & (PHASE_ONE_MASK | PHASE_THREE_MASK)))
-                    if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION))
+                    if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION)))
                         me->CastCustomSpell(SPELL_COPY_DAMAGE, SPELLVALUE_BASE_POINT0, damage, twilightHalion, true);
 
                 if (me->HealthBelowPctDamaged(75, damage) && (events.GetPhaseMask() & PHASE_ONE_MASK))
@@ -472,7 +471,7 @@ class boss_twilight_halion : public CreatureScript
             void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
                 if (me->GetHealth() - damage > 0)
-                    if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_TWILIGHT_HALION))
+                    if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_TWILIGHT_HALION)))
                         me->CastCustomSpell(SPELL_COPY_DAMAGE, SPELLVALUE_BASE_POINT0, damage, twilightHalion, true);
 
                 if (me->HealthBelowPctDamaged(50, damage) && (events.GetPhaseMask() & PHASE_TWO_MASK))
@@ -524,8 +523,6 @@ class boss_twilight_halion : public CreatureScript
 
             void UpdateAI(uint32 const diff)
             {
-                me->SetHealth(_instance->GetData(DATA_HALION_SHARED_HEALTH));
-
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
@@ -1125,11 +1122,11 @@ class npc_combat_stalker : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            bool CanAIAttack(Unit const* target) const
+            bool CanAIAttack(const Unit * target) const
             {
-                if (Creature* creature = target->ToCreature())
+                if (target->GetTypeId() == TYPEID_UNIT)
                 {
-                    switch (creature->GetEntry())
+                    switch (target->ToCreature()->GetEntry())
                     {
                         case NPC_HALION:
                         case NPC_TWILIGHT_HALION:
@@ -1628,7 +1625,7 @@ class spell_halion_clear_debuffs : public SpellScriptLoader
 
             bool Validate(SpellInfo const* /*spell*/)
             {
-                if (!sSpellMgr->GetSpellInfo(SPELL_CLEAN_WEAKNESSES))
+                if (!sSpellMgr->GetSpellInfo(SPELL_CLEAR_DEBUFFS))
                     return false;
                 if (!sSpellMgr->GetSpellInfo(SPELL_TWILIGHT_REALM))
                     return false;
@@ -1643,7 +1640,7 @@ class spell_halion_clear_debuffs : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectHitTarget += SpellHitFn(spell_halion_clear_debuffs_SpellScript::HandleScript, EFFECT_O, SPELL_EFFECT_SCRIPT_EFFECT);
+                OnEffectHitTarget += SpellEffectFn(spell_halion_clear_debuffs_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
             }
         };
 
