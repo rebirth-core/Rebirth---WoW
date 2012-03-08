@@ -630,7 +630,6 @@ class npc_halion_controller : public CreatureScript
                     case ACTION_PHASE_TWO:
                     {
                         _events.ScheduleEvent(EVENT_SHADOW_PULSARS_SHOOT, 10000); // Fix the timer
-                        me->GetMap()->SummonCreature(NPC_TWILIGHT_HALION, HalionSpawnPos);
                         if (Creature* rotationFocus = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_ORB_ROTATION_FOCUS)))
                             rotationFocus->AI()->DoAction(ACTION_BEGIN_ROTATION);
                         break;
@@ -681,6 +680,7 @@ class npc_halion_controller : public CreatureScript
                             DoCast(me, SPELL_FIERY_EXPLOSION);
                             if (Creature* halion = me->GetMap()->SummonCreature(NPC_HALION, HalionSpawnPos))
                                 halion->AI()->Talk(SAY_INTRO);
+                            me->GetMap()->SummonCreature(NPC_TWILIGHT_HALION, HalionSpawnPos);
                             break;
                         case EVENT_SHADOW_PULSARS_SHOOT:
                         {
@@ -1135,9 +1135,9 @@ class npc_combat_stalker : public CreatureScript
 
             bool CanAIAttack(const Unit * target) const
             {
-                if (target->GetTypeId() == TYPEID_UNIT)
+                if (const Creature* creature = target->ToCreature())
                 {
-                    switch (target->ToCreature()->GetEntry())
+                    switch (creature->GetEntry())
                     {
                         case NPC_HALION:
                         case NPC_TWILIGHT_HALION:
