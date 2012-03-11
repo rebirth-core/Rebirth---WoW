@@ -252,27 +252,18 @@ class instance_ruby_sanctum : public InstanceMapScript
 
             void SetData(uint32 type, uint32 data)
             {
-                switch (type)
-                {
-                    case DATA_BALTHARUS_SHARED_HEALTH:
-                        BaltharusSharedHealth = data;
-                        break;
-                    default:
-                        break;
-                }
+                if (type != DATA_BALTHARUS_SHARED_HEALTH)
+                    return;
+
+                BaltharusSharedHealth = data;
             }
 
             uint32 GetData(uint32 type)
             {
-                switch (type)
-                {
-                    case DATA_BALTHARUS_SHARED_HEALTH:
-                        return BaltharusSharedHealth;
-                    default:
-                        break;
-                }
+                if (type != DATA_BALTHARUS_SHARED_HEALTH)
+                    return 0;
 
-                return 0;
+                return BaltharusSharedHealth;
             }
 
             std::string GetSaveData()

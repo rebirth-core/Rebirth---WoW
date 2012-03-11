@@ -427,8 +427,12 @@ class boss_twilight_halion : public CreatureScript
                 me->SetHealth(uint32(0.75f * me->GetMaxHealth()));
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(Unit* who)
             {
+                if (Creature* whoCreature = who->ToCreature())
+                    if (whoCreature->GetEntry() == NPC_COMBAT_STALKER)
+                        return;
+
                 _instance->SendEncounterUnit(ENCOUNTER_FRAME_ADD, me, 2);
                 events.Reset();
                 events.SetPhase(PHASE_TWO);
