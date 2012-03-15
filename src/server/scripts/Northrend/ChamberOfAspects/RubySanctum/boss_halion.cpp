@@ -105,14 +105,14 @@ enum Spells
     SPELL_TRACK_ROTATION                = 74758,
 
     // Misc
-    SPELL_TWILIGHT_DIVISION             = 75063,    // Phase spell from phase 2 to phase 3
+    SPELL_TWILIGHT_DIVISION             = 75063, // Phase spell from phase 2 to phase 3
     SPELL_LEAVE_TWILIGHT_REALM          = 74812,
-    SPELL_TWILIGHT_PHASING              = 74808,    // Phase spell from phase 1 to phase 2
-    SPELL_SUMMON_TWILIGHT_PORTAL        = 74809,    // Summons go 202794
+    SPELL_TWILIGHT_PHASING              = 74808, // Phase spell from phase 1 to phase 2
+    SPELL_SUMMON_TWILIGHT_PORTAL        = 74809, // Summons go 202794
     SPELL_TWILIGHT_MENDING              = 75509,
     SPELL_TWILIGHT_REALM                = 74807,
 
-    SPELL_COPY_DAMAGE                   = 74810,
+    SPELL_COPY_DAMAGE                   = 74810, // Not in DBCs but found in sniffs.
 };
 
 enum Events
@@ -1720,6 +1720,38 @@ class spell_halion_twilight_cutter : public SpellScriptLoader
         }
 };
 
+class spell_halion_copy_damage : public SpellScriptLoader
+{
+    public:
+        spell_halion_copy_damage() : SpellScriptLoader("spell_halion_copy_damage") { }
+
+        class spell_halion_copy_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_halion_copy_damage_SpellScript);
+
+            void HandleDummy(SpellEffIndex effIndex)
+            {
+                if (!GetCaster()) // Probably useless
+                    return;
+
+                SpellNonMeleeDamage damageInfo(GetCaster(), GetHitUnit(), GetSpellInfo()->Id, GetSpellInfo()->SchoolMask);
+                damageInfo.damage = GetSpellValue()->EffectBasePoints[0];
+                GetCaster()->SendSpellNonMeleeDamageLog(&damageInfo);
+                GetCaster()->DealSpellDamage(&damageInfo, false);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_halion_copy_damage_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_halion_copy_damage_SpellScript();
+        }
+};
+
 void AddSC_boss_halion()
 {
     new boss_halion();
@@ -1742,27 +1774,5 @@ void AddSC_boss_halion()
     new spell_halion_twilight_phasing();
     new spell_halion_twilight_cutter();
     new spell_halion_clear_debuffs();
+    new spell_halion_copy_damage();
 }
-
-/*
-ServerToClient: SMSG_SPELLNONMELEEDAMAGELOG (0x0250) Length: 46 Time: 06/30/2010 22:55:05.000 Number: 354005
-Target GUID: Full: 0xF130009BB700E547 Type: Unit Entry: 39863 Low: 58695 <-- Halion
-Caster GUID: Full: 0xF130009CCE00E548 Type: Unit Entry: 40142 Low: 58696 <-- Twilight Halion
-Spell ID: 74810 <-- Not in DBCs.
-Damage: 388
-Overkill: 0
-SchoolMask: 8
-Absorb: 0
-Resist: 0
-Show spellname in log: False
-
-Also
-ServerToClient: SMSG_SPELLNONMELEEDAMAGELOG (0x0250) Length: 46 Time: 06/30/2010 22:39:48.000 Number: 287998
-Target GUID: Full: 0xF130009CCE00DB07 Type: Unit Entry: 40142 Low: 56071 <-- Twilight Halion
-Caster GUID: Full: 0xF130009BB700DB06 Type: Unit Entry: 39863 Low: 56070 <-- Halion
-Spell ID: 74810
-Damage: 1232
-Overkill: 0
-
-WTF is this shit ? Schoolmask changes randomly on this spell. 141 hits on three attempts to kill Halion.
-*/
