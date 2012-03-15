@@ -243,7 +243,7 @@ class boss_halion : public CreatureScript
                 _Reset();
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(Unit* who)
             {
                 _EnterCombat();
                 Talk(SAY_AGGRO);
@@ -262,7 +262,7 @@ class boss_halion : public CreatureScript
                 // Due to Halion's EventMap not being updated under phase two, Berserk will be triggered by the Controller
                 // so that the timer still ticks in phase two.
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
-                    controller->AI()->DoAction(ACTION_BERSERK);
+                    controller->AI()->EnterCombat(who);
             }
 
             void JustDied(Unit* /*killer*/)
@@ -390,6 +390,14 @@ class boss_halion : public CreatureScript
             {
                 if (index == DATA_FIGHT_PHASE)
                     events.SetPhase(value);
+            }
+
+            uint32 GetData(uint32 index)
+            {
+                if (index == DATA_FIGHT_PHASE)
+                    return events.GetPhaseMask();
+
+                return 0;
             }
 
             void DoAction(int32 const action)
@@ -618,6 +626,14 @@ class npc_halion_controller : public CreatureScript
                 _summons.Summon(who);
             }
 
+            void EnterCombat(Unit* who)
+            {
+                if (Creature* combatStalker = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_COMBAT_STALKER)))
+                    combatStalker->AI()->EnterCombat(who);
+
+                _events.ScheduleEvent(EVENT_BERSERK, 8 * MINUTE * IN_MILLISECONDS);
+            }
+
             void DoAction(int32 const action)
             {
                 switch (action)
@@ -647,13 +663,6 @@ class npc_halion_controller : public CreatureScript
                         _instance->DoUpdateWorldState(WORLDSTATE_CORPOREALITY_TOGGLE, 1);
                         _instance->DoUpdateWorldState(WORLDSTATE_CORPOREALITY_MATERIAL, 50);
                         _instance->DoUpdateWorldState(WORLDSTATE_CORPOREALITY_TWILIGHT, 50);
-                        break;
-                    }
-                    case ACTION_BERSERK:
-                    {
-                        _events.ScheduleEvent(EVENT_BERSERK, 8 * MINUTE * IN_MILLISECONDS);
-                        //! Here because this is called when Halion is engaged.
-                        me->SetInCombatWithZone();
                         break;
                     }
                 }
@@ -1134,30 +1143,54 @@ class npc_combat_stalker : public CreatureScript
             void Reset()
             {
                 ScriptedAI::Reset();
-                me->SetReactState(REACT_PASSIVE);
             }
 
-            bool CanAIAttack(const Unit * target) const
+            void EnterCombat(Unit* who)
             {
-                if (const Creature* creature = target->ToCreature())
+                DoZoneInCombat();
+                if (who->GetTypeId() == TYPEID_UNIT)
+                    if (who->ToCreature()->GetEntry() == NPC_HALION || who->ToCreature()->GetEntry() == NPC_TWILIGHT_HALION)
+                        me->AddThreat(who, float(urand(1,3) * 100.0f));
+            }
+
+            void EnterEvadeMode()
+            {
+                if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
+                    halion->AI()->EnterEvadeMode();
+
+                if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_TWILIGHT_HALION)))
+                    twilightHalion->AI()->EnterEvadeMode();
+
+                ScriptedAI::EnterEvadeMode();
+            }
+
+            void UpdateAI(uint32 const diff)
+            {
+                if (!me->isInCombat())
+                    return;
+
+                std::list<HostileReference*> const& threatList = me->getThreatManager().getThreatList();
+                if (threatList.empty())
                 {
-                    switch (creature->GetEntry())
-                    {
-                        case NPC_HALION:
-                        case NPC_TWILIGHT_HALION:
-                            return true;
-                        default:
-                            break;
-                    }
+                    EnterEvadeMode();
+                    return;
                 }
 
-                return false;
-            }
+                _wipeCheck ^= true;
+                if (!_wipeCheck)
+                    return;
 
-            void UpdateAI(uint32 const /*diff*/) { }
+                for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
+                    if (Unit* refTarget = (*itr)->getTarget())
+                        if (refTarget->GetTypeId() == TYPEID_PLAYER)
+                            return;
+
+                EnterEvadeMode();
+            }
 
         private:
             InstanceScript* _instance;
+            bool _wipeCheck;
         };
 
         CreatureAI* GetAI(Creature* creature) const
