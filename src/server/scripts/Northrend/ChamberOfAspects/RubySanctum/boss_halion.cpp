@@ -1081,7 +1081,7 @@ class npc_orb_carrier : public CreatureScript
                 //! we are not channeling it.
                 if (!me->HasUnitState(UNIT_STATE_CASTING))
                     if (Creature* rotationFocus = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_ORB_ROTATION_FOCUS)))
-                        DoCast(rotationFocus, SPELL_TRACK_ROTATION, false);
+                        DoCast(rotationFocus, SPELL_TRACK_ROTATION, true);
             }
 
             void DoAction(int32 const action)

@@ -120,7 +120,7 @@ DELETE FROM `creature` WHERE `id`=40146;
 DELETE FROM `creature_text` WHERE `entry`=39863;
 DELETE FROM `creature_text` WHERE `entry`=40142;
 DELETE FROM `creature_text` WHERE `entry`=40146;
-DELETE FROM `creature_text` WHERE `entry`=40081;
+DELETE FROM `creature_text` WHERE `entry`=40083;
 INSERT INTO `creature_text` (`entry`,`groupid`,`id`,`text`,`type`,`language`,`probability`,`emote`,`duration`,`sound`,`comment`) VALUES 
 (39863,0,0, 'Meddlesome insects! You are too late. The Ruby Sanctum is lost!',14,0,100,1,0,17499, 'Halion'),
 (39863,1,0, 'Your world teeters on the brink of annihilation. You will ALL bear witness to the coming of a new age of DESTRUCTION!',14,0,100,0,0,17500, 'Halion'),
@@ -139,7 +139,7 @@ INSERT INTO `creature_text` (`entry`,`groupid`,`id`,`text`,`type`,`language`,`pr
 (40146,3,0, 'Your efforts have forced Halion further into the Twilight realm!',42,0,100,0,0,0, 'Halion Controller'),
 (40146,4,0, 'Without pressure in both realms, Halion begins to regenerate.',42,0,100,0,0,0, 'Halion Controller'),
 
-(40081,0,0, 'The orbiting spheres pulse with dark energy!',41,0,100,0,0,0, 'Orb Carrier');
+(40083,0,0, 'The orbiting spheres pulse with dark energy!',41,0,100,0,0,0, 'Shadow Orb');
 
 -- Spawns
 SET @OGUID = X; -- Set guid (1 required)
@@ -147,11 +147,12 @@ DELETE FROM `gameobject` WHERE `id`=203624;
 INSERT INTO `gameobject` (`guid`,`id`,`map`,`spawnMask`,`phaseMask`,`position_x`,`position_y`,`position_z`,`orientation`,`rotation0`,`rotation1`,`rotation2`,`rotation3`,`spawntimesecs`,`animprogress`,`state`) VALUES
 (@OGUID,203624,724,15,0x20,3157.372,533.9948,72.8887,1.034892,0,0,0.4946623,0.8690853,120,0,0); -- GO_TWILIGHT_FLAME_RING
 
-SET @GUID = X; -- Set guid (2 required)
-DELETE FROM `creature` WHERE `id` IN (40081,40091);
+SET @GUID = X; -- Set guid (3 required)
+DELETE FROM `creature` WHERE `id` IN (40081,40091,40151);
 INSERT INTO `creature` (`guid`,`id`,`map`,`spawnMask`,`phaseMask`,`modelid`,`equipment_id`,`position_x`,`position_y`,`position_z`,`orientation`,`spawntimesecs`,`spawndist`,`currentwaypoint`,`curhealth`,`curmana`,`MovementType`,`npcflag`,`unit_flags`,`dynamicflags`) VALUES
 (@GUID,40091,724,1,0x20,0,0,3113.711,533.5382,72.96869,1.936719,300,0,0,1,0,0,0,0,0), -- Orb Rotation Focus
-(@GUID+1,40081,724,1,0x20,0,0,3153.75,533.1875,72.97205,0,300,0,0,1,0,0,0,0,0); -- Orb Carrier
+(@GUID+1,40081,724,1,0x20,0,0,3153.75,533.1875,72.97205,0,300,0,0,1,0,0,0,0,0), -- Orb Carrier
+(@GUID+2,40151,724,1,0x21,0,0,3153.75,533.1875,72.97205,0,300,0,0,1,0,0,0,0,0); -- Combat Stalker
 
 -- Pathing for Orb Rotation Focus Entry: 40091
 SET @PATH = @GUID * 10;
