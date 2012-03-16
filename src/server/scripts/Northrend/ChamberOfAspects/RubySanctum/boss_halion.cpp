@@ -481,13 +481,9 @@ class boss_twilight_halion : public CreatureScript
 
             void JustReachedHome()
             {
-                // If the Twilight Halion enters evade mode on phase 2, the players in the Physical realm
-                // should enter the Twilight Realm to end the fight (i.e. wipe).
-                // As a consequence, the Twilight Halion entering evade mode does not end the encounter.
-                if (events.GetPhaseMask() & PHASE_TWO_MASK)
-                    return;
-
                 _instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
+                if (Creature* controller = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION_CONTROLLER)))
+                    controller->CastSpell(controller, SPELL_CLEAR_DEBUFFS);
                 ScriptedAI::JustReachedHome();
             }
 
@@ -1072,18 +1068,20 @@ class npc_orb_carrier : public CreatureScript
 
         struct npc_orb_carrierAI : public ScriptedAI
         {
-            npc_orb_carrierAI(Creature* creature) : ScriptedAI(creature)
+            npc_orb_carrierAI(Creature* creature) : ScriptedAI(creature), _instance(creature->GetInstanceScript())
             {
                 ASSERT(creature->GetVehicleKit());
+                me->setActive(true);
             }
 
             void UpdateAI(uint32 const diff)
             {
                 //! According to sniffs this spell is cast every 1 or 2 seconds.
                 //! However, refreshing it looks bad, so just cast the spell if
-                //! we are not channeling it. Targeting will be handled by conditions.
+                //! we are not channeling it.
                 if (!me->HasUnitState(UNIT_STATE_CASTING))
-                    DoCast(me, SPELL_TRACK_ROTATION, false);
+                    if (Creature* rotationFocus = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_ORB_ROTATION_FOCUS)))
+                        DoCast(rotationFocus, SPELL_TRACK_ROTATION, false);
             }
 
             void DoAction(int32 const action)
@@ -1120,6 +1118,9 @@ class npc_orb_carrier : public CreatureScript
                     }
                 }
             }
+
+        private:
+            InstanceScript* _instance;
         };
 
         CreatureAI* GetAI(Creature* creature) const
@@ -1138,6 +1139,8 @@ class npc_combat_stalker : public CreatureScript
             npc_combat_stalkerAI(Creature* creature) : Scripted_NoMovementAI(creature),
                    _instance(creature->GetInstanceScript())
             {
+                creature->SetPhaseMask(0x20|0x1, true);
+                me->setActive(true);
             }
 
             void Reset()
@@ -1151,6 +1154,8 @@ class npc_combat_stalker : public CreatureScript
                 if (who->GetTypeId() == TYPEID_UNIT)
                     if (who->ToCreature()->GetEntry() == NPC_HALION || who->ToCreature()->GetEntry() == NPC_TWILIGHT_HALION)
                         me->AddThreat(who, float(urand(1,3) * 100.0f));
+
+                _wipeCheck = true;
             }
 
             void EnterEvadeMode()
@@ -1160,6 +1165,8 @@ class npc_combat_stalker : public CreatureScript
 
                 if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_TWILIGHT_HALION)))
                     twilightHalion->AI()->EnterEvadeMode();
+
+                _wipeCheck = false;
 
                 ScriptedAI::EnterEvadeMode();
             }
@@ -1176,10 +1183,10 @@ class npc_combat_stalker : public CreatureScript
                     return;
                 }
 
-                _wipeCheck ^= true;
                 if (!_wipeCheck)
                     return;
 
+                _wipeCheck = !_wipeCheck;
                 for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
                     if (Unit* refTarget = (*itr)->getTarget())
                         if (refTarget->GetTypeId() == TYPEID_PLAYER)

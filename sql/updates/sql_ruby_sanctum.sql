@@ -52,7 +52,7 @@ UPDATE `creature_template` SET `faction_A`=14,`faction_H`=14,`exp`=2,`mindmg`=50
 UPDATE `creature_template` SET `faction_A`=14,`faction_H`=14,`exp`=2,`mindmg`=509,`maxdmg`=683,`attackpower`=805,`dmg_multiplier`=35 WHERE `entry`=40145; -- 40145 - Halion (3) - The Twilight Destroyer
 
 -- 40091 - Orb Rotation Focus
-UPDATE `creature_template` SET `modelid1`=11686,`modelid2`=169,`scale`=1,`flags_extra`=130,`unit_flags`=33554688 WHERE `entry`=40091;
+UPDATE `creature_template` SET `modelid1`=11686,`modelid2`=169,`scale`=1,`unit_flags`=33554688 WHERE `entry`=40091;
 
 UPDATE `creature_template` SET `InhabitType`=7,`modelid1`=11686,`modelid2`=169,`VehicleId`=718,`unit_flags`=33554688 WHERE `entry`=40081; -- 40081 - Orb Carrier 
 UPDATE `creature_template` SET `InhabitType`=7,`modelid1`=11686,`modelid2`=169,`VehicleId`=718,`unit_flags`=33554688 WHERE `entry`=40470; -- 40470 - Orb Carrier (1)
@@ -68,7 +68,7 @@ UPDATE `creature_template` SET `ScriptName`= 'boss_twilight_halion' WHERE `entry
 UPDATE `creature_template` SET `ScriptName`= 'npc_orb_carrier' WHERE `entry`=40081;
 UPDATE `creature_template` SET `ScriptName`= 'npc_combustion_consumption' WHERE `entry` IN(40001, 40135);
 UPDATE `creature_template` SET `ScriptName`= 'npc_meteor_strike_initial' WHERE `entry`=40029;
-UPDATE `creature_template` SET `ScriptName`= 'npc_meteor_strike' WHERE `entry` IN(40041, 40042, 40043, 40044);
+UPDATE `creature_template` SET `ScriptName`= 'npc_meteor_strike' WHERE `entry` IN (40041, 40042, 40043, 40044);
 
 -- Model info update
 UPDATE `creature_model_info` SET `bounding_radius`=3.8,`combat_reach`=7.6,`gender`=2 WHERE `modelid`=16946;
@@ -207,11 +207,9 @@ INSERT INTO `npc_spellclick_spells` (`npc_entry`,`spell_id`,`cast_flags`,`user_t
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=13 AND `SourceEntry`=74758;
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=13 AND `SourceEntry`=75509;
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=13 AND `SourceEntry`=75866;
-INSERT INTO `conditions` (`SourceTypeOrReferenceId`,`SourceEntry`,`ConditionTypeOrReference`,`ConditionValue1`,`ConditionValue2`,`Comment`) VALUES
-(13,74758,18,1,40091, 'Track Rotation can only target Orb Rotation Focus');
-
-INSERT INTO `conditions` (`SourceTypeOrReferenceId`,`SourceGroup`,`SourceEntry`,`ElseGroup`,`ConditionTypeOrReference`,`ConditionValue1`,`ConditionValue2`,`ConditionValue3`,`ErrorTextId`,`ScriptName`,`Comment`) VALUES
-(13,0,75509,0,18,1,39863,0,0, '', 'Twilight Mending can only target Halion'),
-(13,0,75509,0,18,1,40142,0,0, '', 'Twilight Mending can only target Halion'),
-(13,0,75866,0,18,1,40683,0,0, '', 'Blazing Aura can only target Living Embers'),
-(13,0,75866,0,18,1,40684,0,0, '', 'Blazing Aura can only target Living Embers');
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
+(13,1,75886,0,0,31,0,3,40683,0,0,0, "", "Blazing Aura can only target Living Embers"),
+(13,1,75886,0,0,31,0,3,40684,0,0,0, "", "Blazing Aura can only target Living Embers"),
+(13,3,75509,0,0,31,0,3,40142,0,0,0, "", "Twilight Mending can only target Halion"),
+(13,3,75509,0,0,31,0,3,39863,0,0,0, "", "Twilight Mending can only target Halion"),
+(13,1,74758,0,0,31,0,3,40091,0,0,0, "", "Track Rotation can only target Orb Rotation Focus");
