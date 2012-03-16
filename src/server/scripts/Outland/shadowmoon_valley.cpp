@@ -75,7 +75,7 @@ public:
 
     struct mob_mature_netherwing_drakeAI : public ScriptedAI
     {
-        mob_mature_netherwing_drakeAI(Creature* c) : ScriptedAI(c) { }
+        mob_mature_netherwing_drakeAI(Creature* creature) : ScriptedAI(creature) { }
 
         uint64 uiPlayerGUID;
 
@@ -96,12 +96,12 @@ public:
             CastTimer = 5000;
         }
 
-        void SpellHit(Unit* pCaster, SpellInfo const* pSpell)
+        void SpellHit(Unit* pCaster, SpellInfo const* spell)
         {
             if (bCanEat || bIsEating)
                 return;
 
-            if (pCaster->GetTypeId() == TYPEID_PLAYER && pSpell->Id == SPELL_PLACE_CARCASS && !me->HasAura(SPELL_JUST_EATEN))
+            if (pCaster->GetTypeId() == TYPEID_PLAYER && spell->Id == SPELL_PLACE_CARCASS && !me->HasAura(SPELL_JUST_EATEN))
             {
                 uiPlayerGUID = pCaster->GetGUID();
                 bCanEat = true;
@@ -179,7 +179,6 @@ public:
             DoMeleeAttackIfReady();
         }
     };
-
 };
 
 /*###
@@ -207,7 +206,7 @@ public:
 
     struct mob_enslaved_netherwing_drakeAI : public ScriptedAI
     {
-        mob_enslaved_netherwing_drakeAI(Creature* c) : ScriptedAI(c)
+        mob_enslaved_netherwing_drakeAI(Creature* creature) : ScriptedAI(creature)
         {
             PlayerGUID = 0;
             Tapped = false;
@@ -224,7 +223,7 @@ public:
                 me->setFaction(FACTION_DEFAULT);
 
             FlyTimer = 10000;
-            me->SetLevitate(false);
+            me->SetDisableGravity(false);
             me->SetVisible(true);
         }
 
@@ -271,7 +270,7 @@ public:
                     PlayerGUID = 0;
                 }
                 me->SetVisible(false);
-                me->SetLevitate(false);
+                me->SetDisableGravity(false);
                 me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 me->RemoveCorpse();
             }
@@ -309,7 +308,7 @@ public:
                                     pos.m_positionZ += 25;
                                 }
 
-                                me->SetLevitate(true);
+                                me->SetDisableGravity(true);
                                 me->GetMotionMaster()->MovePoint(1, pos);
                             }
                         }
@@ -321,7 +320,6 @@ public:
             DoMeleeAttackIfReady();
         }
     };
-
 };
 
 /*#####
@@ -340,7 +338,7 @@ public:
 
     struct mob_dragonmaw_peonAI : public ScriptedAI
     {
-        mob_dragonmaw_peonAI(Creature* c) : ScriptedAI(c) {}
+        mob_dragonmaw_peonAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 PlayerGUID;
         bool Tapped;
@@ -401,7 +399,6 @@ public:
             }
         }
     };
-
 };
 
 /*######
@@ -413,10 +410,10 @@ class npc_drake_dealer_hurlunk : public CreatureScript
 public:
     npc_drake_dealer_hurlunk() : CreatureScript("npc_drake_dealer_hurlunk") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
-        if (uiAction == GOSSIP_ACTION_TRADE)
+        if (action == GOSSIP_ACTION_TRADE)
             player->GetSession()->SendListInventory(creature->GetGUID());
 
         return true;
@@ -431,7 +428,6 @@ public:
 
         return true;
     }
-
 };
 
 /*######
@@ -446,10 +442,10 @@ class npcs_flanis_swiftwing_and_kagrosh : public CreatureScript
 public:
     npcs_flanis_swiftwing_and_kagrosh() : CreatureScript("npcs_flanis_swiftwing_and_kagrosh") { }
 
-    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
-        if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
+        if (action == GOSSIP_ACTION_INFO_DEF+1)
         {
             ItemPosCountVec dest;
             uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 30658, 1, NULL);
@@ -459,7 +455,7 @@ public:
                 player->PlayerTalkClass->ClearMenus();
             }
         }
-        if (uiAction == GOSSIP_ACTION_INFO_DEF+2)
+        if (action == GOSSIP_ACTION_INFO_DEF+2)
         {
             ItemPosCountVec dest;
             uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 30659, 1, NULL);
@@ -483,7 +479,6 @@ public:
 
         return true;
     }
-
 };
 
 /*######
@@ -504,10 +499,10 @@ class npc_murkblood_overseer : public CreatureScript
 public:
     npc_murkblood_overseer() : CreatureScript("npc_murkblood_overseer") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
-        switch (uiAction)
+        switch (action)
         {
             case GOSSIP_ACTION_INFO_DEF+1:
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SMO1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
@@ -552,7 +547,6 @@ public:
         player->SEND_GOSSIP_MENU(10940, creature->GetGUID());
         return true;
     }
-
 };
 
 /*######
@@ -572,10 +566,10 @@ class npc_oronok_tornheart : public CreatureScript
 public:
     npc_oronok_tornheart() : CreatureScript("npc_oronok_tornheart") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
-        switch (uiAction)
+        switch (action)
         {
             case GOSSIP_ACTION_TRADE:
                 player->GetSession()->SendListInventory(creature->GetGUID());
@@ -628,7 +622,6 @@ public:
 
         return true;
     }
-
 };
 
 /*####
@@ -721,7 +714,7 @@ public:
 
     struct npc_overlord_morghorAI : public ScriptedAI
     {
-        npc_overlord_morghorAI(Creature* c) : ScriptedAI(c) {}
+        npc_overlord_morghorAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 PlayerGUID;
         uint64 IllidanGUID;
@@ -815,7 +808,7 @@ public:
             case 19: DoScriptText(LORD_ILLIDAN_SAY_7, Illi); return 5000; break;
             case 20:
                 Illi->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-                Illi->SetLevitate(true);
+                Illi->SetDisableGravity(true);
                 return 500; break;
             case 21: DoScriptText(OVERLORD_SAY_5, me); return 500; break;
             case 22:
@@ -884,7 +877,6 @@ public:
             } else ConversationTimer -= diff;
         }
     };
-
 };
 
 /*####
@@ -1061,7 +1053,6 @@ public:
             }
         }
     };
-
 };
 
 /*#####
@@ -1176,7 +1167,7 @@ public:
 
     struct mob_torloth_the_magnificentAI : public ScriptedAI
     {
-        mob_torloth_the_magnificentAI(Creature* c) : ScriptedAI(c) {}
+        mob_torloth_the_magnificentAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 AnimationTimer, SpellTimer1, SpellTimer2, SpellTimer3;
 
@@ -1265,7 +1256,6 @@ public:
                 me->CombatStop();
             } else if (!Timers)
             {
-
                 SpellTimer1 = SpawnCast[6].Timer1;
                 SpellTimer2 = SpawnCast[7].Timer1;
                 SpellTimer3 = SpawnCast[8].Timer1;
@@ -1321,7 +1311,6 @@ public:
             }
         }
     };
-
 };
 
 /*#####
@@ -1340,7 +1329,7 @@ public:
 
     struct npc_lord_illidan_stormrageAI : public ScriptedAI
     {
-        npc_lord_illidan_stormrageAI(Creature* c) : ScriptedAI(c) {}
+        npc_lord_illidan_stormrageAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 PlayerGUID;
 
@@ -1467,7 +1456,6 @@ public:
                 EnterEvadeMode();
         }
     };
-
 };
 
 /*######
@@ -1486,7 +1474,7 @@ public:
 
     struct mob_illidari_spawnAI : public ScriptedAI
     {
-        mob_illidari_spawnAI(Creature* c) : ScriptedAI(c) {}
+        mob_illidari_spawnAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 LordIllidanGUID;
         uint32 SpellTimer1, SpellTimer2, SpellTimer3;
@@ -1586,7 +1574,6 @@ public:
             DoMeleeAttackIfReady();
         }
     };
-
 };
 
 void npc_lord_illidan_stormrage::npc_lord_illidan_stormrageAI::SummonNextWave()
@@ -1680,7 +1667,6 @@ public:
         }
      return true;
     }
-
 };
 
 /*####
@@ -1739,7 +1725,7 @@ public:
 
     struct npc_enraged_spiritAI : public ScriptedAI
     {
-        npc_enraged_spiritAI(Creature* c) : ScriptedAI(c) {}
+        npc_enraged_spiritAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset()   { }
 
@@ -1801,7 +1787,6 @@ public:
             }
         }
     };
-
 };
 
 /*#####

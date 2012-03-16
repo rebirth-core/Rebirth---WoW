@@ -124,7 +124,6 @@ public:
 
         void Reset()
         {
-
           timer = 2000;
           questPhase = 0;
           summonerGuid = 0;
@@ -294,7 +293,7 @@ public:
 
     struct master_kelerun_bloodmournAI : public ScriptedAI
     {
-        master_kelerun_bloodmournAI(Creature* c) : ScriptedAI(c) {}
+        master_kelerun_bloodmournAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint8  questPhase;
         uint8  paladinPhase;
@@ -366,10 +365,8 @@ public:
 
         void StartEvent()
         {
-
             if (questPhase == 1)
             { // no player check, quest can be finished as group, so no complex PlayerGUID/group search code
-
                 for (uint8 i = 0; i < 4; ++i)
                 if (Creature* summoned = DoSpawnCreature(PaladinEntry[i], SpawnPosition[i].x, SpawnPosition[i].y, SpawnPosition[i].z, SpawnPosition[i].o, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000))
                     paladinGuid[i] = summoned->GetGUID();
@@ -428,7 +425,6 @@ public:
 
         return true;
     }
-
 };
 
 /*######
@@ -461,7 +457,7 @@ public:
 
     struct npc_apprentice_mirvedaAI : public ScriptedAI
     {
-        npc_apprentice_mirvedaAI(Creature* c) : ScriptedAI(c), Summons(me) {}
+        npc_apprentice_mirvedaAI(Creature* creature) : ScriptedAI(creature), Summons(me) {}
 
         uint32 KillCount;
         uint64 PlayerGUID;
@@ -512,7 +508,6 @@ public:
             }
         }
     };
-
 };
 
 /*######
@@ -552,7 +547,7 @@ public:
 
     struct npc_infused_crystalAI : public Scripted_NoMovementAI
     {
-        npc_infused_crystalAI(Creature* c) : Scripted_NoMovementAI(c) {}
+        npc_infused_crystalAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
         uint32 EndTimer;
         uint32 WaveTimer;
@@ -621,7 +616,6 @@ public:
             } else WaveTimer -= diff;
         }
     };
-
 };
 
 void AddSC_eversong_woods()

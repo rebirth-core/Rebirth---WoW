@@ -49,9 +49,9 @@ class npc_forest_frog : public CreatureScript
 
         struct npc_forest_frogAI : public ScriptedAI
         {
-            npc_forest_frogAI(Creature* c) : ScriptedAI(c)
+            npc_forest_frogAI(Creature* creature) : ScriptedAI(creature)
             {
-                instance = c->GetInstanceScript();
+                instance = creature->GetInstanceScript();
             }
 
             InstanceScript* instance;
@@ -128,7 +128,7 @@ class npc_zulaman_hostage : public CreatureScript
 
         struct npc_zulaman_hostageAI : public ScriptedAI
         {
-            npc_zulaman_hostageAI(Creature* c) : ScriptedAI(c) {IsLoot = false;}
+            npc_zulaman_hostageAI(Creature* creature) : ScriptedAI(creature) {IsLoot = false;}
             bool IsLoot;
             uint64 PlayerGUID;
             void Reset() {}
@@ -157,10 +157,10 @@ class npc_zulaman_hostage : public CreatureScript
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 uiAction)
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
-            if (uiAction == GOSSIP_ACTION_INFO_DEF + 1)
+            if (action == GOSSIP_ACTION_INFO_DEF + 1)
                 player->CLOSE_GOSSIP_MENU();
 
             if (!creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP))

@@ -158,7 +158,7 @@ m_HostileRefManager(this)
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
 
-    m_updateFlag = (UPDATEFLAG_HIGHGUID | UPDATEFLAG_LIVING | UPDATEFLAG_HAS_POSITION);
+    m_updateFlag = (UPDATEFLAG_LIVING | UPDATEFLAG_STATIONARY_POSITION);
 
     m_attackTimer[BASE_ATTACK] = 0;
     m_attackTimer[OFF_ATTACK] = 0;
@@ -430,7 +430,7 @@ void Unit::SendMonsterMoveTransport(Unit* vehicleOwner)
     data.append(GetPackGUID());
     data.append(vehicleOwner->GetPackGUID());
     data << int8(GetTransSeat());
-    data << uint8(GetTypeId() == TYPEID_PLAYER ? 1 : 0); // boolean
+    data << uint8(0);
     data << GetPositionX() - vehicleOwner->GetPositionX();
     data << GetPositionY() - vehicleOwner->GetPositionY();
     data << GetPositionZ() - vehicleOwner->GetPositionZ();
@@ -784,20 +784,9 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         // last damage from duel opponent
         if (duel_hasEnded)
         {
-            Player* he;
+            Player* he = duel_wasMounted ? victim->GetCharmer()->ToPlayer() : victim->ToPlayer();
 
-            if (duel_wasMounted)
-            {
-                ASSERT(victim->GetCharmer()->GetTypeId() == TYPEID_PLAYER);
-                he = victim->GetCharmer()->ToPlayer();
-            }
-            else
-            {
-                ASSERT(victim->GetTypeId() == TYPEID_PLAYER);
-                he = victim->ToPlayer();
-            }
-
-            ASSERT(he->duel);
+            ASSERT(he && he->duel);
 
             if (duel_wasMounted) // In this case victim==mount
                 victim->SetHealth(1);
@@ -3060,7 +3049,7 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
     if (IsInWater())
         return c->canSwim();
     else
-        return c->canWalk() || c->canFly();
+        return c->canWalk() || c->CanFly();
 }
 
 bool Unit::IsInWater() const
@@ -4122,6 +4111,45 @@ Aura* Unit::GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID, uint64 itemC
 {
     AuraApplication * aurApp = GetAuraApplicationOfRankedSpell(spellId, casterGUID, itemCasterGUID, reqEffMask);
     return aurApp ? aurApp->GetBase() : NULL;
+}
+
+void Unit::GetDispellableAuraList(Unit* caster, uint32 dispelMask, DispelChargesList& dispelList)
+{
+    // we should not be able to dispel diseases if the target is affected by unholy blight
+    if (dispelMask & (1 << DISPEL_DISEASE) && HasAura(50536))
+        dispelMask &= ~(1 << DISPEL_DISEASE);
+
+    AuraMap const& auras = GetOwnedAuras();
+    for (AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+    {
+        Aura* aura = itr->second;
+        AuraApplication * aurApp = aura->GetApplicationOfTarget(GetGUID());
+        if (!aurApp)
+            continue;
+
+        // don't try to remove passive auras
+        if (aura->IsPassive())
+            continue;
+
+        if (aura->GetSpellInfo()->GetDispelMask() & dispelMask)
+        {
+            if (aura->GetSpellInfo()->Dispel == DISPEL_MAGIC)
+            {
+                // do not remove positive auras if friendly target
+                //               negative auras if non-friendly target
+                if (aurApp->IsPositive() == IsFriendlyTo(caster))
+                    continue;
+            }
+
+            // The charges / stack amounts don't count towards the total number of auras that can be dispelled.
+            // Ie: A dispel on a target with 5 stacks of Winters Chill and a Polymorph has 1 / (1 + 1) -> 50% chance to dispell
+            // Polymorph instead of 1 / (5 + 1) -> 16%.
+            bool dispel_charges = aura->GetSpellInfo()->AttributesEx7 & SPELL_ATTR7_DISPEL_CHARGES;
+            uint8 charges = dispel_charges ? aura->GetCharges() : aura->GetStackAmount();
+            if (charges > 0)
+                dispelList.push_back(std::make_pair(aura, charges));
+        }
+    }
 }
 
 bool Unit::HasAuraEffect(uint32 spellId, uint8 effIndex, uint64 caster) const
@@ -12608,15 +12636,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 return;
         }
 
-        data.append(GetPackGUID());
-        data << uint32(0);                                  // movement flags
-        data << uint16(0);                                  // unk flags
-        data << uint32(getMSTime());
-        data << float(GetPositionX());
-        data << float(GetPositionY());
-        data << float(GetPositionZ());
-        data << float(GetOrientation());
-        data << uint32(0);                                  // fall time
+        BuildMovementPacket(&data);
         data << float(GetSpeed(mtype));
         SendMessageToSet(&data, true);
     }
@@ -12673,14 +12693,6 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         data << float(GetSpeed(mtype));
         SendMessageToSet(&data, true);
     }
-}
-
-void Unit::SetHover(bool on)
-{
-    if (on)
-        CastSpell(this, 11010, true);
-    else
-        RemoveAurasDueToSpell(11010);
 }
 
 void Unit::setDeathState(DeathState s)
@@ -14579,9 +14591,9 @@ Player* Unit::GetSpellModOwner() const
 }
 
 ///----------Pet responses methods-----------------
-void Unit::SendPetCastFail(uint32 spellid, SpellCastResult msg)
+void Unit::SendPetCastFail(uint32 spellid, SpellCastResult result)
 {
-    if (msg == SPELL_CAST_OK)
+    if (result == SPELL_CAST_OK)
         return;
 
     Unit* owner = GetCharmerOrOwner();
@@ -14589,15 +14601,13 @@ void Unit::SendPetCastFail(uint32 spellid, SpellCastResult msg)
         return;
 
     WorldPacket data(SMSG_PET_CAST_FAILED, 1 + 4 + 1);
-    data << uint8(0);                                       // cast count?
+    data << uint8(0);                                       // cast count
     data << uint32(spellid);
-    data << uint8(msg);
-    // uint32 for some reason
-    // uint32 for some reason
+    data << uint8(result);
     owner->ToPlayer()->GetSession()->SendPacket(&data);
 }
 
-void Unit::SendPetActionFeedback (uint8 msg)
+void Unit::SendPetActionFeedback(uint8 msg)
 {
     Unit* owner = GetOwner();
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
@@ -14608,7 +14618,7 @@ void Unit::SendPetActionFeedback (uint8 msg)
     owner->ToPlayer()->GetSession()->SendPacket(&data);
 }
 
-void Unit::SendPetTalk (uint32 pettalk)
+void Unit::SendPetTalk(uint32 pettalk)
 {
     Unit* owner = GetOwner();
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
@@ -16991,7 +17001,7 @@ void Unit::ChangeSeat(int8 seatId, bool next)
         ASSERT(false);
 }
 
-void Unit::ExitVehicle(Position const* exitPosition)
+void Unit::ExitVehicle(Position const* /*exitPosition*/)
 {
     //! This function can be called at upper level code to initialize an exit from the passenger's side.
     if (!m_vehicle)
@@ -17033,8 +17043,6 @@ void Unit::_ExitVehicle(Position const* exitPosition)
     else
         pos = *exitPosition;
 
-    AddUnitState(UNIT_STATE_MOVE);
-
     if (GetTypeId() == TYPEID_PLAYER)
         ToPlayer()->SetFallInformation(0, GetPositionZ());
     else if (HasUnitMovementFlag(MOVEMENTFLAG_ROOT))
@@ -17069,12 +17077,12 @@ void Unit::_ExitVehicle(Position const* exitPosition)
 
 void Unit::BuildMovementPacket(ByteBuffer *data) const
 {
-    *data << uint32(GetUnitMovementFlags()); // movement flags
-    *data << uint16(m_movementInfo.flags2);    // 2.3.0
-    *data << uint32(getMSTime());            // time
+    *data << uint32(GetUnitMovementFlags());            // movement flags
+    *data << uint16(GetExtraUnitMovementFlags());       // 2.3.0
+    *data << uint32(getMSTime());                       // time / counter
     *data << GetPositionX();
     *data << GetPositionY();
-    *data << GetPositionZ();
+    *data << GetPositionZMinusOffset();
     *data << GetOrientation();
 
     // 0x00000200
@@ -17119,18 +17127,12 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
         *data << (float)m_movementInfo.splineElevation;
 }
 
-void Unit::SetFlying(bool apply)
+void Unit::SetCanFly(bool apply)
 {
     if (apply)
-    {
-        SetByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
-    }
+        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
     else
-    {
-        RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
-    }
+        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
 }
 
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
@@ -17171,12 +17173,25 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
             GetMap()->CreatureRelocation(ToCreature(), x, y, z, orientation);
     }
     else if (turn)
-        SetOrientation(orientation);
-
-    if ((relocated || turn) && IsVehicle())
-        GetVehicleKit()->RelocatePassengers(x, y, z, orientation);
+        UpdateOrientation(orientation);
 
     return (relocated || turn);
+}
+
+//! Only server-side orientation update, does not broadcast to client
+void Unit::UpdateOrientation(float orientation)
+{
+    SetOrientation(orientation);
+    if (IsVehicle())
+        GetVehicleKit()->RelocatePassengers(GetPositionX(), GetPositionY(), GetPositionZ(), orientation);
+}
+
+//! Only server-side height update, does not broadcast to client
+void Unit::UpdateHeight(float newZ)
+{
+    Relocate(GetPositionX(), GetPositionY(), newZ);
+    if (IsVehicle())
+        GetVehicleKit()->RelocatePassengers(GetPositionX(), GetPositionY(), newZ, GetOrientation());
 }
 
 void Unit::SendThreatListUpdate()
@@ -17441,14 +17456,14 @@ void Unit::SetFacingTo(float ori)
     init.Launch();
 }
 
-void Unit::SetFacingToObject(WorldObject* pObject)
+void Unit::SetFacingToObject(WorldObject* object)
 {
     // never face when already moving
     if (!IsStopped())
         return;
 
     // TODO: figure out under what conditions creature will move towards object instead of facing it where it currently is.
-    SetFacingTo(GetAngle(pObject));
+    SetFacingTo(GetAngle(object));
 }
 
 bool Unit::SetWalk(bool enable)
@@ -17464,15 +17479,98 @@ bool Unit::SetWalk(bool enable)
     return true;
 }
 
-bool Unit::SetLevitate(bool enable)
+bool Unit::SetDisableGravity(bool disable)
 {
-    if (enable == IsLevitating())
+    if (disable == IsLevitating())
+        return false;
+    
+    if (disable)
+        AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
+
+    return true;
+}
+
+bool Unit::SetHover(bool enable)
+{
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
         return false;
 
     if (enable)
-        AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
+    {
+        //! No need to check height on ascent
+        AddUnitMovementFlag(MOVEMENTFLAG_HOVER);
+        if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
+            UpdateHeight(GetPositionZ() + hh);
+    }
     else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
+    {
+        RemoveUnitMovementFlag(MOVEMENTFLAG_HOVER);
+        if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
+        {
+            float newZ = GetPositionZ() - hh;
+            UpdateAllowedPositionZ(GetPositionX(), GetPositionY(), newZ);
+            UpdateHeight(newZ);
+        }
+    }
 
     return true;
+}
+
+void Unit::SendMovementHover()
+{
+    WorldPacket data(MSG_MOVE_HOVER, 64);
+    data.append(GetPackGUID());
+    BuildMovementPacket(&data);
+    SendMessageToSet(&data, true);
+}
+
+void Unit::SendMovementWaterWalking() 
+{
+    WorldPacket data(MSG_MOVE_WATER_WALK, 64);
+    data.append(GetPackGUID());
+    BuildMovementPacket(&data);
+    SendMessageToSet(&data, true);
+}
+
+void Unit::SendMovementFeatherFall()
+{
+    WorldPacket data(MSG_MOVE_FEATHER_FALL, 64);
+    data.append(GetPackGUID());
+    BuildMovementPacket(&data);
+    SendMessageToSet(&data, true);
+}
+    
+void Unit::SendMovementGravityChange()
+{
+    WorldPacket data(MSG_MOVE_GRAVITY_CHNG, 64);
+    data.append(GetPackGUID());
+    BuildMovementPacket(&data);
+    SendMessageToSet(&data, true);
+}
+
+void Unit::SendMovementCanFlyChange()
+{
+    /*!
+        if ( a3->MoveFlags & MOVEMENTFLAG_CAN_FLY )
+        {
+            v4->MoveFlags |= 0x1000000u;
+            result = 1;
+        }
+        else
+        {
+            if ( v4->MoveFlags & MOVEMENTFLAG_FLYING )
+                CMovement::DisableFlying(v4);
+            v4->MoveFlags &= 0xFEFFFFFFu;
+            result = 1;
+        }
+    */
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SendMovementSetCanFly(CanFly());
+
+    WorldPacket data(MSG_MOVE_UPDATE_CAN_FLY, 64);
+    data.append(GetPackGUID());
+    BuildMovementPacket(&data);
+    SendMessageToSet(&data, true);
 }

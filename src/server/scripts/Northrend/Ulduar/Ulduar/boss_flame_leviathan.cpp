@@ -171,7 +171,7 @@ enum Yells
 
 enum MiscellanousData
 {
-    // Other actions are in Ulduar.h
+    // Other Actions are in Ulduar.h
     ACTION_START_HARD_MODE    = 5,
     ACTION_SPAWN_VEHICLES     = 6,
     // Amount of seats depending on Raid mode
@@ -1155,7 +1155,7 @@ class npc_lorekeeper : public CreatureScript
             }
         };
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 action)
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
             InstanceScript* instance = creature->GetInstanceScript();
@@ -1228,10 +1228,10 @@ class npc_brann_bronzebeard : public CreatureScript
 public:
     npc_brann_bronzebeard() : CreatureScript("npc_brann_bronzebeard") { }
 
-    //bool OnGossipSelect(Player* player, Creature* creature, uint32 uiSender, uint32 uiAction)
+    //bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     //{
     //    player->PlayerTalkClass->ClearMenus();
-    //    switch(uiAction)
+    //    switch(action)
     //    {
     //        case GOSSIP_ACTION_INFO_DEF+1:
     //            if (player)
@@ -1756,7 +1756,7 @@ class spell_vehicle_throw_passenger : public SpellScriptLoader
                                                 if (Unit* device = seat->GetPassenger(2))
                                                     if (!device->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
                                                     {
-                                                        float dist = unit->GetExactDistSq(targets.GetDst());
+                                                        float dist = unit->GetExactDistSq(targets.GetDstPos());
                                                         if (dist < minDist)
                                                         {
                                                             minDist = dist;
@@ -1764,13 +1764,13 @@ class spell_vehicle_throw_passenger : public SpellScriptLoader
                                                         }
                                                     }
                             }
-                            if (target && target->IsWithinDist2d(targets.GetDst(), GetSpellInfo()->Effects[effIndex].CalcRadius() * 2)) // now we use *2 because the location of the seat is not correct
+                            if (target && target->IsWithinDist2d(targets.GetDstPos(), GetSpellInfo()->Effects[effIndex].CalcRadius() * 2)) // now we use *2 because the location of the seat is not correct
                                 passenger->EnterVehicle(target, 0);
                             else
                             {
                                 passenger->ExitVehicle();
                                 float x, y, z;
-                                targets.GetDst()->GetPosition(x, y, z);
+                                targets.GetDstPos()->GetPosition(x, y, z);
                                 passenger->GetMotionMaster()->MoveJump(x, y, z, targets.GetSpeedXY(), targets.GetSpeedZ());
                             }
                         }
