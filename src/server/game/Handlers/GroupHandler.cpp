@@ -388,7 +388,7 @@ void WorldSession::HandleGroupDisbandOpcode(WorldPacket & /*recv_data*/)
     if (!grp)
         return;
 
-    if (_player->InBattleground() || _player->InOutdoorPVP(true))
+    if (_player->InBattleground())
     {
         SendPartyResult(PARTY_OP_INVITE, "", ERR_INVITE_RESTRICTED);
         return;

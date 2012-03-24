@@ -236,8 +236,6 @@ void MotionMaster::MoveChase(Unit* target, float dist, float angle)
     // ignore movement request if target not exist
     if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
         return;
-	if (Impl[MOTION_SLOT_ACTIVE] && Impl[MOTION_SLOT_ACTIVE]->GetMovementGeneratorType() == HOME_MOTION_TYPE)
-        return;
 
     //_owner->ClearUnitState(UNIT_STATE_FOLLOW);
     if (_owner->GetTypeId() == TYPEID_PLAYER)
@@ -367,10 +365,7 @@ void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float spee
     init.SetParabolic(max_height,0);
     init.SetVelocity(speedXY);
     init.Launch();
-    if (_owner->GetTypeId() == TYPEID_PLAYER)
-        Mutate(new EffectMovementGenerator(id), MOTION_SLOT_CONTROLLED);
-    else
-        Mutate(new EffectMovementGenerator(id), MOTION_SLOT_ACTIVE);
+    Mutate(new EffectMovementGenerator(id), MOTION_SLOT_CONTROLLED);
 }
 
 void MotionMaster::MoveFall(uint32 id/*=0*/)

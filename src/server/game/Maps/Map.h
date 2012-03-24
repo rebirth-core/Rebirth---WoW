@@ -136,7 +136,8 @@ enum ZLiquidStatus
 
 struct LiquidData
 {
-    uint32 type;
+    uint32 type_flags;
+    uint32 entry;
     float  level;
     float  depth_level;
 };
@@ -163,7 +164,8 @@ class GridMap
 
     // Liquid data
     float _liquidLevel;
-    uint8* _liquidData;
+    uint16* _liquidEntry;
+    uint8* _liquidFlags;
     float* _liquidMap;
     uint16 _gridArea;
     uint16 _liquidType;
@@ -453,6 +455,21 @@ class Map : public GridRefManager<NGridType>
 
         InstanceMap* ToInstanceMap(){ if (IsDungeon())  return reinterpret_cast<InstanceMap*>(this); else return NULL;  }
         const InstanceMap* ToInstanceMap() const { if (IsDungeon())  return (const InstanceMap*)((InstanceMap*)this); else return NULL;  }
+     /*
+      **********************
+      * DYNAMIC LOS SYSTEM *
+      **********************
+     */
+     public:
+         uint32 AddDynLOSObject(float x, float y, float radius);
+         uint32 AddDynLOSObject(float x, float y, float z, float radius, float height);
+         void SetDynLOSObjectState(uint32 id, bool state);
+		 bool GetDynLOSObjectState(uint32 id);
+         bool IsInDynLOS(float x, float y, float z, float x2, float y2, float z2);
+     private:
+         std::map<uint32, DynamicLOSObject*> m_dynamicLOSObjects;
+         uint32 m_dynamicLOSCounter;
+     /* END */
         float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask) const;
@@ -473,7 +490,6 @@ class Map : public GridRefManager<NGridType>
 
         void SendInitTransports(Player* player);
         void SendRemoveTransports(Player* player);
-		void SendInitTransportsInInstance(Player* player);
 
         bool CreatureCellRelocation(Creature* creature, Cell new_cell);
 

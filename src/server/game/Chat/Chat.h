@@ -131,7 +131,6 @@ class ChatHandler
         bool ShowHelpForCommand(ChatCommand* table, const char* cmd);
         bool ShowHelpForSubCommands(ChatCommand* table, char const* cmd, char const* subcmd);
 
-        bool HandleAHBotOptionsCommand(const char* args);
         bool HandleNameAnnounceCommand(const char* args);
         bool HandleGMNameAnnounceCommand(const char* args);
         bool HandleGMAnnounceCommand(const char* args);
@@ -358,15 +357,6 @@ class ChatHandler
         bool HandleUnBanHelper(BanMode mode, char const* args);
         void HandleCharacterLevel(Player* player, uint64 playerGuid, uint32 oldLevel, uint32 newLevel);
         void HandleLearnSkillRecipesHelper(Player* player, uint32 skill_id);
-		
-		
-        //Wintergrasp
-        bool HandleWintergraspStatusCommand(const char *args);
-        bool HandleWintergraspStartCommand(const char *args);
-        bool HandleWintergraspStopCommand(const char *args);
-        bool HandleWintergraspEnableCommand(const char *args);
-        bool HandleWintergraspSwitchTeamCommand(const char *args);
-        bool HandleWintergraspTimerCommand(const char *args);
 
         // Stores informations about a deleted character
         struct DeletedInfo

@@ -114,16 +114,16 @@ class ulduar_teleporter : public GameObjectScript
                 if (instance->GetBossState(BOSS_XT002) == DONE)
                 {
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleport zum Schrottplatz", GOSSIP_SENDER_MAIN, SCRAPYARD);
-                    if (player->isGameMaster())
+                    if (sWorld->getBoolConfig(CONFIG_REBIRTH_ULDUAR_BETA_ENABLED))
                         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleport zur Vorkammer von Ulduar", GOSSIP_SENDER_MAIN, ANTECHAMBER);
                 }
-                if (instance->GetBossState(BOSS_KOLOGARN) == DONE && player->isGameMaster())
+                if (instance->GetBossState(BOSS_KOLOGARN) == DONE && sWorld->getBoolConfig(CONFIG_REBIRTH_ULDUAR_BETA_ENABLED))
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleport zum Zerschmetterten Gang", GOSSIP_SENDER_MAIN, WALKWAY);
-                if (instance->GetBossState(BOSS_AURIAYA) == DONE && player->isGameMaster())
+                if (instance->GetBossState(BOSS_AURIAYA) == DONE && sWorld->getBoolConfig(CONFIG_REBIRTH_ULDUAR_BETA_ENABLED))
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleport zum Konservatorium des Lebens", GOSSIP_SENDER_MAIN, CONSERVATORY);
-                if (instance->GetBossState(BOSS_FREYA) == DONE && player->isGameMaster())
+                if (instance->GetBossState(BOSS_FREYA) == DONE && sWorld->getBoolConfig(CONFIG_REBIRTH_ULDUAR_BETA_ENABLED))
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleport zum Funken der Imagination", GOSSIP_SENDER_MAIN, SPARK);
-                if (instance->GetBossState(BOSS_VEZAX) == DONE && player->isGameMaster())
+                if (instance->GetBossState(BOSS_VEZAX) == DONE && sWorld->getBoolConfig(CONFIG_REBIRTH_ULDUAR_BETA_ENABLED))
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleport zum Abstieg in den Wahnsinn", GOSSIP_SENDER_MAIN, MADNESS);
             }
 

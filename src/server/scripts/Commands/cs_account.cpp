@@ -382,7 +382,7 @@ public:
 
         // Let set addon state only for lesser (strong) security level
         // or to self account
-        if (handler->GetSession() && handler->GetSession()->GetAccountId () != accountId &&
+        if (handler->GetSession() && handler->GetSession()->GetAccountId() != accountId &&
             handler->HasLowerSecurityAccount(NULL, accountId, true))
             return false;
 
@@ -502,11 +502,12 @@ public:
             stmt->setUInt32(0, targetAccountId);
             stmt->setUInt32(1, realmID);
         }
+
         LoginDatabase.Execute(stmt);
 
         if (gm != 0)
         {
-            PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT_ACCESS);
+            stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT_ACCESS);
 
             stmt->setUInt32(0, targetAccountId);
             stmt->setUInt8(1, uint8(gm));

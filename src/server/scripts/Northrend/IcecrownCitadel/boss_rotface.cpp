@@ -108,6 +108,12 @@ class boss_rotface : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
+                if (!instance->CheckRequiredBosses(DATA_ROTFACE, who->ToPlayer()))
+                {
+                    EnterEvadeMode();
+                    instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
+                    return;
+                }
 
                 me->setActive(true);
                 Talk(SAY_AGGRO);
@@ -435,6 +441,10 @@ class spell_rotface_ooze_flood : public SpellScriptLoader
 
                 std::list<Creature*> triggers;
                 GetHitUnit()->GetCreatureListWithEntryInGrid(triggers, GetHitUnit()->GetEntry(), 12.5f);
+
+                if (triggers.empty())
+                    return;
+
                 triggers.sort(Trinity::ObjectDistanceOrderPred(GetHitUnit()));
                 GetHitUnit()->CastSpell(triggers.back(), uint32(GetEffectValue()), false, NULL, NULL, GetOriginalCaster() ? GetOriginalCaster()->GetGUID() : 0);
             }

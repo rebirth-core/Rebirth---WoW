@@ -102,7 +102,7 @@ namespace FactorySelector
     MovementGenerator* selectMovementGenerator(Creature* creature)
     {
         MovementGeneratorRegistry& mv_registry(*MovementGeneratorRepository::instance());
-        ASSERT(creature->GetCreatureInfo() != NULL);
+        ASSERT(creature->GetCreatureTemplate() != NULL);
         const MovementGeneratorCreator* mv_factory = mv_registry.GetRegistryItem(creature->GetDefaultMovementType());
 
         /* if (mv_factory == NULL)
@@ -134,6 +134,11 @@ namespace FactorySelector
         GameObjectAIRegistry& ai_registry(*GameObjectAIRepository::instance());
 
         ai_factory = ai_registry.GetRegistryItem(go->GetAIName());
+                
+        //scriptname in db
+        if (!ai_factory)
+            if (GameObjectAI* scriptedAI = sScriptMgr->GetGameObjectAI(go))
+                return scriptedAI;
 
         //future goAI types go here
 

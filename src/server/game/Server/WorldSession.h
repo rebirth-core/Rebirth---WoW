@@ -31,24 +31,25 @@
 #include "WorldPacket.h"
 #include "Cryptography/BigNumber.h"
 
-struct ItemTemplate;
-struct AuctionEntry;
-struct DeclinedName;
-struct MovementInfo;
-
+class CalendarEvent;
+class CalendarInvite;
 class Creature;
+class GameObject;
+class InstanceSave;
 class Item;
+class LoginQueryHolder;
 class Object;
 class Player;
-class Unit;
-class GameObject;
 class Quest;
+class SpellCastTargets;
+class Unit;
+class Warden;
 class WorldPacket;
 class WorldSocket;
-class LoginQueryHolder;
-class SpellCastTargets;
-class Warden;
 struct AreaTableEntry;
+struct AuctionEntry;
+struct DeclinedName;
+struct ItemTemplate;
 struct LfgJoinResultData;
 struct LfgLockStatus;
 struct LfgPlayerBoot;
@@ -56,6 +57,7 @@ struct LfgProposal;
 struct LfgReward;
 struct LfgRoleCheck;
 struct LfgUpdateData;
+struct MovementInfo;
 
 enum AccountDataType
 {
@@ -121,6 +123,16 @@ enum PartyResult
     ERR_PARTY_LFG_BOOT_DUNGEON_COMPLETE = 28,
     ERR_PARTY_LFG_BOOT_LOOT_ROLLS       = 29,
     ERR_PARTY_LFG_TELEPORT_IN_COMBAT    = 30
+};
+
+
+enum BFLeaveReason
+{
+    BF_LEAVE_REASON_CLOSE     = 0x00000001,
+    //BF_LEAVE_REASON_UNK1      = 0x00000002, (not used)
+    //BF_LEAVE_REASON_UNK2      = 0x00000004, (not used)
+    BF_LEAVE_REASON_EXITED    = 0x00000008,
+    BF_LEAVE_REASON_LOW_LEVEL = 0x00000010,
 };
 
 enum ChatRestrictionType
@@ -292,7 +304,7 @@ class WorldSession
 
         void SendAttackStop(Unit const* enemy);
 
-        void SendBattlegGroundList(uint64 guid, BattlegroundTypeId bgTypeId);
+        void SendBattleGroundList(uint64 guid, BattlegroundTypeId bgTypeId);
 
         void SendTradeStatus(TradeStatus status);
         void SendUpdateTrade(bool trader_data = true);
@@ -784,12 +796,12 @@ class WorldSession
         void HandleHearthAndResurrect(WorldPacket& recv_data);
         void HandleInstanceLockResponse(WorldPacket& recvPacket);
 
-        // WinterGrasp
+        // Battlefield
         void SendBfInvitePlayerToWar(uint32 BattleId,uint32 ZoneId,uint32 time);
         void SendBfInvitePlayerToQueue(uint32 BattleId);
-        void SendBfQueueInviteResponce(uint32 BattleId,uint32 ZoneId);
+        void SendBfQueueInviteResponse(uint32 BattleId,uint32 ZoneId, bool CanQueue = true, bool Full = false);
         void SendBfEntered(uint32 BattleId);
-        void SendBfLeaveMessage(uint32 BattleId);
+        void SendBfLeaveMessage(uint32 BattleId, BFLeaveReason reason = BF_LEAVE_REASON_EXITED);
         void HandleBfQueueInviteResponse(WorldPacket &recv_data);
         void HandleBfEntryInviteResponse(WorldPacket &recv_data);
         void HandleBfExitRequest(WorldPacket &recv_data);
@@ -873,21 +885,36 @@ class WorldSession
         void HandleAcceptGrantLevel(WorldPacket& recv_data);
 
         // Calendar
-        void HandleCalendarGetCalendar(WorldPacket& recv_data);
-        void HandleCalendarGetEvent(WorldPacket& recv_data);
-        void HandleCalendarGuildFilter(WorldPacket& recv_data);
-        void HandleCalendarArenaTeam(WorldPacket& recv_data);
-        void HandleCalendarAddEvent(WorldPacket& recv_data);
-        void HandleCalendarUpdateEvent(WorldPacket& recv_data);
-        void HandleCalendarRemoveEvent(WorldPacket& recv_data);
-        void HandleCalendarCopyEvent(WorldPacket& recv_data);
-        void HandleCalendarEventInvite(WorldPacket& recv_data);
-        void HandleCalendarEventRsvp(WorldPacket& recv_data);
-        void HandleCalendarEventRemoveInvite(WorldPacket& recv_data);
-        void HandleCalendarEventStatus(WorldPacket& recv_data);
-        void HandleCalendarEventModeratorStatus(WorldPacket& recv_data);
-        void HandleCalendarComplain(WorldPacket& recv_data);
-        void HandleCalendarGetNumPending(WorldPacket& recv_data);
+        void HandleCalendarGetCalendar(WorldPacket& recvData);
+        void HandleCalendarGetEvent(WorldPacket& recvData);
+        void HandleCalendarGuildFilter(WorldPacket& recvData);
+        void HandleCalendarArenaTeam(WorldPacket& recvData);
+        void HandleCalendarAddEvent(WorldPacket& recvData);
+        void HandleCalendarUpdateEvent(WorldPacket& recvData);
+        void HandleCalendarRemoveEvent(WorldPacket& recvData);
+        void HandleCalendarCopyEvent(WorldPacket& recvData);
+        void HandleCalendarEventInvite(WorldPacket& recvData);
+        void HandleCalendarEventRsvp(WorldPacket& recvData);
+        void HandleCalendarEventRemoveInvite(WorldPacket& recvData);
+        void HandleCalendarEventStatus(WorldPacket& recvData);
+        void HandleCalendarEventModeratorStatus(WorldPacket& recvData);
+        void HandleCalendarComplain(WorldPacket& recvData);
+        void HandleCalendarGetNumPending(WorldPacket& recvData);
+        void HandleCalendarEventSignup(WorldPacket& recvData);
+
+        void SendCalendarEvent(CalendarEvent const& calendarEvent, CalendarSendEventType sendEventType);
+        void SendCalendarEventInvite(CalendarInvite const& invite, bool pending);
+        void SendCalendarEventInviteAlert(CalendarEvent const& calendarEvent, CalendarInvite const& calendarInvite);
+        void SendCalendarEventInviteRemove(CalendarInvite const& invite, uint32 flags);
+        void SendCalendarEventInviteRemoveAlert(CalendarEvent const& calendarEvent, CalendarInviteStatus status);
+        void SendCalendarEventRemovedAlert(CalendarEvent const& calendarEvent);
+        void SendCalendarEventUpdateAlert(CalendarEvent const& calendarEvent, CalendarSendEventType sendEventType);
+        void SendCalendarEventStatus(CalendarEvent const& calendarEvent, CalendarInvite const& invite);
+        void SendCalendarEventModeratorStatusAlert(CalendarInvite const& invite);
+        void SendCalendarClearPendingAction();
+        void SendCalendarRaidLockout(InstanceSave const* save, bool add);
+        void SendCalendarRaidLockoutUpdated(InstanceSave const* save);
+        void SendCalendarCommandResult(CalendarError err, char const* param = NULL);
 
         void HandleSpellClick(WorldPacket& recv_data);
         void HandleMirrorImageDataRequest(WorldPacket& recv_data);

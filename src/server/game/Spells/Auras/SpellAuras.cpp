@@ -357,23 +357,6 @@ void Aura::_InitEffects(uint8 effMask, Unit* caster, int32 *baseAmount)
         else
             m_effects[i] = NULL;
     }
-
-    // Mixology
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_POTION && caster /*&& caster->IsPlayer()*/ && caster->HasAura(53042))
-    {
-        if (sSpellMgr->IsSpellMemberOfSpellGroup(m_spellInfo->Id, SPELL_GROUP_ELIXIR_BATTLE) ||
-            sSpellMgr->IsSpellMemberOfSpellGroup(m_spellInfo->Id, SPELL_GROUP_ELIXIR_GUARDIAN))
-        {
-            m_maxDuration *= 2;
-            m_duration = m_maxDuration;
-            for (uint8 i = 0 ; i < MAX_SPELL_EFFECTS; ++i)
-            {
-                if (effMask & (uint8(1) << i))
-                    m_effects[i]->SetAmount((int32)(m_effects[i]->GetAmount() * 1.3f));
-            }
-        }
-    }
-
 }
 
 Aura::~Aura()
@@ -1219,19 +1202,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         break;
                 }
                 break;
-            case SPELLFAMILY_WARLOCK:
-                switch (GetId())
-                {
-                    case 48020: // Demonic Circle
-                        if (target->GetTypeId() == TYPEID_PLAYER)
-                            if (GameObject* obj = target->GetGameObject(48018))
-                            {
-                                target->NearTeleportTo(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
-                                target->RemoveMovementImpairingAuras();
-                            }
-                        break;
-                }
-                break;
             case SPELLFAMILY_PRIEST:
                 if (!caster)
                     break;
@@ -1434,17 +1404,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if (spellId)
                             caster->CastSpell(target, spellId, true);
                     }
-                }
-                switch (GetId())
-                {
-                   case 48018: // Demonic Circle
-                        // Do not remove GO when aura is removed by stack
-                        // to prevent remove GO added by new spell
-                        // old one is already removed
-                        if (!onReapply)
-                            target->RemoveGameObject(GetId(), true);
-                        target->RemoveAura(62388);
-                    break;
                 }
                 break;
             case SPELLFAMILY_PRIEST:
@@ -2398,13 +2357,14 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint8> & targets, Unit* caster)
                 switch (GetSpellInfo()->Effects[effIndex].Effect)
                 {
                     case SPELL_EFFECT_APPLY_AREA_AURA_PARTY:
-                        targetList.push_back(GetUnitOwner());
-                        GetUnitOwner()->GetPartyMemberInDist(targetList, radius);
-                        break;
                     case SPELL_EFFECT_APPLY_AREA_AURA_RAID:
+                    {
                         targetList.push_back(GetUnitOwner());
-                        GetUnitOwner()->GetRaidMember(targetList, radius);
+                        Trinity::AnyGroupedUnitInObjectRangeCheck u_check(GetUnitOwner(), GetUnitOwner(), radius, GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID);
+                        Trinity::UnitListSearcher<Trinity::AnyGroupedUnitInObjectRangeCheck> searcher(GetUnitOwner(), targetList, u_check);
+                        GetUnitOwner()->VisitNearbyObject(radius, searcher);
                         break;
+                    }
                     case SPELL_EFFECT_APPLY_AREA_AURA_FRIEND:
                     {
                         targetList.push_back(GetUnitOwner());

@@ -22,6 +22,7 @@
 #include "Vehicle.h"
 #include "MapManager.h"
 #include "ruby_sanctum.h"
+#include "Group.h"
 
 enum Texts
 {
@@ -93,6 +94,7 @@ enum Spells
     // Misc
     SPELL_TWILIGHT_DIVISION             = 75063,    // Phase spell from phase 2 to phase 3
     SPELL_LEAVE_TWILIGHT_REALM          = 74812,
+    SPELL_TWILIGHT_AURA                 = 74807,
     SPELL_TWILIGHT_PHASING              = 74808,    // Phase spell from phase 1 to phase 2
     SPELL_SUMMON_TWILIGHT_PORTAL        = 74809,    // Summons go 202794
     SPELL_TWILIGHT_MENDING              = 75509,
@@ -203,6 +205,28 @@ CorporealityData const corporealityReference[MAX_CORPOREALITY_STATE] =
     {100, 74831, 74836},
 };
 
+const Position PortalLocation[6] =
+{
+    {3156.35f, 518.738f, 72.9f, 0},   //Phase 2: Portal zum Betreten des Zwielichtreichs. ToDo: Fix Coords
+    {3151.86f, 556.971f, 72.9f, 0},   //Phase 3: Portal zum Verlassen des Zwielichtreichs.
+    {3157.05f, 507.106f, 72.9f, 0},   //Phase 3: Portal zum Verlassen des Zwielichtreichs.
+    {3151.86f, 556.971f, 72.9f, 0},   //Phase 3: Portal zum Betreten des Zwielichtreichs.
+    {3157.05f, 507.106f, 72.9f, 0},   //Phase 3: Portal zum Betreten des Zwielichtreichs.
+};
+
+enum TwilightPortals
+{
+    PORTAL_ENTER_TWILIGHT_REALM          = 123200,
+    PORTAL_LEAVE_TWILIGHT_REALM          = 123201,
+};
+
+uint32 PLAYERS_IN_TWILIGHT_PHASE         = 0;
+uint32 PLAYERS_IN_NORMAL_PHASE           = 0;
+
+
+bool PHASE_THREE_PORTALS_SPAWNED,
+     PHASE_THREE_ATTACK;
+
 class boss_halion : public CreatureScript
 {
     public:
@@ -216,6 +240,8 @@ class boss_halion : public CreatureScript
             {
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
                 instance->SetData(DATA_HALION_SHARED_HEALTH, me->GetMaxHealth());
+                PLAYERS_IN_TWILIGHT_PHASE = 0;
+                PLAYERS_IN_NORMAL_PHASE = 0;
                 _Reset();
             }
 
@@ -282,13 +308,21 @@ class boss_halion : public CreatureScript
                     events.DelayEvents(2600); // 2.5 sec + 0.1 sec lag
 
                     Talk(SAY_PHASE_TWO);
-
+                    Creature* portal = DoSummon(PORTAL_ENTER_TWILIGHT_REALM, PortalLocation[0], 30000, TEMPSUMMON_TIMED_DESPAWN);
+                    
                     me->CastStop();
                     DoCast(me, SPELL_TWILIGHT_PHASING);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
 
                     if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
                         controller->AI()->DoAction(ACTION_PHASE_TWO);
+                }
+
+                if (me->HealthBelowPctDamaged(49, damage) && !PHASE_THREE_PORTALS_SPAWNED)
+                {
+                    Creature* joinOne = DoSummon(PORTAL_ENTER_TWILIGHT_REALM, PortalLocation[3], 900000, TEMPSUMMON_TIMED_DESPAWN);
+                    Creature* joinTwo = DoSummon(PORTAL_ENTER_TWILIGHT_REALM, PortalLocation[4], 900000, TEMPSUMMON_TIMED_DESPAWN);
+                    PHASE_THREE_PORTALS_SPAWNED = true;
                 }
 
                 if (events.GetPhaseMask() & PHASE_THREE_MASK)
@@ -471,6 +505,13 @@ class boss_twilight_halion : public CreatureScript
                     me->CastStop();
                     DoCast(me, SPELL_TWILIGHT_DIVISION);
                     Talk(SAY_PHASE_THREE);
+                    Creature* leaveOne = DoSummon(PORTAL_LEAVE_TWILIGHT_REALM, PortalLocation[1], 900000, TEMPSUMMON_TIMED_DESPAWN);
+                    DoCast(leaveOne, SPELL_TWILIGHT_AURA);
+                    DoCast(leaveOne, SPELL_TWILIGHT_PHASING);
+
+                    Creature* leaveTwo = DoSummon(PORTAL_LEAVE_TWILIGHT_REALM, PortalLocation[2], 900000, TEMPSUMMON_TIMED_DESPAWN);
+                    DoCast(leaveTwo, SPELL_TWILIGHT_AURA);
+                    DoCast(leaveTwo, SPELL_TWILIGHT_PHASING);
                 }
 
                 if (events.GetPhaseMask() & PHASE_THREE_MASK)
@@ -610,8 +651,8 @@ class npc_halion_controller : public CreatureScript
                         if (Creature* rotationFocus = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_ORB_ROTATION_FOCUS)))
                             rotationFocus->AI()->DoAction(ACTION_BEGIN_ROTATION);
 
-                        if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
-                            halion->CastSpell(halion->GetPositionX(), halion->GetPositionY(), halion->GetPositionZ(), SPELL_SUMMON_TWILIGHT_PORTAL, true);
+                        //if (Creature* halion = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_HALION)))
+                        //    halion->CastSpell(halion->GetPositionX(), halion->GetPositionY(), halion->GetPositionZ(), SPELL_SUMMON_TWILIGHT_PORTAL, true);
                         break;
                     }
                     case ACTION_PHASE_THREE:
@@ -1591,6 +1632,48 @@ class spell_halion_twilight_cutter : public SpellScriptLoader
         }
 };
 
+class npc_halion_enter_twilight_realm : public CreatureScript
+{
+public:
+    npc_halion_enter_twilight_realm() : CreatureScript("npc_halion_enter_twilight_realm") { }
+
+    bool OnGossipHello(Player* player, Creature* portal)
+    {
+        uint32 members = player->GetGroup()->GetMembersCount();
+        PLAYERS_IN_NORMAL_PHASE = members - PLAYERS_IN_TWILIGHT_PHASE;
+
+        if (PLAYERS_IN_TWILIGHT_PHASE + 1 < members)
+        {
+            portal->CastSpell(player, SPELL_TWILIGHT_AURA, true);
+            portal->CastSpell(player, SPELL_TWILIGHT_PHASING, true);
+            PLAYERS_IN_NORMAL_PHASE--;
+            PLAYERS_IN_TWILIGHT_PHASE++;
+        }
+
+        return true;
+    }
+
+};
+
+class npc_halion_leave_twilight_realm : public CreatureScript
+{
+public:
+    npc_halion_leave_twilight_realm() : CreatureScript("npc_halion_leave_twilight_realm") { }
+
+    bool OnGossipHello(Player* player, Creature* portal)
+    {
+        uint32 members = player->GetGroup()->GetMembersCount();
+        if (PLAYERS_IN_NORMAL_PHASE + 1 < members)
+        {
+            portal->CastSpell(player, SPELL_LEAVE_TWILIGHT_REALM, true);
+            PLAYERS_IN_NORMAL_PHASE++;
+            PLAYERS_IN_TWILIGHT_PHASE--;
+        }
+        return true;
+    }
+
+};
+
 void AddSC_boss_halion()
 {
     new boss_halion();
@@ -1611,4 +1694,6 @@ void AddSC_boss_halion()
     new spell_halion_leave_twilight_realm();
     new spell_halion_enter_twilight_realm();
     new spell_halion_twilight_cutter();
+    new npc_halion_enter_twilight_realm();
+    new npc_halion_leave_twilight_realm();
 }

@@ -146,7 +146,7 @@ void Vehicle::ApplyAllImmunities()
     _me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
 
     // Mechanical units & vehicles ( which are not Bosses, they have own immunities in DB ) should be also immune on healing ( exceptions in switch below )
-    if (_me->ToCreature() && _me->ToCreature()->GetCreatureInfo()->type == CREATURE_TYPE_MECHANICAL && !_me->ToCreature()->isWorldBoss())
+    if (_me->ToCreature() && _me->ToCreature()->GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && !_me->ToCreature()->isWorldBoss())
     {
         // Heal & dispel ...
         _me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEAL, true);
@@ -178,6 +178,7 @@ void Vehicle::ApplyAllImmunities()
         case 510: // Isle of Conquest
             _me->SetControlled(true, UNIT_STATE_ROOT);
             // why we need to apply this? we can simple add immunities to slow mechanic in DB
+            //me->m_movementInfo.flags2=59;
             _me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_DECREASE_SPEED, true);
             break;
         default:
@@ -418,23 +419,20 @@ void Vehicle::RemovePassenger(Unit* unit)
         unit->m_movementInfo.t_pos.Relocate(0, 0, 0, 0);
         unit->m_movementInfo.t_time = 0;
         unit->m_movementInfo.t_seat = 0;
-        unit->SetUnitMovementFlags(0);
-        unit->SetExtraUnitMovementFlags(0);
-        if (unit->HasUnitState(UNIT_STATE_NOT_MOVE))
-            unit->ClearUnitState(UNIT_STATE_NOT_MOVE);
     }
 
     if (_me->GetTypeId() == TYPEID_UNIT && _me->ToCreature()->IsAIEnabled)
         _me->ToCreature()->AI()->PassengerBoarded(unit, seat->first, false);
 
     // only for flyable vehicles
-    if (unit->HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
+    if (unit->IsFlying())
         _me->CastSpell(unit, VEHICLE_SPELL_PARACHUTE, true);
 
     if (GetBase()->GetTypeId() == TYPEID_UNIT)
         sScriptMgr->OnRemovePassenger(this, unit);
 }
 
+//! Must be called after m_base::Relocate
 void Vehicle::RelocatePassengers(float x, float y, float z, float ang)
 {
     ASSERT(_me->GetMap());
@@ -444,8 +442,6 @@ void Vehicle::RelocatePassengers(float x, float y, float z, float ang)
         if (Unit* passenger = ObjectAccessor::GetUnit(*GetBase(), itr->second.Passenger))
         {
             ASSERT(passenger->IsInWorld());
-            ASSERT(passenger->IsOnVehicle(GetBase()));
-            ASSERT(GetSeatForPassenger(passenger));
 
             float px = x + passenger->m_movementInfo.t_pos.m_positionX;
             float py = y + passenger->m_movementInfo.t_pos.m_positionY;
@@ -510,31 +506,4 @@ uint8 Vehicle::GetAvailableSeatCount() const
             ++ret;
 
     return ret;
-}
-
-
-void Vehicle::Relocate(Position pos)
-{
-    sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle::Relocate %u", _me->GetEntry());
-
-    std::set<Unit*> vehiclePlayers;
-    for (int8 i = 0; i < 8; i++)
-        vehiclePlayers.insert(GetPassenger(i));
-
-    // passengers should be removed or they will have movement stuck
-    RemoveAllPassengers();
-
-    for (std::set<Unit*>::const_iterator itr = vehiclePlayers.begin(); itr != vehiclePlayers.end(); ++itr)
-    {
-        if (Unit* plr = (*itr))
-        {
-            // relocate/setposition doesn't work for player
-            plr->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
-            //plr->TeleportTo(pPlayer->GetMapId(), triggerPos.GetPositionX(), triggerPos.GetPositionY(), triggerPos.GetPositionZ(), triggerPos.GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
-        }
-    }
-
-    _me->UpdatePosition(pos, true);
-    // problems, and impossible to do delayed enter
-    //pPlayer->EnterVehicle(veh);
 }
