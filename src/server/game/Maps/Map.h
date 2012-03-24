@@ -466,12 +466,12 @@ class Map : public GridRefManager<NGridType>
          void SetDynLOSObjectState(uint32 id, bool state);
 		 bool GetDynLOSObjectState(uint32 id);
          bool IsInDynLOS(float x, float y, float z, float x2, float y2, float z2);
+         float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
+         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
      private:
          std::map<uint32, DynamicLOSObject*> m_dynamicLOSObjects;
          uint32 m_dynamicLOSCounter;
      /* END */
-        float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
-        float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask) const;
         void Balance() { _dynamicTree.balance(); }
         void Remove(const GameObjectModel& mdl) { _dynamicTree.remove(mdl); }
