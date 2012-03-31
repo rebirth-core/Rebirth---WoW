@@ -27,12 +27,11 @@
 #include "Chat.h"
 #include "Spell.h"
 #include "BattlegroundMgr.h"
-#include "BattlefieldMgr.h"
 #include "CreatureAI.h"
 #include "MapManager.h"
 #include "BattlegroundIC.h"
-#include "BattlefieldWG.h"
-#include "BattlefieldMgr.h"
+#include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 
 bool IsPrimaryProfessionSkill(uint32 skill)
 {
@@ -114,22 +113,12 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
         }
         case SPELLFAMILY_WARLOCK:
         {
-            // Death Coil
-            if (spellproto->SpellFamilyFlags[0] & 0x80000)
-                return DIMINISHING_HORROR;
             // Curses/etc
-            else if ((spellproto->SpellFamilyFlags[0] & 0x80000000) || (spellproto->SpellFamilyFlags[1] & 0x200))
+            if ((spellproto->SpellFamilyFlags[0] & 0x80000000) || (spellproto->SpellFamilyFlags[1] & 0x200))
                 return DIMINISHING_LIMITONLY;
             // Seduction
             else if (spellproto->SpellFamilyFlags[1] & 0x10000000)
                 return DIMINISHING_FEAR;
-            break;
-        }
-        case SPELLFAMILY_PRIEST:
-        {
-            // Psychic Horror
-            if (spellproto->SpellFamilyFlags[2] & 0x2000)
-                return DIMINISHING_HORROR;
             break;
         }
         case SPELLFAMILY_DRUID:
@@ -231,6 +220,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
         return DIMINISHING_BANISH;
     if (mechanic & (1 << MECHANIC_ROOT))
         return triggered ? DIMINISHING_ROOT : DIMINISHING_CONTROLLED_ROOT;
+    if (mechanic & (1 << MECHANIC_HORROR))
+        return DIMINISHING_HORROR;
 
     return DIMINISHING_NONE;
 }
@@ -654,7 +645,7 @@ SpellSpellGroupMapBounds SpellMgr::GetSpellSpellGroupMapBounds(uint32 spell_id) 
 uint32 SpellMgr::IsSpellMemberOfSpellGroup(uint32 spellid, SpellGroup groupid) const
 {
     SpellSpellGroupMapBounds spellGroup = GetSpellSpellGroupMapBounds(spellid);
-    for (SpellSpellGroupMap::const_iterator itr = spellGroup.first; itr != spellGroup.second ; ++itr)
+    for (SpellSpellGroupMap::const_iterator itr = spellGroup.first; itr != spellGroup.second; ++itr)
     {
         if (itr->second == groupid)
             return true;
@@ -680,7 +671,7 @@ void SpellMgr::GetSetOfSpellsInSpellGroup(SpellGroup group_id, std::set<uint32>&
     usedGroups.insert(group_id);
 
     SpellGroupSpellMapBounds groupSpell = GetSpellGroupSpellMapBounds(group_id);
-    for (SpellGroupSpellMap::const_iterator itr = groupSpell.first; itr != groupSpell.second ; ++itr)
+    for (SpellGroupSpellMap::const_iterator itr = groupSpell.first; itr != groupSpell.second; ++itr)
     {
         if (itr->second < 0)
         {
@@ -699,7 +690,7 @@ bool SpellMgr::AddSameEffectStackRuleSpellGroups(SpellInfo const* spellInfo, int
     uint32 spellId = spellInfo->GetFirstRankSpell()->Id;
     SpellSpellGroupMapBounds spellGroup = GetSpellSpellGroupMapBounds(spellId);
     // Find group with SPELL_GROUP_STACK_RULE_EXCLUSIVE_SAME_EFFECT if it belongs to one
-    for (SpellSpellGroupMap::const_iterator itr = spellGroup.first; itr != spellGroup.second ; ++itr)
+    for (SpellSpellGroupMap::const_iterator itr = spellGroup.first; itr != spellGroup.second; ++itr)
     {
         SpellGroup group = itr->second;
         SpellGroupStackMap::const_iterator found = mSpellGroupStack.find(group);
@@ -735,13 +726,13 @@ SpellGroupStackRule SpellMgr::CheckSpellGroupStackRules(SpellInfo const* spellIn
     // find SpellGroups which are common for both spells
     SpellSpellGroupMapBounds spellGroup1 = GetSpellSpellGroupMapBounds(spellid_1);
     std::set<SpellGroup> groups;
-    for (SpellSpellGroupMap::const_iterator itr = spellGroup1.first; itr != spellGroup1.second ; ++itr)
+    for (SpellSpellGroupMap::const_iterator itr = spellGroup1.first; itr != spellGroup1.second; ++itr)
     {
         if (IsSpellMemberOfSpellGroup(spellid_2, itr->second))
         {
             bool add = true;
             SpellGroupSpellMapBounds groupSpell = GetSpellGroupSpellMapBounds(itr->second);
-            for (SpellGroupSpellMap::const_iterator itr2 = groupSpell.first; itr2 != groupSpell.second ; ++itr2)
+            for (SpellGroupSpellMap::const_iterator itr2 = groupSpell.first; itr2 != groupSpell.second; ++itr2)
             {
                 if (itr2->second < 0)
                 {
@@ -760,7 +751,7 @@ SpellGroupStackRule SpellMgr::CheckSpellGroupStackRules(SpellInfo const* spellIn
 
     SpellGroupStackRule rule = SPELL_GROUP_STACK_RULE_DEFAULT;
 
-    for (std::set<SpellGroup>::iterator itr = groups.begin() ; itr!= groups.end() ; ++itr)
+    for (std::set<SpellGroup>::iterator itr = groups.begin(); itr!= groups.end(); ++itr)
     {
         SpellGroupStackMap::const_iterator found = mSpellGroupStack.find(*itr);
         if (found != mSpellGroupStack.end())
@@ -1136,8 +1127,18 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
             if (!player)
                 return false;
 
-            Battlefield* Bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetZoneId());
-            if (!Bf || Bf->CanFlyIn() || (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)))
+            if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+            {
+                OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+                if ((pvpWG->isWarTime()==false) || player->isDead() || player->HasAura(45472) || player->HasAura(44795) || player->GetPositionZ() > 619.2f || player->isInFlight() || (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)))
+                   return false;
+            }
+            break;
+        }
+        case 58045: // Essence of Wintergrasp - Wintergrasp
+        case 57940: // Essence of Wintergrasp - Northrend
+        {
+            if (!player || player->GetTeamId() != sWorld->getWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION))
                 return false;
             break;
         }
@@ -1156,34 +1157,9 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
 
             return false;
         }
-        case 56618: // Horde Controls Factory Phase Shift
-        case 56617: // Alliance Controls Factory Phase Shift
-            {
-                if (!player)
-                    return false;
-
-                Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetZoneId());
-
-                if (!bf || bf->GetTypeId() != BATTLEFIELD_WG)
-                    return false;
-
-                // team that controls the workshop in the specified area
-                uint32 team = bf->GetData(newArea);
-                
-                if (team == TEAM_HORDE)
-                    return spellId == 56618;
-                else if (team == TEAM_ALLIANCE)
-                    return spellId == 56617;
-            }
-            break;
     }
 
     return true;
-}
-
-void SpellMgr::LoadSpellInfos()
-{
-
 }
 
 void SpellMgr::LoadSpellRanks()
@@ -1196,18 +1172,17 @@ void SpellMgr::LoadSpellRanks()
         mSpellInfoMap[itr->first]->ChainEntry = NULL;
     }
     mSpellChains.clear();
-
+    //                                                     0             1      2
     QueryResult result = WorldDatabase.Query("SELECT first_spell_id, spell_id, rank from spell_ranks ORDER BY first_spell_id, rank");
 
     if (!result)
     {
-        sLog->outString(">> Loaded 0 spell rank records");
+        sLog->outString(">> Loaded 0 spell rank records. DB table `spell_ranks` is empty.");
         sLog->outString();
-        sLog->outErrorDb("`spell_ranks` table is empty!");
         return;
     }
 
-    uint32 rows = 0;
+    uint32 count = 0;
     bool finished = false;
 
     do
@@ -1226,7 +1201,7 @@ void SpellMgr::LoadSpellRanks()
             if (lastSpell == -1)
                 lastSpell = currentSpell;
             uint32 spell_id = fields[1].GetUInt32();
-            uint32 rank = fields[2].GetUInt32();
+            uint32 rank = fields[2].GetUInt8();
 
             // don't drop the row if we're moving to the next rank
             if (currentSpell == lastSpell)
@@ -1254,7 +1229,7 @@ void SpellMgr::LoadSpellRanks()
         int32 curRank = 0;
         bool valid = true;
         // check spells in chain
-        for (std::list<std::pair<int32, int32> >::iterator itr = rankChain.begin() ; itr!= rankChain.end(); ++itr)
+        for (std::list<std::pair<int32, int32> >::iterator itr = rankChain.begin(); itr!= rankChain.end(); ++itr)
         {
             SpellInfo const* spell = GetSpellInfo(itr->first);
             if (!spell)
@@ -1278,7 +1253,7 @@ void SpellMgr::LoadSpellRanks()
         std::list<std::pair<int32, int32> >::iterator itr = rankChain.begin();
         do
         {
-            ++rows;
+            ++count;
             int32 addedSpell = itr->first;
             mSpellChains[addedSpell].first = GetSpellInfo(lastSpell);
             mSpellChains[addedSpell].last = GetSpellInfo(rankChain.back().first);
@@ -1298,7 +1273,7 @@ void SpellMgr::LoadSpellRanks()
         while (true);
     } while (!finished);
 
-    sLog->outString(">> Loaded %u spell rank records in %u ms", rows, GetMSTimeDiffToNow(oldMSTime));
+    sLog->outString(">> Loaded %u spell rank records in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
 }
 
@@ -1309,23 +1284,24 @@ void SpellMgr::LoadSpellRequired()
     mSpellsReqSpell.clear();                                   // need for reload case
     mSpellReq.clear();                                         // need for reload case
 
+    //                                                   0        1
     QueryResult result = WorldDatabase.Query("SELECT spell_id, req_spell from spell_required");
 
     if (!result)
     {
-        sLog->outString(">> Loaded 0 spell required records");
+        sLog->outString(">> Loaded 0 spell required records. DB table `spell_required` is empty.");
         sLog->outString();
-        sLog->outErrorDb("`spell_required` table is empty!");
         return;
     }
-    uint32 rows = 0;
 
+    uint32 count = 0;
     do
     {
         Field* fields = result->Fetch();
 
-        uint32 spell_id =  fields[0].GetUInt32();
+        uint32 spell_id = fields[0].GetUInt32();
         uint32 spell_req = fields[1].GetUInt32();
+
         // check if chain is made with valid first spell
         SpellInfo const* spell = GetSpellInfo(spell_id);
         if (!spell)
@@ -1333,17 +1309,20 @@ void SpellMgr::LoadSpellRequired()
             sLog->outErrorDb("spell_id %u in `spell_required` table is not found in dbcs, skipped", spell_id);
             continue;
         }
+
         SpellInfo const* req_spell = GetSpellInfo(spell_req);
         if (!req_spell)
         {
             sLog->outErrorDb("req_spell %u in `spell_required` table is not found in dbcs, skipped", spell_req);
             continue;
         }
+
         if (GetFirstSpellInChain(spell_id) == GetFirstSpellInChain(spell_req))
         {
             sLog->outErrorDb("req_spell %u and spell_id %u in `spell_required` table are ranks of the same spell, entry not needed, skipped", spell_req, spell_id);
             continue;
         }
+
         if (IsSpellRequiringSpell(spell_id, spell_req))
         {
             sLog->outErrorDb("duplicated entry of req_spell %u and spell_id %u in `spell_required`, skipped", spell_req, spell_id);
@@ -1352,10 +1331,10 @@ void SpellMgr::LoadSpellRequired()
 
         mSpellReq.insert (std::pair<uint32, uint32>(spell_id, spell_req));
         mSpellsReqSpell.insert (std::pair<uint32, uint32>(spell_req, spell_id));
-        ++rows;
+        ++count;
     } while (result->NextRow());
 
-    sLog->outString(">> Loaded %u spell required records in %u ms", rows, GetMSTimeDiffToNow(oldMSTime));
+    sLog->outString(">> Loaded %u spell required records in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
 }
 
@@ -1407,24 +1386,22 @@ void SpellMgr::LoadSpellLearnSpells()
     QueryResult result = WorldDatabase.Query("SELECT entry, SpellID, Active FROM spell_learn_spell");
     if (!result)
     {
-        sLog->outString(">> Loaded 0 spell learn spells");
+        sLog->outString(">> Loaded 0 spell learn spells. DB table `spell_learn_spell` is empty.");
         sLog->outString();
-        sLog->outErrorDb("`spell_learn_spell` table is empty!");
         return;
     }
 
     uint32 count = 0;
-
     do
     {
         Field* fields = result->Fetch();
 
-        uint32 spell_id = fields[0].GetUInt32();
+        uint32 spell_id = fields[0].GetUInt16();
 
         SpellLearnSpellNode node;
-        node.spell      = fields[1].GetUInt32();
-        node.active     = fields[2].GetBool();
-        node.autoLearned= false;
+        node.spell       = fields[1].GetUInt16();
+        node.active      = fields[2].GetBool();
+        node.autoLearned = false;
 
         if (!GetSpellInfo(spell_id))
         {
@@ -1508,7 +1485,7 @@ void SpellMgr::LoadSpellTargetPositions()
 
     mSpellTargetPositions.clear();                                // need for reload case
 
-    //                                                0   1           2                  3                  4                  5
+    //                                                0      1              2                  3                  4                  5
     QueryResult result = WorldDatabase.Query("SELECT id, target_map, target_position_x, target_position_y, target_position_z, target_orientation FROM spell_target_position");
     if (!result)
     {
@@ -1518,7 +1495,6 @@ void SpellMgr::LoadSpellTargetPositions()
     }
 
     uint32 count = 0;
-
     do
     {
         Field* fields = result->Fetch();
@@ -1527,7 +1503,7 @@ void SpellMgr::LoadSpellTargetPositions()
 
         SpellTargetPosition st;
 
-        st.target_mapId       = fields[1].GetUInt32();
+        st.target_mapId       = fields[1].GetUInt16();
         st.target_X           = fields[2].GetFloat();
         st.target_Y           = fields[3].GetFloat();
         st.target_Z           = fields[4].GetFloat();
@@ -1630,19 +1606,17 @@ void SpellMgr::LoadSpellGroups()
     mSpellSpellGroup.clear();                                  // need for reload case
     mSpellGroupSpell.clear();
 
-    uint32 count = 0;
-
-    //                                                       0   1
+    //                                                0     1
     QueryResult result = WorldDatabase.Query("SELECT id, spell_id FROM spell_group");
     if (!result)
     {
+        sLog->outString(">> Loaded 0 spell group definitions. DB table `spell_group` is empty.");
         sLog->outString();
-        sLog->outString(">> Loaded %u spell group definitions", count);
         return;
     }
 
     std::set<uint32> groups;
-
+    uint32 count = 0;
     do
     {
         Field* fields = result->Fetch();
@@ -1660,7 +1634,7 @@ void SpellMgr::LoadSpellGroups()
 
     } while (result->NextRow());
 
-    for (SpellGroupSpellMap::iterator itr = mSpellGroupSpell.begin(); itr!= mSpellGroupSpell.end() ;)
+    for (SpellGroupSpellMap::iterator itr = mSpellGroupSpell.begin(); itr!= mSpellGroupSpell.end();)
     {
         if (itr->second < 0)
         {
@@ -1691,12 +1665,12 @@ void SpellMgr::LoadSpellGroups()
         }
     }
 
-    for (std::set<uint32>::iterator groupItr = groups.begin() ; groupItr != groups.end() ; ++groupItr)
+    for (std::set<uint32>::iterator groupItr = groups.begin(); groupItr != groups.end(); ++groupItr)
     {
         std::set<uint32> spells;
         GetSetOfSpellsInSpellGroup(SpellGroup(*groupItr), spells);
 
-        for (std::set<uint32>::iterator spellItr = spells.begin() ; spellItr != spells.end() ; ++spellItr)
+        for (std::set<uint32>::iterator spellItr = spells.begin(); spellItr != spells.end(); ++spellItr)
         {
             ++count;
             mSpellSpellGroup.insert(SpellSpellGroupMap::value_type(*spellItr, SpellGroup(*groupItr)));
@@ -1713,23 +1687,22 @@ void SpellMgr::LoadSpellGroupStackRules()
 
     mSpellGroupStack.clear();                                  // need for reload case
 
-    uint32 count = 0;
-
     //                                                       0         1
     QueryResult result = WorldDatabase.Query("SELECT group_id, stack_rule FROM spell_group_stack_rules");
     if (!result)
     {
-        sLog->outString(">> Loaded 0 spell group stack rules");
+        sLog->outString(">> Loaded 0 spell group stack rules. DB table `spell_group_stack_rules` is empty.");
         sLog->outString();
         return;
     }
 
+    uint32 count = 0;
     do
     {
         Field* fields = result->Fetch();
 
         uint32 group_id = fields[0].GetUInt32();
-        uint8 stack_rule = fields[1].GetUInt32();
+        uint8 stack_rule = fields[1].GetInt8();
         if (stack_rule >= SPELL_GROUP_STACK_RULE_MAX)
         {
             sLog->outErrorDb("SpellGroupStackRule %u listed in `spell_group_stack_rules` does not exist", stack_rule);
@@ -1759,17 +1732,16 @@ void SpellMgr::LoadSpellProcEvents()
 
     mSpellProcEventMap.clear();                             // need for reload case
 
-    uint32 count = 0;
-
     //                                                0      1           2                3                 4                 5                 6          7       8        9             10
     QueryResult result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask0, SpellFamilyMask1, SpellFamilyMask2, procFlags, procEx, ppmRate, CustomChance, Cooldown FROM spell_proc_event");
     if (!result)
     {
-        sLog->outString(">> Loaded %u spell proc event conditions", count);
+        sLog->outString(">> Loaded 0 spell proc event conditions. DB table `spell_proc_event` is empty.");
         sLog->outString();
         return;
     }
 
+    uint32 count = 0;
     uint32 customProc = 0;
     do
     {
@@ -1786,8 +1758,8 @@ void SpellMgr::LoadSpellProcEvents()
 
         SpellProcEventEntry spe;
 
-        spe.schoolMask      = fields[1].GetUInt32();
-        spe.spellFamilyName = fields[2].GetUInt32();
+        spe.schoolMask      = fields[1].GetInt8();
+        spe.spellFamilyName = fields[2].GetUInt16();
         spe.spellFamilyMask[0] = fields[3].GetUInt32();
         spe.spellFamilyMask[1] = fields[4].GetUInt32();
         spe.spellFamilyMask[2] = fields[5].GetUInt32();
@@ -1824,17 +1796,16 @@ void SpellMgr::LoadSpellProcs()
 
     mSpellProcMap.clear();                             // need for reload case
 
-    uint32 count = 0;
-
-    //                                               0        1           2                3                 4                 5                 6         7              8               9        10              11             12      13        14
+    //                                                 0        1           2                3                 4                 5                 6         7              8               9        10              11             12      13        14
     QueryResult result = WorldDatabase.Query("SELECT spellId, schoolMask, spellFamilyName, spellFamilyMask0, spellFamilyMask1, spellFamilyMask2, typeMask, spellTypeMask, spellPhaseMask, hitMask, attributesMask, ratePerMinute, chance, cooldown, charges FROM spell_proc");
     if (!result)
     {
-        sLog->outString(">> Loaded %u spell proc conditions and data", count);
+        sLog->outString(">> Loaded 0 spell proc conditions and data. DB table `spell_proc` is empty.");
         sLog->outString();
         return;
     }
 
+    uint32 count = 0;
     do
     {
         Field* fields = result->Fetch();
@@ -1866,8 +1837,8 @@ void SpellMgr::LoadSpellProcs()
 
         SpellProcEntry baseProcEntry;
 
-        baseProcEntry.schoolMask      = fields[1].GetUInt32();
-        baseProcEntry.spellFamilyName = fields[2].GetUInt32();
+        baseProcEntry.schoolMask      = fields[1].GetInt8();
+        baseProcEntry.spellFamilyName = fields[2].GetUInt16();
         baseProcEntry.spellFamilyMask[0] = fields[3].GetUInt32();
         baseProcEntry.spellFamilyMask[1] = fields[4].GetUInt32();
         baseProcEntry.spellFamilyMask[2] = fields[5].GetUInt32();
@@ -1965,16 +1936,17 @@ void SpellMgr::LoadSpellBonusess()
     uint32 oldMSTime = getMSTime();
 
     mSpellBonusMap.clear();                             // need for reload case
-    uint32 count = 0;
+
     //                                                0      1             2          3         4
     QueryResult result = WorldDatabase.Query("SELECT entry, direct_bonus, dot_bonus, ap_bonus, ap_dot_bonus FROM spell_bonus_data");
     if (!result)
     {
-        sLog->outString(">> Loaded %u spell bonus data", count);
+        sLog->outString(">> Loaded 0 spell bonus data. DB table `spell_bonus_data` is empty.");
         sLog->outString();
         return;
     }
 
+    uint32 count = 0;
     do
     {
         Field* fields = result->Fetch();
@@ -2006,17 +1978,16 @@ void SpellMgr::LoadSpellThreats()
 
     mSpellThreatMap.clear();                                // need for reload case
 
-    uint32 count = 0;
-
     //                                                0      1        2       3
     QueryResult result = WorldDatabase.Query("SELECT entry, flatMod, pctMod, apPctMod FROM spell_threat");
     if (!result)
     {
-        sLog->outString(">> Loaded 0 aggro generating spells");
+        sLog->outString(">> Loaded 0 aggro generating spells. DB table `spell_threat` is empty.");
         sLog->outString();
         return;
     }
 
+    uint32 count = 0;
     do
     {
         Field* fields = result->Fetch();
@@ -2030,7 +2001,7 @@ void SpellMgr::LoadSpellThreats()
         }
 
         SpellThreatEntry ste;
-        ste.flatMod  = fields[1].GetInt16();
+        ste.flatMod  = fields[1].GetInt32();
         ste.pctMod   = fields[2].GetFloat();
         ste.apPctMod = fields[3].GetFloat();
 
@@ -2080,7 +2051,6 @@ void SpellMgr::LoadSpellPetAuras()
     }
 
     uint32 count = 0;
-
     do
     {
         Field* fields = result->Fetch();
@@ -2135,11 +2105,10 @@ void SpellMgr::LoadEnchantCustomAttr()
     uint32 size = sSpellItemEnchantmentStore.GetNumRows();
     mEnchantCustomAttr.resize(size);
 
-    uint32 count = 0;
-
     for (uint32 i = 0; i < size; ++i)
        mEnchantCustomAttr[i] = 0;
 
+    uint32 count = 0;
     for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
     {
         SpellInfo const* spellInfo = GetSpellInfo(i);
@@ -2175,17 +2144,16 @@ void SpellMgr::LoadSpellEnchantProcData()
 
     mSpellEnchantProcEventMap.clear();                             // need for reload case
 
-    uint32 count = 0;
-
     //                                                  0         1           2         3
     QueryResult result = WorldDatabase.Query("SELECT entry, customChance, PPMChance, procEx FROM spell_enchant_proc_data");
     if (!result)
     {
-        sLog->outString(">> Loaded %u spell enchant proc event conditions", count);
+        sLog->outString(">> Loaded 0 spell enchant proc event conditions. DB table `spell_enchant_proc_data` is empty.");
         sLog->outString();
         return;
     }
 
+    uint32 count = 0;
     do
     {
         Field* fields = result->Fetch();
@@ -2230,14 +2198,13 @@ void SpellMgr::LoadSpellLinked()
     }
 
     uint32 count = 0;
-
     do
     {
         Field* fields = result->Fetch();
 
         int32 trigger = fields[0].GetInt32();
-        int32 effect =  fields[1].GetInt32();
-        int32 type =    fields[2].GetInt32();
+        int32 effect = fields[1].GetInt32();
+        int32 type = fields[2].GetUInt8();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(trigger));
         if (!spellInfo)
@@ -2475,7 +2442,6 @@ void SpellMgr::LoadSpellAreas()
     }
 
     uint32 count = 0;
-
     do
     {
         Field* fields = result->Fetch();
@@ -3065,6 +3031,16 @@ void SpellMgr::LoadDbcDataCorrections()
                 // because of bug in dbc
                 spellInfo->procChance = 0;
                 break;
+            case 45524: // Chains of Ice
+                // this will fix self-damage caused by Glyph of Chains of Ice
+                spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_TARGET_ENEMY;
+                break;
+            case 32182: // Heroism
+                spellInfo->excludeCasterAuraSpell = 57723; // Exhaustion
+                break;
+            case 2825:  // Bloodlust
+                spellInfo->excludeCasterAuraSpell = 57724; // Sated
+                break;
             case 20335: // Heart of the Crusader
             case 20336:
             case 20337:
@@ -3076,6 +3052,22 @@ void SpellMgr::LoadDbcDataCorrections()
                 // Target entry seems to be wrong for this spell :/
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER_AREA_PARTY;
                 spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_10_YARDS_2;
+                break;
+            case 63944:                             // Renewed Hope hack
+                spellInfo->EffectApplyAuraName[0] = 87;
+                spellInfo->EffectMiscValue[0] = 127;
+                break;
+            case 71189: // Dreamwalker's Rage
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+                spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_SRC_AREA_ENEMY;
+                spellInfo->EffectRadiusIndex[0] = 12;
+                break;
+            case 70127: // Mystic Buffet
+            case 72528:
+            case 72529:
+            case 72530:
+                spellInfo->EffectImplicitTargetA[1] = TARGET_SRC_CASTER;
+                spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_SRC_AREA_ENEMY;
                 break;
             case 44978: // Wild Magic
             case 45001:
@@ -3160,12 +3152,19 @@ void SpellMgr::LoadDbcDataCorrections()
             case 44401: // Missile Barrage
                 spellInfo->procCharges = 1;
                 break;
+            case 53257: // Cobra Strikes
+                spellInfo->procCharges = 2;
+                spellInfo->StackAmount = 0;
+                break;
             case 44544: // Fingers of Frost
                 spellInfo->EffectSpellClassMask[0] = flag96(685904631, 1151048, 0);
                 break;
             case 74396: // Fingers of Frost visual buff
                 spellInfo->procCharges = 2;
                 spellInfo->StackAmount = 0;
+                break;
+            case 24259: // Spell Lock silence (temporary hack)
+                spellInfo->speed = 80;
                 break;
             case 28200: // Ascendance (Talisman of Ascendance trinket)
                 spellInfo->procCharges = 6;
@@ -3215,6 +3214,13 @@ void SpellMgr::LoadDbcDataCorrections()
             case 30421: // Nether Portal - Perseverence
                 spellInfo->EffectBasePoints[2] += 30000;
                 break;
+            // some dummy spell only has dest, should push caster in this case
+            case 62324: // Throw Passenger
+                spellInfo->Targets |= TARGET_FLAG_UNIT_ALLY;
+                break;
+            case 66665: // Burning Breath
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+                break;
             case 16834: // Natural shapeshifter
             case 16835:
                 spellInfo->DurationIndex = 21;
@@ -3244,12 +3250,31 @@ void SpellMgr::LoadDbcDataCorrections()
                 spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_SRC_AREA_ALLY;
                 spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_SRC_AREA_ALLY;
                 break;
+            case 12051: // Evocation - now we can interrupt this
+                spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
+                break;
+            case 42650: // Army of the Dead - now we can interrupt this
+                spellInfo->InterruptFlags = SPELL_INTERRUPT_FLAG_INTERRUPT;
+                break;
             case 57994: // Wind Shear - improper data for EFFECT_1 in 3.3.5 DBC, but is correct in 4.x
                 spellInfo->Effect[EFFECT_1] = SPELL_EFFECT_MODIFY_THREAT_PERCENT;
                 spellInfo->EffectBasePoints[EFFECT_1] = -6; // -5%
                 break;
+            case 20224: // Seals of the Pure (Rank 1)
+            case 20225: // Seals of the Pure (Rank 2)
+            case 20330: // Seals of the Pure (Rank 3)
+            case 20331: // Seals of the Pure (Rank 4)
+            case 20332: // Seals of the Pure (Rank 5)
+                spellInfo->EffectSpellClassMask[EFFECT_0][1] = 0x20400800;
+                break;
             case 63675: // Improved Devouring Plague
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+                break;
+            case 33206: // Pain Suppression
+                spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_STUNNED;
+                break;
+            case 56278: // Read Pronouncement, missing EffectApplyAuraName
+                spellInfo->Effect[0] = SPELL_EFFECT_DUMMY;
                 break;
             case 8145: // Tremor Totem (instant pulse)
             case 6474: // Earthbind Totem (instant pulse)
@@ -3307,6 +3332,9 @@ void SpellMgr::LoadDbcDataCorrections()
             case 61719: // Easter Lay Noblegarden Egg Aura - Interrupt flags copied from aura which this aura is linked with
                 spellInfo->AuraInterruptFlags = AURA_INTERRUPT_FLAG_HITBYSPELL | AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
                 break;
+            case 49206: // Summon Gargoyle
+                spellInfo->DurationIndex = 587;
+                break;
             // ULDUAR SPELLS
             //
             case 62374: // Pursued (Flame Leviathan)
@@ -3314,6 +3342,28 @@ void SpellMgr::LoadDbcDataCorrections()
                 break;
             case 63342: // Focused Eyebeam Summon Trigger (Kologarn)
                 spellInfo->MaxAffectedTargets = 1;
+                break;
+            case 64145: // Diminish Power
+            case 63882: // Death Ray Warning Visual
+            case 63886: // Death Ray Damage Visual
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
+                break;
+            case 64172: // Titanic Storm
+                spellInfo->excludeTargetAuraSpell = 65294; // Empowered
+                break;
+            case 63830: // Malady of the Mind
+            case 63881: // Malady of the Mind proc
+            case 63795: // Psychosis
+                spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ANY;
+                spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_TARGET_ANY;
+                spellInfo->EffectImplicitTargetB[2] = TARGET_UNIT_TARGET_ANY;
+                break;
+            case 63802: // Brain Link
+                spellInfo->MaxAffectedTargets = 2;
+                spellInfo->EffectRadiusIndex[0] = 12; // 100 yard
+                break;
+            case 63050: // Sanity
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_DEATH_PERSISTENT;
                 break;
             case 62716: // Growth of Nature (Freya)
             case 65584: // Growth of Nature (Freya)
@@ -3467,6 +3517,24 @@ void SpellMgr::LoadDbcDataCorrections()
                 spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ANY;
                 spellInfo->Effect[1] = 0;
                 break;
+            case 68282: // Charge (ToC mount)
+                spellInfo->Effect[0] = SPELL_EFFECT_SCHOOL_DAMAGE;
+                spellInfo->Effect[1] = SPELL_EFFECT_CHARGE;
+                spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->EffectBasePoints[0] = 20*1000;
+            break;
+            case 51590: // Toss Ice Boulder
+                spellInfo->MaxAffectedTargets = 1;
+                break;
+            case 74412: // Emergency Recall [Final]
+                for (int8 i = 0; i < 3; ++i)
+                    spellInfo->EffectImplicitTargetB[i] = TARGET_UNIT_TARGET_ANY;
+                break;
+            case 75536: // Explosion (prevent error message in console)
+            case 75545: // Explosion (prevent error message in console)
+            case 75553: // Emergency Recall [Camera trigger]
+                spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ANY;
+                break;
             case 71614: // Ice Lock
                 spellInfo->Mechanic = MECHANIC_STUN;
                 break;
@@ -3556,6 +3624,11 @@ void SpellMgr::LoadDbcDataCorrections()
             case 72405: // Broken Frostmourne
                 spellInfo->EffectRadiusIndex[1] = EFFECT_RADIUS_200_YARDS;   // 200yd
                 break;
+            case 51678: // WintergraspSiegeEngine Ram set radius of damage for units to 5 yards 
+                spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_5_YARDS; // SPELL_EFFECT_KNOCK_BACK
+                spellInfo->EffectRadiusIndex[1] = EFFECT_RADIUS_5_YARDS; // SPELL_EFFECT_SCHOOL_DAMAGE
+                spellInfo->EffectRadiusIndex[2] = EFFECT_RADIUS_20_YARDS; // SPELL_EFFECT_WMO_DAMAGE, Huck but it must be -> Fortress towers are much bigger than original WMO damage radius of spell
+                break;
             case 40055: // Introspection
             case 40165: // Introspection
             case 40166: // Introspection
@@ -3572,6 +3645,16 @@ void SpellMgr::LoadDbcDataCorrections()
                 if (spellInfo->SpellFamilyFlags[2] & 0x100)
                     spellInfo->MaxAffectedTargets = 2;
                 break;
+            case SPELLFAMILY_PRIEST:
+                // Twin Disciplines should affect at Prayer of Mending
+                if (spellInfo->SpellIconID == 2292)
+                    spellInfo->EffectSpellClassMask[0] = flag96(0, 622642, 2581594112);
+                // Spiritual Healing should affect at Prayer of Mending
+                else if (spellInfo->SpellIconID == 46)
+                    spellInfo->EffectSpellClassMask[0][1] |= 0x20;
+                // Divine Providence should affect at Prayer of Mending
+                else if (spellInfo->SpellIconID == 2845 && spellInfo->Id != 64844)
+                    spellInfo->EffectSpellClassMask[0][1] |= 0x20;
             case SPELLFAMILY_PALADIN:
                 // Seals of the Pure should affect Seal of Righteousness
                 if (spellInfo->SpellIconID == 25 && spellInfo->Attributes & SPELL_ATTR0_PASSIVE)

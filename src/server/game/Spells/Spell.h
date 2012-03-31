@@ -455,7 +455,7 @@ class Spell
         void SetAutoRepeat(bool rep) { m_autoRepeat = rep; }
         void ReSetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
         bool IsNextMeleeSwingSpell() const;
-        bool IsTriggered() const {return _triggeredCastFlags & TRIGGERED_FULL_MASK;};
+        bool IsTriggered() const { return _triggeredCastFlags & TRIGGERED_FULL_MASK; };
         bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
         bool IsAutoActionResetSpell() const;
 
@@ -481,6 +481,8 @@ class Spell
         void CleanupTargetList();
 
         void SetSpellValue(SpellValueMod mod, int32 value);
+
+        void SetMagnetingAura(Aura* aura) { m_magnetingAura = aura; }
     protected:
         bool HasGlobalCooldown() const;
         void TriggerGlobalCooldown();
@@ -538,7 +540,8 @@ class Spell
         SpellEffectHandleMode effectHandleMode;
         // used in effects handlers
         Aura* m_spellAura;
-
+        // pointer to magneting aura if spell is redirected
+        Aura* m_magnetingAura;
         // this is set in Spell Hit, but used in Apply Aura handler
         DiminishingLevels m_diminishLevel;
         DiminishingGroup m_diminishGroup;
@@ -549,6 +552,7 @@ class Spell
         // Damage and healing in effects need just calculate
         int32 m_damage;           // Damge   in effects count here
         int32 m_healing;          // Healing in effects count here
+        int32 m_true_damage;      // Needed by some spells
 
         // ******************************************
         // Spell trigger system

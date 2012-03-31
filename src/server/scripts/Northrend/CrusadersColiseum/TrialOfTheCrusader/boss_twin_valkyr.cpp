@@ -177,7 +177,7 @@ struct boss_twin_baseAI : public ScriptedAI
         me->ModifyAuraState(m_uiAuraState, true);
         /* Uncomment this once that they are flying above the ground
         me->SetLevitate(true);
-        me->SetFlying(true); */
+        me->SetCanFly(true); */
         m_bIsBerserk = false;
 
         m_uiSpecialAbilityTimer = MINUTE*IN_MILLISECONDS;
@@ -619,7 +619,7 @@ public:
         {
             if (m_uiRangeCheckTimer < uiDiff)
             {
-                if (Player* target = me->SelectNearestPlayer(2.0f))
+                if (me->SelectNearestPlayer(2.0f))
                     {
                         DoCastAOE(SPELL_UNLEASHED_DARK);
                         me->GetMotionMaster()->MoveIdle();
@@ -660,7 +660,7 @@ public:
         {
             if (m_uiRangeCheckTimer < uiDiff)
             {
-                if (Player* target = me->SelectNearestPlayer(2.0f))
+                if (me->SelectNearestPlayer(2.0f))
                     {
                         DoCastAOE(SPELL_UNLEASHED_LIGHT);
                         me->GetMotionMaster()->MoveIdle();

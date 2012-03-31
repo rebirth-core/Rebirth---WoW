@@ -178,7 +178,6 @@ void Vehicle::ApplyAllImmunities()
         case 510: // Isle of Conquest
             _me->SetControlled(true, UNIT_STATE_ROOT);
             // why we need to apply this? we can simple add immunities to slow mechanic in DB
-            //me->m_movementInfo.flags2=59;
             _me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_DECREASE_SPEED, true);
             break;
         default:
@@ -506,4 +505,30 @@ uint8 Vehicle::GetAvailableSeatCount() const
             ++ret;
 
     return ret;
+}
+
+void Vehicle::Relocate(Position pos)
+{
+    sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle::Relocate %u", _me->GetEntry());
+
+    std::set<Unit*> vehiclePlayers;
+    for (int8 i = 0; i < 8; i++)
+        vehiclePlayers.insert(GetPassenger(i));
+
+    // passengers should be removed or they will have movement stuck
+    RemoveAllPassengers();
+
+    for (std::set<Unit*>::const_iterator itr = vehiclePlayers.begin(); itr != vehiclePlayers.end(); ++itr)
+    {
+        if (Unit* plr = (*itr))
+        {
+            // relocate/setposition doesn't work for player
+            plr->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
+            //plr->TeleportTo(pPlayer->GetMapId(), triggerPos.GetPositionX(), triggerPos.GetPositionY(), triggerPos.GetPositionZ(), triggerPos.GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
+        }
+    }
+
+    _me->UpdatePosition(pos, true);
+    // problems, and impossible to do delayed enter
+    //pPlayer->EnterVehicle(veh);
 }

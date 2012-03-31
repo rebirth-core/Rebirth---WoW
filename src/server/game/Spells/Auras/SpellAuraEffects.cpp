@@ -30,13 +30,13 @@
 #include "SpellAuraEffects.h"
 #include "Battleground.h"
 #include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 #include "Formulas.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "ScriptMgr.h"
 #include "Vehicle.h"
-#include "BattlefieldMgr.h"
 
 class Aura;
 //
@@ -486,6 +486,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 break;
             switch (GetSpellInfo()->SpellFamilyName)
             {
+                case SPELLFAMILY_GENERIC:
+                    if (GetId()==70845)
+                        DoneActualBenefit = caster->GetMaxHealth() * 0.2f;
+                    break;
                 case SPELLFAMILY_MAGE:
                     // Ice Barrier
                     if (GetSpellInfo()->SpellFamilyFlags[1] & 0x1 && GetSpellInfo()->SpellFamilyFlags[2] & 0x8)
@@ -681,6 +685,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 if (caster->GetTypeId() == TYPEID_PLAYER)
                 // Bonus from Glyph of Lightwell
                 if (AuraEffect* modHealing = caster->GetAuraEffect(55673, 0))
+                    AddPctN(amount, modHealing->GetAmount());
+                // Bonus from talent Spiritual Healing
+                if (AuraEffect* modHealing = caster->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_PRIEST, 46, 1))
                     AddPctN(amount, modHealing->GetAmount());
             }
             break;
@@ -3482,7 +3489,7 @@ void AuraEffect::HandleAuraModSchoolImmunity(AuraApplication const* aurApp, uint
         {
             bool banishFound = false;
             Unit::AuraEffectList const& banishAuras = target->GetAuraEffectsByType(GetAuraType());
-            for (Unit::AuraEffectList::const_iterator i = banishAuras.begin(); i !=  banishAuras.end(); ++i)
+            for (Unit::AuraEffectList::const_iterator i = banishAuras.begin(); i != banishAuras.end(); ++i)
                 if ((*i)->GetSpellInfo()->Mechanic == MECHANIC_BANISH)
                 {
                     banishFound = true;
@@ -4595,7 +4602,7 @@ void AuraEffect::HandleNoReagentUseAura(AuraApplication const* aurApp, uint8 mod
 
     flag96 mask;
     Unit::AuraEffectList const& noReagent = target->GetAuraEffectsByType(SPELL_AURA_NO_REAGENT_USE);
-        for (Unit::AuraEffectList::const_iterator i = noReagent.begin(); i !=  noReagent.end(); ++i)
+        for (Unit::AuraEffectList::const_iterator i = noReagent.begin(); i != noReagent.end(); ++i)
             mask |= (*i)->m_spellInfo->Effects[(*i)->m_effIndex].SpellClassMask;
 
     target->SetUInt32Value(PLAYER_NO_REAGENT_COST_1  , mask[0]);
@@ -4861,12 +4868,8 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                         case 2584: // Waiting to Resurrect
                             // Waiting to resurrect spell cancel, we must remove player from resurrect queue
                             if (target->GetTypeId() == TYPEID_PLAYER)
-                            {
                                 if (Battleground* bg = target->ToPlayer()->GetBattleground())
                                     bg->RemovePlayerFromResurrectQueue(target->GetGUID());
-                                if(Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(target->GetZoneId()))
-                                    bf->RemovePlayerFromResurrectQueue(target->GetGUID());
-                            }
                             break;
                         case 36730:                                     // Flame Strike
                         {
@@ -4952,18 +4955,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                             int32 returnmana = CalculatePctU(caster->GetCreateMana(), GetSpellInfo()->ManaCostPercentage) * stack / 2;
                             caster->CastCustomSpell(caster, 64372, &returnmana, NULL, NULL, true, NULL, this, GetCasterGUID());
                         }
-                    }
-                    break;
-                case SPELLFAMILY_HUNTER:
-                    switch (GetId())
-                    {
-                        case 34477: // Misdirection
-                            if (aurApp->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
-                                target->SetReducedThreatPercent(0, 0);
-                            break;
-                        case 35079: // Misdirection proc
-                            target->SetReducedThreatPercent(0, 0);
-                            break;
                     }
                     break;
                 case SPELLFAMILY_DEATHKNIGHT:
@@ -5207,7 +5198,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                         target->CastCustomSpell(target, 50322, &bp0, NULL, NULL, true);
                     }
                     else
-                        target-> RemoveAurasDueToSpell(50322);
+                        target->RemoveAurasDueToSpell(50322);
                     break;
                 }
             }
@@ -6191,7 +6182,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
     uint32 absorb = 0;
     uint32 resist = 0;
-    CleanDamage cleanDamage =  CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
+    CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     // ignore non positive values (can be result apply spellmods to aura damage
     uint32 damage = std::max(GetAmount(), 0);
@@ -6466,7 +6457,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster) const
     caster->CalcHealAbsorb(target, GetSpellInfo(), heal, absorb);
     int32 gain = caster->DealHeal(target, heal);
 
-    SpellPeriodicAuraLogInfo pInfo(this, damage, damage - gain, absorb, 0, 0.0f, crit);
+    SpellPeriodicAuraLogInfo pInfo(this, heal, heal - gain, absorb, 0, 0.0f, crit);
     target->SendPeriodicAuraLog(&pInfo);
 
     target->getHostileRefManager().threatAssist(caster, float(gain) * 0.5f, GetSpellInfo());
@@ -6484,7 +6475,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster) const
         caster->DealDamageMods(caster, funnelDamage, &funnelAbsorb);
         caster->SendSpellNonMeleeDamageLog(caster, GetId(), funnelDamage, GetSpellInfo()->GetSchoolMask(), funnelAbsorb, 0, false, 0, false);
 
-        CleanDamage cleanDamage =  CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
+        CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
         caster->DealDamage(caster, funnelDamage, &cleanDamage, NODAMAGE, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), true);
     }
 

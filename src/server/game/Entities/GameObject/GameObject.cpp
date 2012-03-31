@@ -464,7 +464,12 @@ void GameObject::Update(uint32 diff)
                         if (goInfo->trap.spellId)
                             CastSpell(ok, goInfo->trap.spellId);
 
-                        m_cooldownTime = time(NULL) + (goInfo->trap.cooldown ? goInfo->trap.cooldown :  uint32(4));   // template or 4 seconds
+                        // allow go to use wg script
+                        if (ok->GetTypeId() == TYPEID_PLAYER)
+                            if (sScriptMgr->OnGossipHello(ok->ToPlayer(), this))
+                                return;
+
+                        m_cooldownTime = time(NULL) + goInfo->trap.cooldown ? goInfo->trap.cooldown :  uint32(4);   // template or 4 seconds
 
                         if (goInfo->trap.type == 1)
                             SetLootState(GO_JUST_DEACTIVATED);
@@ -686,29 +691,34 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
     data.spawnMask = spawnMask;
     data.artKit = GetGoArtKit();
 
-    // update in DB
-    std::ostringstream ss;
-    ss << "INSERT INTO gameobject VALUES ("
-        << m_DBTableGuid << ','
-        << GetEntry() << ','
-        << mapid << ','
-        << uint32(spawnMask) << ','                         // cast to prevent save as symbol
-        << uint16(GetPhaseMask()) << ','                    // prevent out of range error
-        << GetPositionX() << ','
-        << GetPositionY() << ','
-        << GetPositionZ() << ','
-        << GetOrientation() << ','
-        << GetFloatValue(GAMEOBJECT_PARENTROTATION) << ','
-        << GetFloatValue(GAMEOBJECT_PARENTROTATION+1) << ','
-        << GetFloatValue(GAMEOBJECT_PARENTROTATION+2) << ','
-        << GetFloatValue(GAMEOBJECT_PARENTROTATION+3) << ','
-        << m_respawnDelayTime << ','
-        << uint32(GetGoAnimProgress()) << ','
-        << uint32(GetGoState()) << ')';
-
+    // Update in DB
     SQLTransaction trans = WorldDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
-    trans->Append(ss.str().c_str());
+
+    uint8 index = 0;
+
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_GAMEOBJECT);
+    stmt->setUInt32(0, m_DBTableGuid);
+    trans->Append(stmt);
+
+    stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_GAMEOBJECT);
+    stmt->setUInt32(index++, m_DBTableGuid);
+    stmt->setUInt32(index++, GetEntry());
+    stmt->setUInt16(index++, uint16(mapid));
+    stmt->setUInt8(index++, spawnMask);
+    stmt->setUInt16(index++, uint16(GetPhaseMask()));
+    stmt->setFloat(index++, GetPositionX());
+    stmt->setFloat(index++, GetPositionY());
+    stmt->setFloat(index++, GetPositionZ());
+    stmt->setFloat(index++, GetOrientation());
+    stmt->setFloat(index++, GetFloatValue(GAMEOBJECT_PARENTROTATION));
+    stmt->setFloat(index++, GetFloatValue(GAMEOBJECT_PARENTROTATION+1));
+    stmt->setFloat(index++, GetFloatValue(GAMEOBJECT_PARENTROTATION+2));
+    stmt->setFloat(index++, GetFloatValue(GAMEOBJECT_PARENTROTATION+3));
+    stmt->setInt32(index++, int32(m_respawnDelayTime));
+    stmt->setUInt8(index++, GetGoAnimProgress());
+    stmt->setUInt8(index++, uint8(GetGoState()));
+    trans->Append(stmt);
+
     WorldDatabase.CommitTransaction(trans);
 }
 
@@ -835,7 +845,9 @@ bool GameObject::IsTransport() const
 {
     // If something is marked as a transport, don't transmit an out of range packet for it.
     GameObjectTemplate const* gInfo = GetGOInfo();
-    if (!gInfo) return false;
+    if (!gInfo)
+        return false;
+
     return gInfo->type == GAMEOBJECT_TYPE_TRANSPORT || gInfo->type == GAMEOBJECT_TYPE_MO_TRANSPORT;
 }
 
@@ -844,15 +856,10 @@ bool GameObject::IsDynTransport() const
 {
     // If something is marked as a transport, don't transmit an out of range packet for it.
     GameObjectTemplate const* gInfo = GetGOInfo();
-    if (!gInfo) return false;
-    return gInfo->type == GAMEOBJECT_TYPE_MO_TRANSPORT || (gInfo->type == GAMEOBJECT_TYPE_TRANSPORT && !gInfo->transport.pause);
-}
+    if (!gInfo)
+        return false;
 
-bool GameObject::IsDestructibleBuilding() const
-{
-    GameObjectTemplate const* gInfo = GetGOInfo();
-    if (!gInfo) return false;
-    return gInfo->type == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING;
+    return gInfo->type == GAMEOBJECT_TYPE_MO_TRANSPORT || (gInfo->type == GAMEOBJECT_TYPE_TRANSPORT && !gInfo->transport.pause);
 }
 
 Unit* GameObject::GetOwner() const
@@ -871,7 +878,7 @@ bool GameObject::IsAlwaysVisibleFor(WorldObject const* seer) const
     if (WorldObject::IsAlwaysVisibleFor(seer))
         return true;
 
-    if (IsTransport() || IsDestructibleBuilding())
+    if (IsTransport())
         return true;
 
     if (!seer)

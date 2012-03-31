@@ -100,7 +100,7 @@ bool ChatHandler::HandleSetSkillCommand(const char *args)
         return false;
     }
 
-    int32 level = atol (level_p);
+    int32 level = atol(level_p);
 
     Player* target = getSelectedPlayer();
     if (!target)
@@ -1239,7 +1239,7 @@ bool ChatHandler::HandleLookupCreatureCommand(const char *args)
         uint8 localeIndex = GetSessionDbLocaleIndex();
         if (CreatureLocale const* cl = sObjectMgr->GetCreatureLocale(id))
         {
-            if (cl->Name.size() > localeIndex && !cl->Name[localeIndex].empty ())
+            if (cl->Name.size() > localeIndex && !cl->Name[localeIndex].empty())
             {
                 std::string name = cl->Name[localeIndex];
 
@@ -1252,9 +1252,9 @@ bool ChatHandler::HandleLookupCreatureCommand(const char *args)
                     }
 
                     if (m_session)
-                        PSendSysMessage (LANG_CREATURE_ENTRY_LIST_CHAT, id, id, name.c_str ());
+                        PSendSysMessage(LANG_CREATURE_ENTRY_LIST_CHAT, id, id, name.c_str());
                     else
-                        PSendSysMessage (LANG_CREATURE_ENTRY_LIST_CONSOLE, id, name.c_str ());
+                        PSendSysMessage(LANG_CREATURE_ENTRY_LIST_CONSOLE, id, name.c_str());
 
                     if (!found)
                         found = true;
@@ -1265,7 +1265,7 @@ bool ChatHandler::HandleLookupCreatureCommand(const char *args)
         }
 
         std::string name = itr->second.Name;
-        if (name.empty ())
+        if (name.empty())
             continue;
 
         if (Utf8FitTo(name, wnamepart))
@@ -1277,9 +1277,9 @@ bool ChatHandler::HandleLookupCreatureCommand(const char *args)
             }
 
             if (m_session)
-                PSendSysMessage (LANG_CREATURE_ENTRY_LIST_CHAT, id, id, name.c_str ());
+                PSendSysMessage(LANG_CREATURE_ENTRY_LIST_CHAT, id, id, name.c_str());
             else
-                PSendSysMessage (LANG_CREATURE_ENTRY_LIST_CONSOLE, id, name.c_str ());
+                PSendSysMessage(LANG_CREATURE_ENTRY_LIST_CONSOLE, id, name.c_str());
 
             if (!found)
                 found = true;
@@ -1287,7 +1287,7 @@ bool ChatHandler::HandleLookupCreatureCommand(const char *args)
     }
 
     if (!found)
-        SendSysMessage (LANG_COMMAND_NOCREATUREFOUND);
+        SendSysMessage(LANG_COMMAND_NOCREATUREFOUND);
 
     return true;
 }
@@ -1375,7 +1375,7 @@ bool ChatHandler::HandleLookupFactionCommand(const char *args)
         return false;
 
     // Can be NULL at console call
-    Player* target = getSelectedPlayer ();
+    Player* target = getSelectedPlayer();
 
     std::string namepart = args;
     std::wstring wnamepart;
@@ -1527,10 +1527,10 @@ bool ChatHandler::HandleLookupTaxiNodeCommand(const char * args)
 
                 // send taxinode in "id - [name] (Map:m X:x Y:y Z:z)" format
                 if (m_session)
-                    PSendSysMessage (LANG_TAXINODE_ENTRY_LIST_CHAT, id, id, name.c_str(), localeNames[loc],
+                    PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CHAT, id, id, name.c_str(), localeNames[loc],
                         nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
                 else
-                    PSendSysMessage (LANG_TAXINODE_ENTRY_LIST_CONSOLE, id, name.c_str(), localeNames[loc],
+                    PSendSysMessage(LANG_TAXINODE_ENTRY_LIST_CONSOLE, id, name.c_str(), localeNames[loc],
                         nodeEntry->map_id, nodeEntry->x, nodeEntry->y, nodeEntry->z);
 
                 if (!found)
@@ -1679,16 +1679,16 @@ bool ChatHandler::HandleGuildCreateCommand(const char *args)
 
     if (target->GetGuildId())
     {
-        SendSysMessage (LANG_PLAYER_IN_GUILD);
+        SendSysMessage(LANG_PLAYER_IN_GUILD);
         return true;
     }
 
     Guild* guild = new Guild;
-    if (!guild->Create (target, guildname))
+    if (!guild->Create(target, guildname))
     {
         delete guild;
-        SendSysMessage (LANG_GUILD_NOT_CREATED);
-        SetSentErrorMessage (true);
+        SendSysMessage(LANG_GUILD_NOT_CREATED);
+        SetSentErrorMessage(true);
         return false;
     }
 
@@ -1715,7 +1715,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
         return false;
 
     std::string glName = guildStr;
-    Guild* targetGuild = sGuildMgr->GetGuildByName (glName);
+    Guild* targetGuild = sGuildMgr->GetGuildByName(glName);
     if (!targetGuild)
         return false;
 
@@ -1730,12 +1730,11 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     if (!extractPlayerTarget((char*)args, &target, &target_guid))
         return false;
 
-    uint32 glId   = target ? target->GetGuildId () : Player::GetGuildIdFromDB (target_guid);
-
+    uint32 glId = target ? target->GetGuildId() : Player::GetGuildIdFromDB(target_guid);
     if (!glId)
         return false;
 
-    Guild* targetGuild = sGuildMgr->GetGuildById (glId);
+    Guild* targetGuild = sGuildMgr->GetGuildById(glId);
     if (!targetGuild)
         return false;
 
@@ -1757,7 +1756,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
     if (!extractPlayerTarget(nameStr, &target, &target_guid, &target_name))
         return false;
 
-    uint32 glId   = target ? target->GetGuildId () : Player::GetGuildIdFromDB (target_guid);
+    uint32 glId = target ? target->GetGuildId() : Player::GetGuildIdFromDB(target_guid);
     if (!glId)
         return false;
 
@@ -1780,11 +1779,11 @@ bool ChatHandler::HandleGuildDeleteCommand(const char *args)
 
     std::string gld = guildStr;
 
-    Guild* targetGuild = sGuildMgr->GetGuildByName (gld);
+    Guild* targetGuild = sGuildMgr->GetGuildByName(gld);
     if (!targetGuild)
         return false;
 
-    targetGuild->Disband ();
+    targetGuild->Disband();
 
     return true;
 }
@@ -1890,7 +1889,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
     {
         m_session->GetPlayer()->DealDamage(target, damage, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         if (target != m_session->GetPlayer())
-            m_session->GetPlayer()->SendAttackStateUpdate (HITINFO_NORMALSWING2, target, 1, SPELL_SCHOOL_MASK_NORMAL, damage, 0, 0, VICTIMSTATE_HIT, 0);
+            m_session->GetPlayer()->SendAttackStateUpdate (HITINFO_AFFECTS_VICTIM, target, 1, SPELL_SCHOOL_MASK_NORMAL, damage, 0, 0, VICTIMSTATE_HIT, 0);
         return true;
     }
 
@@ -1920,7 +1919,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
 
         m_session->GetPlayer()->DealDamageMods(target, damage, &absorb);
         m_session->GetPlayer()->DealDamage(target, damage, NULL, DIRECT_DAMAGE, schoolmask, NULL, false);
-        m_session->GetPlayer()->SendAttackStateUpdate (HITINFO_NORMALSWING2, target, 1, schoolmask, damage, absorb, resist, VICTIMSTATE_HIT, 0);
+        m_session->GetPlayer()->SendAttackStateUpdate (HITINFO_AFFECTS_VICTIM, target, 1, schoolmask, damage, absorb, resist, VICTIMSTATE_HIT, 0);
         return true;
     }
 
@@ -2025,7 +2024,7 @@ bool ChatHandler::HandleLinkGraveCommand(const char *args)
     else
         return false;
 
-    WorldSafeLocsEntry const* graveyard =  sWorldSafeLocsStore.LookupEntry(g_id);
+    WorldSafeLocsEntry const* graveyard = sWorldSafeLocsStore.LookupEntry(g_id);
 
     if (!graveyard)
     {
@@ -2883,6 +2882,8 @@ bool ChatHandler::HandleBanCharacterCommand(const char *args)
     if (!reason)
         return false;
 
+   std::string banReason = reason;
+
     if (!normalizePlayerName(name))
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -2894,12 +2895,24 @@ bool ChatHandler::HandleBanCharacterCommand(const char *args)
     {
         case BAN_SUCCESS:
         {
+            banReason = banReason + " Забанил " + m_session->GetPlayer()->GetName();
+
             if (atoi(duration) > 0)
-                PSendSysMessage(LANG_BAN_YOUBANNED, name.c_str(), secsToTimeString(TimeStringToSecs(duration), true).c_str(), reason);
+            {
+                if (CONFIG_SHOW_BAN_IN_WORLD)
+                    sWorld->SendWorldText(LANG_BAN_YOUBANNED,name.c_str(),secsToTimeString(TimeStringToSecs(duration),true).c_str(),banReason.c_str());
+                else
+                    PSendSysMessage(LANG_BAN_YOUBANNED,name.c_str(),secsToTimeString(TimeStringToSecs(duration),true).c_str(),banReason.c_str()); 
+            }
             else
-                PSendSysMessage(LANG_BAN_YOUPERMBANNED, name.c_str(), reason);
-            break;
+            { 
+                if (CONFIG_SHOW_BAN_IN_WORLD)
+                    sWorld->SendWorldText(LANG_BAN_YOUPERMBANNED,name.c_str(),banReason.c_str());
+                else
+                    PSendSysMessage(LANG_BAN_YOUPERMBANNED,name.c_str(),banReason.c_str());
+            }
         }
+        break;
         case BAN_NOTFOUND:
         {
             PSendSysMessage(LANG_BAN_NOTFOUND, "character", name.c_str());
@@ -2937,6 +2950,8 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char *args)
     if (!reason)
         return false;
 
+    std::string banReason = reason;
+  
     switch (mode)
     {
         case BAN_ACCOUNT:
@@ -2964,11 +2979,22 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char *args)
     switch (sWorld->BanAccount(mode, nameOrIP, duration, reason, m_session ? m_session->GetPlayerName() : ""))
     {
         case BAN_SUCCESS:
-            if (atoi(duration)>0)
-                PSendSysMessage(LANG_BAN_YOUBANNED, nameOrIP.c_str(), secsToTimeString(TimeStringToSecs(duration), true).c_str(), reason);
-            else
-                PSendSysMessage(LANG_BAN_YOUPERMBANNED, nameOrIP.c_str(), reason);
-            break;
+             banReason = banReason + " Забанил " + m_session->GetPlayer()->GetName();
+             if (atoi(duration) > 0)
+             {
+                 if (CONFIG_SHOW_BAN_IN_WORLD)
+                     sWorld->SendWorldText(LANG_BAN_YOUBANNED,nameOrIP.c_str(),secsToTimeString(TimeStringToSecs(duration),true).c_str(),banReason.c_str());
+                 else
+                     PSendSysMessage(LANG_BAN_YOUBANNED,nameOrIP.c_str(),secsToTimeString(TimeStringToSecs(duration),true).c_str(),banReason.c_str());
+             }
+             else
+             {
+                 if (CONFIG_SHOW_BAN_IN_WORLD)
+                     sWorld->SendWorldText(LANG_BAN_YOUPERMBANNED,nameOrIP.c_str(),banReason.c_str());
+                 else
+                     PSendSysMessage(LANG_BAN_YOUPERMBANNED,nameOrIP.c_str(),banReason.c_str());
+             }            
+             break;
         case BAN_SYNTAX_ERROR:
             return false;
         case BAN_NOTFOUND:
@@ -3157,6 +3183,25 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char *args)
     return true;
 }
 
+bool ChatHandler::HandleBanInfoAccountByCharCommand(const char *args)
+{
+    Player* target;
+    uint64 target_guid;
+    if (!extractPlayerTarget((char*)args, &target, &target_guid))
+        return false;
+
+    uint32 accountid = target ? target->GetSession()->GetAccountId() : sObjectMgr->GetPlayerAccountIdByGUID(target_guid);
+
+    std::string accountname;
+    if (!AccountMgr::GetName(accountid,accountname))
+    {
+        PSendSysMessage(LANG_BANINFO_NOCHARACTER);
+        return true;
+    }
+
+    return HandleBanInfoHelper(accountid, accountname.c_str());
+}
+
 bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
 {
     QueryResult result = LoginDatabase.PQuery("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate, banreason, bannedby FROM account_banned WHERE id = '%u' ORDER BY bandate ASC", accountid);
@@ -3335,6 +3380,26 @@ bool ChatHandler::HandleBanListAccountCommand(const char *args)
     return HandleBanListHelper(result);
 }
 
+bool ChatHandler::HandleBanListPlayerAccountCommand(const char *args)
+{
+    LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate<>bandate");
+
+    char* cFilter = strtok((char*)args, " ");
+    if(!cFilter)
+        return false;
+
+    std::string filter = cFilter;
+    LoginDatabase.EscapeString(filter);
+    QueryResult result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name "_LIKE_" "_CONCAT3_("'%%'","'%s'","'%%'"),filter.c_str());
+    if (!result)
+    {
+        PSendSysMessage(LANG_BANLIST_NOCHARACTER);
+        return true;
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleBanListHelper(PreparedQueryResult result)
 {
     PSendSysMessage(LANG_BANLIST_MATCHINGACCOUNT);
@@ -3365,7 +3430,7 @@ bool ChatHandler::HandleBanListHelper(PreparedQueryResult result)
         {
             SendSysMessage("-------------------------------------------------------------------------------");
             Field* fields = result->Fetch();
-            uint32 account_id = fields[0].GetUInt32 ();
+            uint32 account_id = fields[0].GetUInt32();
 
             std::string account_name;
 
@@ -4464,7 +4529,7 @@ bool ChatHandler::HandleChannelSetOwnership(const char *args)
     if (!*args)
         return false;
     char *channel = strtok((char*)args, " ");
-    char *argstr =  strtok(NULL, "");
+    char *argstr = strtok(NULL, "");
 
     if (!channel || !argstr)
         return false;
@@ -4764,9 +4829,11 @@ bool ChatHandler::HandleBindSightCommand(const char * /*args*/)
 
 bool ChatHandler::HandleUnbindSightCommand(const char * /*args*/)
 {
-    if (m_session->GetPlayer()->isPossessing())
+    Player* player = m_session->GetPlayer();
+
+    if (player->isPossessing())
         return false;
 
-    m_session->GetPlayer()->StopCastingBindSight();
+    player->StopCastingBindSight();
     return true;
 }

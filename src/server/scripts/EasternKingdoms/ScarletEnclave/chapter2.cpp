@@ -236,12 +236,13 @@ public:
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->LoadEquipment(0, true);
                 me->RemoveAura(SPELL_ANTI_MAGIC_ZONE);
+		me->ApplySpellImmune(0, IMMUNITY_ID, 19725, true); 
             }
         }
 
-        void WaypointReached(uint32 uiPointId)
+        void WaypointReached(uint32 waypointId)
         {
-            switch (uiPointId)
+            switch (waypointId)
             {
                 case 0:
                     DoScriptText(SAY_BREAKOUT1, me);
@@ -277,9 +278,7 @@ public:
         void JustSummoned(Creature* summoned)
         {
             if (Player* player = GetPlayerForEscort())
-            {
                 summoned->AI()->AttackStart(player);
-            }
 
             if (summoned->GetEntry() == NPC_HIGH_INQUISITOR_VALROTH)
                 m_uiValrothGUID = summoned->GetGUID();

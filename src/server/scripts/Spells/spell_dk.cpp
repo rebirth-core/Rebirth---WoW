@@ -247,7 +247,7 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
         }
 };
 
-// 47496 - Explode, Ghoul spell for Corpse Explosion
+// 47496 - Explode, GHoul spell for Corpse Explosion
 class spell_dk_ghoul_explode : public SpellScriptLoader
 {
     public:
@@ -337,7 +337,7 @@ class spell_dk_death_pact : public SpellScriptLoader
             void FilterTargets(std::list<Unit*>& unitList)
             {
                 Unit* unit_to_add = NULL;
-                for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
+                for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 {
                     if ((*itr)->GetTypeId() == TYPEID_UNIT
                         && (*itr)->GetOwnerGUID() == GetCaster()->GetGUID()
@@ -381,6 +381,11 @@ class spell_dk_scourge_strike : public SpellScriptLoader
         class spell_dk_scourge_strike_SpellScript : public SpellScript
         {
             PrepareSpellScript(spell_dk_scourge_strike_SpellScript);
+    private:
+        float m_multip;
+    public:
+        spell_dk_scourge_strike_SpellScript() : m_multip(0.0f) { }
+
 
             bool Validate(SpellInfo const* /*spellEntry*/)
             {
@@ -393,8 +398,15 @@ class spell_dk_scourge_strike : public SpellScriptLoader
             {
                 Unit* caster = GetCaster();
                 if (Unit* unitTarget = GetHitUnit())
+                m_multip = (GetEffectValue() * unitTarget->GetDiseasesByCaster(caster->GetGUID())) / 100.0f;
+        }
+
+        void HandleAfterHit()
+        {
+            Unit* caster = GetCaster();
+            if (Unit* unitTarget = GetHitUnit())
                 {
-                    int32 bp = CalculatePctN(GetHitDamage(), GetEffectValue() * unitTarget->GetDiseasesByCaster(caster->GetGUID()));
+                    int32 bp = GetTrueDamage() * m_multip;
                     caster->CastCustomSpell(unitTarget, DK_SPELL_SCOURGE_STRIKE_TRIGGERED, &bp, NULL, NULL, true);
                 }
             }
@@ -402,6 +414,7 @@ class spell_dk_scourge_strike : public SpellScriptLoader
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_dk_scourge_strike_SpellScript::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
+                AfterHit += SpellHitFn(spell_dk_scourge_strike_SpellScript::HandleAfterHit);
             }
         };
 

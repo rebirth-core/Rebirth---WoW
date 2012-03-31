@@ -323,7 +323,7 @@ void InstanceScript::DoSendNotifyToInstance(char const* format, ...)
  // Complete Achievement for all players in instance
  void InstanceScript::DoCompleteAchievement(uint32 achievement)
  {
-     AchievementEntry const* pAE = GetAchievementStore()->LookupEntry(achievement);
+     AchievementEntry const* pAE = sAchievementStore.LookupEntry(achievement);
      Map::PlayerList const &PlayerList = instance->GetPlayers();
  
      if (!pAE)
@@ -337,7 +337,7 @@ void InstanceScript::DoSendNotifyToInstance(char const* format, ...)
              if (Player *pPlayer = i->getSource())
                  pPlayer->CompletedAchievement(pAE);
  }
-
+ 
 // Update Achievement Criteria for all players in instance
 void InstanceScript::DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit* unit /*= NULL*/)
 {

@@ -186,7 +186,7 @@ public:
                     if (owner->GetTypeId() == TYPEID_PLAYER)
                     {
                         owner->CastSpell(owner, 46231, true);
-                        CAST_CRE(who)->ForcedDespawn();
+                        CAST_CRE(who)->DespawnOrUnsummon();
                     }
                 }
             }
@@ -287,6 +287,59 @@ public:
 
         return true;
     }
+};
+
+/*######
+## vehicle_wyrmrest_skytalon
+######*/
+
+class vehicle_wyrmrest_skytalon : public CreatureScript
+{
+public:
+    vehicle_wyrmrest_skytalon() : CreatureScript("vehicle_wyrmrest_skytalon") { }
+
+    struct vehicle_wyrmrest_skytalonAI : public VehicleAI
+    {
+        vehicle_wyrmrest_skytalonAI(Creature *c) : VehicleAI(c) { }
+
+        uint32 check_Timer;
+        bool isInUse;
+
+        void Reset()
+        {
+            check_Timer = 6000;
+        }
+
+        void OnCharmed(bool apply)
+        {
+            isInUse = apply;
+
+            if(!apply)
+                check_Timer = 30000;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if(!me->IsVehicle())
+                return;
+
+            if(!isInUse)
+            {
+                if(check_Timer < diff)
+                {
+                    me->DealDamage(me,me->GetHealth());
+                    check_Timer = 6000;
+                }else check_Timer -= diff;
+            }
+        }
+
+    };
+
+    CreatureAI* GetAI(Creature *_Creature) const
+    {
+        return new  vehicle_wyrmrest_skytalonAI(_Creature);
+    }
+
 };
 
 /*######
@@ -716,9 +769,9 @@ public:
             }
         }
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
-            switch (i)
+            switch (waypointId)
             {
                 case 0:
                     IntroPhase = 1;
@@ -1012,13 +1065,13 @@ public:
             uiPhaseTimer = 0;
         }
 
-        void WaypointReached(uint32 uiPointId)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
             if (!player)
                 return;
 
-            switch (uiPointId)
+            switch (waypointId)
             {
                 case 3:
                     SetEscortPaused(true);
@@ -1038,7 +1091,6 @@ public:
                     }
                     me->SetWalk(false);
                     break;
-
                 case 4:
                     SetEscortPaused(true);
                     uiPhase = 7;
@@ -1377,7 +1429,7 @@ public:
             bCheck              = false;
             uiShadowBoltTimer   = urand(5000, 12000);
             uiDeflectionTimer   = urand(20000, 25000);
-            uiSoulBlastTimer    = urand (12000, 18000);
+            uiSoulBlastTimer    = urand(12000, 18000);
         }
         void MovementInform(uint32 uiType, uint32 /*uiId*/)
         {
@@ -1403,7 +1455,7 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if (me->GetAreaId() == 4125)
+            if (me->GetAreaId() == 4128)
             {
                 if (uiShadowBoltTimer <= uiDiff)
                 {
@@ -1851,35 +1903,33 @@ public:
                 player->FailQuest(QUEST_ESCAPING_THE_MIST);
         }
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
-
             if (!player)
                 return;
 
-            switch (i)
+            switch (waypointId)
             {
-            case 10:
-                me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
-                DoScriptText(SAY_2, me);
-                break;
-            case 12:
-                DoScriptText(SAY_3, me);
-                me->HandleEmoteCommand(EMOTE_ONESHOT_LOOT);
-                break;
-            case 16:
-                DoScriptText(SAY_4, me);
-                me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
-                break;
-            case 20:
-                me->SetPhaseMask(1, true);
-                DoScriptText(SAY_5, me);
-                me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
-                if (player)
+                case 10:
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
+                    DoScriptText(SAY_2, me);
+                    break;
+                case 12:
+                    DoScriptText(SAY_3, me);
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_LOOT);
+                    break;
+                case 16:
+                    DoScriptText(SAY_4, me);
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
+                    break;
+                case 20:
+                    me->SetPhaseMask(1, true);
+                    DoScriptText(SAY_5, me);
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
                     player->GroupEventHappens(QUEST_ESCAPING_THE_MIST, me);
-                SetRun(true);
-                break;
+                    SetRun(true);
+                    break;
             }
         }
     };
@@ -1952,14 +2002,13 @@ public:
             else Bonker_agro=0;
         }
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
-
             if (!player)
                 return;
 
-            switch (i)
+            switch (waypointId)
             {
                 case 29:
                     player->GroupEventHappens(QUEST_GET_ME_OUTA_HERE, me);
@@ -2557,12 +2606,67 @@ public:
 
 };
 
+/*######
+## Fizzcrank Recon Pilot - quest fix 11795 and 11887
+######*/
+
+#define GOSSIP_ITEM_PILOT_1  "Search the body for the pilot's insignia."
+#define GOSSIP_ITEM_PILOT_2  "Search the body for the pilot's emergency toolkit."
+
+enum eReconPilot
+{
+    QUEST_EMERGENCY_PROTOCOL_C            = 11795,
+    QUEST_EMERGENCY_SUPPLIES              = 11887,
+    SPELL_SUMMON_INSIGNIA                 = 46166,
+    SPELL_GIVE_EMERGENCY_KIT              = 46362,
+    GOSSIP_TEXT_PILOT                     = 12489
+};
+
+class npc_recon_pilot : public CreatureScript
+{
+public:
+    npc_recon_pilot() : CreatureScript("npc_recon_pilot") { }
+
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    {
+        if (pPlayer->GetQuestStatus(QUEST_EMERGENCY_PROTOCOL_C) == QUEST_STATUS_INCOMPLETE)
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_PILOT_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+        if (pPlayer->GetQuestStatus(QUEST_EMERGENCY_SUPPLIES) == QUEST_STATUS_INCOMPLETE)
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_PILOT_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+
+        pPlayer->PlayerTalkClass->SendGossipMenu(GOSSIP_TEXT_PILOT, pCreature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        pPlayer->PlayerTalkClass->ClearMenus();
+
+        switch (uiAction)
+        {
+            case GOSSIP_ACTION_INFO_DEF+1:
+                pCreature->CastSpell(pPlayer, SPELL_SUMMON_INSIGNIA, true);
+                break;
+            case GOSSIP_ACTION_INFO_DEF+2:
+                pCreature->CastSpell(pPlayer, SPELL_GIVE_EMERGENCY_KIT, true);
+                break;
+        }
+
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pCreature->DespawnOrUnsummon();
+
+        return true;
+    }
+};
+
 void AddSC_borean_tundra()
 {
     new npc_sinkhole_kill_credit();
     new npc_khunok_the_behemoth();
     new npc_keristrasza();
     new npc_corastrasza();
+    new vehicle_wyrmrest_skytalon();
     new npc_iruk();
     new mob_nerubar_victim();
     new npc_scourge_prisoner();
@@ -2586,4 +2690,5 @@ void AddSC_borean_tundra()
     new npc_valiance_keep_cannoneer();
     new npc_warmage_coldarra();
     new npc_hidden_cultist();
+    new npc_recon_pilot();
 }

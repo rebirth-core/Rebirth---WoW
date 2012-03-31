@@ -207,30 +207,6 @@ public:
 #pragma pack(push, 1)
 #endif
 
- class DynamicLOSObject
- {
-     public:
-         DynamicLOSObject();
-         bool IsBetween(float x, float y, float z, float x2, float y2, float z2);
-         bool IsInside(float x, float y);
-         bool IsOverOrUnder(float z);
-         float GetDistance(float x, float y);
-         bool IsActive();
-         void SetActiveState(bool state);
-         void SetCoordinates(float x, float y);
-         void SetZ(float z);
-         void SetRadius(float r);
-         void SetHeight(float h);
-         bool HasHeightInfo();
-     private:
-         float _x;
-         float _y;
-         float _z;
-         float _height;
-         float _radius;
-         bool _active;
- };
-
 struct InstanceTemplate
 {
     uint32 Parent;
@@ -269,8 +245,12 @@ class Map : public GridRefManager<NGridType>
         // currently unused for normal maps
         bool CanUnload(uint32 diff)
         {
-            if (!m_unloadTimer) return false;
-            if (m_unloadTimer <= diff) return true;
+            if (!m_unloadTimer)
+                return false;
+
+            if (m_unloadTimer <= diff)
+                return true;
+
             m_unloadTimer -= diff;
             return false;
         }
@@ -455,23 +435,8 @@ class Map : public GridRefManager<NGridType>
 
         InstanceMap* ToInstanceMap(){ if (IsDungeon())  return reinterpret_cast<InstanceMap*>(this); else return NULL;  }
         const InstanceMap* ToInstanceMap() const { if (IsDungeon())  return (const InstanceMap*)((InstanceMap*)this); else return NULL;  }
-     /*
-      **********************
-      * DYNAMIC LOS SYSTEM *
-      **********************
-     */
-     public:
-         uint32 AddDynLOSObject(float x, float y, float radius);
-         uint32 AddDynLOSObject(float x, float y, float z, float radius, float height);
-         void SetDynLOSObjectState(uint32 id, bool state);
-		 bool GetDynLOSObjectState(uint32 id);
-         bool IsInDynLOS(float x, float y, float z, float x2, float y2, float z2);
-         float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
-         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
-     private:
-         std::map<uint32, DynamicLOSObject*> m_dynamicLOSObjects;
-         uint32 m_dynamicLOSCounter;
-     /* END */
+        float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
+        float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask) const;
         void Balance() { _dynamicTree.balance(); }
         void Remove(const GameObjectModel& mdl) { _dynamicTree.remove(mdl); }

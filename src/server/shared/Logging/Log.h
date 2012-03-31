@@ -51,7 +51,6 @@ enum DebugLogFilters
     LOG_FILTER_GUILD                    = 0x00200000,   // Guild related
     LOG_FILTER_TRANSPORTS               = 0x00400000,   // Transport related
     LOG_FILTER_WARDEN                   = 0x00800000,   // Warden related
-    LOG_FILTER_BATTLEFIELD              = 0x01000000,   // Battlefield related
 };
 
 enum LogTypes
@@ -118,28 +117,28 @@ class Log
         void SetColor(bool stdout_stream, ColorTypes color);
         void ResetColor(bool stdout_stream);
 
-        void outErrorST( const char * err, ... )                ATTR_PRINTF(2, 3);
-        void outDB( LogTypes type, const char * str );
-        void outString( const char * str, ... )                 ATTR_PRINTF(2, 3);
-        void outString( );
-        void outStringInLine( const char * str, ... )           ATTR_PRINTF(2, 3);
-        void outError( const char * err, ... )                  ATTR_PRINTF(2, 3);
-        void outCrash( const char * err, ... )                  ATTR_PRINTF(2, 3);
-        void outBasic( const char * str, ... )                  ATTR_PRINTF(2, 3);
-        void outDetail( const char * str, ... )                 ATTR_PRINTF(2, 3);
-        void outSQLDev( const char * str, ... )                 ATTR_PRINTF(2, 3);
+        void outErrorST(const char * err, ...)                  ATTR_PRINTF(2, 3);
+        void outDB(LogTypes type, const char * str);
+        void outString(const char * str, ...)                   ATTR_PRINTF(2, 3);
+        void outString();
+        void outStringInLine(const char * str, ...)             ATTR_PRINTF(2, 3);
+        void outError(const char * err, ...)                    ATTR_PRINTF(2, 3);
+        void outCrash(const char * err, ...)                    ATTR_PRINTF(2, 3);
+        void outBasic(const char * str, ...)                    ATTR_PRINTF(2, 3);
+        void outDetail(const char * str, ...)                   ATTR_PRINTF(2, 3);
+        void outSQLDev(const char * str, ...)                   ATTR_PRINTF(2, 3);
         void outDebug(DebugLogFilters f, const char* str, ...)  ATTR_PRINTF(3, 4);
-        void outStaticDebug( const char * str, ... )            ATTR_PRINTF(2, 3);
-        void outDebugInLine( const char * str, ... )            ATTR_PRINTF(2, 3);
-        void outErrorDb( const char * str, ... )                ATTR_PRINTF(2, 3);
-        void outChar( const char * str, ... )                   ATTR_PRINTF(2, 3);
-        void outCommand( uint32 account, const char * str, ...) ATTR_PRINTF(3, 4);
-        void outRemote( const char * str, ... )                 ATTR_PRINTF(2, 3);
-        void outChat( const char * str, ... )                   ATTR_PRINTF(2, 3);
-        void outArena( const char * str, ... )                  ATTR_PRINTF(2, 3);
-        void outSQLDriver( const char* str, ... )               ATTR_PRINTF(2, 3);
-        void outWarden( const char * str, ... )                 ATTR_PRINTF(2, 3);
-        void outCharDump( const char * str, uint32 account_id, uint32 guid, const char * name );
+        void outStaticDebug(const char * str, ...)              ATTR_PRINTF(2, 3);
+        void outDebugInLine(const char * str, ...)              ATTR_PRINTF(2, 3);
+        void outErrorDb(const char * str, ...)                  ATTR_PRINTF(2, 3);
+        void outChar(const char * str, ...)                     ATTR_PRINTF(2, 3);
+        void outCommand(uint32 account, const char * str, ...)  ATTR_PRINTF(3, 4);
+        void outRemote(const char * str, ...)                   ATTR_PRINTF(2, 3);
+        void outChat(const char * str, ...)                     ATTR_PRINTF(2, 3);
+        void outArena(const char * str, ...)                    ATTR_PRINTF(2, 3);
+        void outSQLDriver(const char* str, ...)                 ATTR_PRINTF(2, 3);
+        void outWarden(const char * str, ...)                   ATTR_PRINTF(2, 3);
+        void outCharDump(const char * str, uint32 account_id, uint32 guid, const char * name);
 
         static void outTimestamp(FILE* file);
         static std::string GetTimestampStr();

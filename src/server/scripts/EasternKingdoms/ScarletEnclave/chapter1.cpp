@@ -994,9 +994,9 @@ public:
             SetDespawnAtFar(false);
         }
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
-            switch (i)
+            switch (waypointId)
             {
                 case 1:
                     if (Unit* car = Unit::GetCreature(*me, carGUID))
@@ -1075,6 +1075,7 @@ public:
                 {
                     if (car->GetEntry() == 28817)
                     {
+                        player->setFaction(35);
                         car->AI()->SetGUID(miner->GetGUID());
                         CAST_AI(npc_scarlet_miner::npc_scarlet_minerAI, miner->AI())->InitCartQuest(player);
                     } else sLog->outError("TSCR: OnGossipHello vehicle entry is not correct.");

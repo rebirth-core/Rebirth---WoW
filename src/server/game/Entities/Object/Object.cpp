@@ -41,7 +41,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "SpellAuraEffects.h"
-#include "BattlefieldMgr.h"
+
 #include "TemporarySummon.h"
 #include "Totem.h"
 #include "OutdoorPvPMgr.h"
@@ -1266,6 +1266,16 @@ void WorldObject::_Create(uint32 guidlow, HighGuid guidhigh, uint32 phaseMask)
     m_phaseMask = phaseMask;
 }
 
+float WorldObject::GetObjectSize() const 
+{ 
+   if (GetTypeId() == TYPEID_UNIT) 
+   { 
+       if (this->ToCreature()->isHunterPet()) 
+           return DEFAULT_WORLD_OBJECT_SIZE; 
+   } 
+   return (m_valuesCount > UNIT_FIELD_COMBATREACH) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE; 
+}
+
 uint32 WorldObject::GetZoneId() const
 {
     return GetBaseMap()->GetZoneId(m_positionX, m_positionY, m_positionZ);
@@ -1457,7 +1467,9 @@ void Position::GetPositionOffsetTo(const Position & endPos, Position & retOffset
 
 float Position::GetAngle(const Position* obj) const
 {
-    if (!obj) return 0;
+    if (!obj)
+        return 0;
+
     return GetAngle(obj->GetPositionX(), obj->GetPositionY());
 }
 
@@ -1508,7 +1520,7 @@ bool Position::HasInArc(float arc, const Position* obj) const
     if (angle > M_PI)
         angle -= 2.0f*M_PI;
 
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
+    float lborder = -1 * (arc/2.0f);                        // in range -pi..0
     float rborder = (arc/2.0f);                             // in range 0..pi
     return ((angle >= lborder) && (angle <= rborder));
 }
@@ -1745,6 +1757,19 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
         }
         else
             return false;
+    }
+
+    // Traps can only be detected within melee distance
+    if (const GameObject *thisGO = obj->ToGameObject())
+    {
+        if (thisGO->GetGoType() == GAMEOBJECT_TYPE_TRAP && thisGO->GetOwnerGUID() && ToPlayer())
+        {
+            if (thisGO->GetOwner() == ToPlayer() ||
+                obj->IsWithinDist(this, ToPlayer()->HasAura(2836) ? 20.0f : 4.0f, false)) // Detect Traps increases chance to detect traps
+                return true;
+
+            return false;
+        }
     }
 
     if (obj->IsInvisibleDueToDespawn())
@@ -2256,12 +2281,7 @@ void WorldObject::SetZoneScript()
         if (map->IsDungeon())
             m_zoneScript = (ZoneScript*)((InstanceMap*)map)->GetInstanceScript();
         else if (!map->IsBattlegroundOrArena())
-        {
-            if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
-                m_zoneScript = bf;
-            else
-                m_zoneScript = sOutdoorPvPMgr->GetZoneScript(GetZoneId());
-        }
+            m_zoneScript = sOutdoorPvPMgr->GetZoneScript(GetZoneId());
     }
 }
 
@@ -2392,7 +2412,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     return pet;
 }
 
-GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime)
+GameObject* WorldObject::SummonGameObject(uint32 entry, const Position &pos, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime) const
 {
     if (!IsInWorld())
         return NULL;
@@ -2405,7 +2425,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
     }
     Map* map = GetMap();
     GameObject* go = new GameObject();
-    if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), entry, map, GetPhaseMask(), x, y, z, ang, rotation0, rotation1, rotation2, rotation3, 100, GO_STATE_READY))
+    if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), entry, map, GetPhaseMask(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), rotation0, rotation1, rotation2, rotation3, 100, GO_STATE_READY))
     {
         delete go;
         return NULL;
@@ -2455,6 +2475,15 @@ GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range) const
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(this, go, checker);
     VisitNearbyGridObject(range, searcher);
     return go;
+}
+
+Player* WorldObject::FindNearestPlayer(float range, bool alive)
+{
+  Player* player = NULL;
+  Trinity::AnyPlayerInObjectRangeCheck check(this, GetVisibilityRange());
+  Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, check);
+  VisitNearbyWorldObject(range, searcher);
+  return player;
 }
 
 void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& gameobjectList, uint32 entry, float maxSearchRange) const
@@ -2695,8 +2724,42 @@ void WorldObject::GetNearPoint(WorldObject const* /*searcher*/, float &x, float 
 void WorldObject::MovePosition(Position &pos, float dist, float angle)
 {
     angle += m_orientation;
-    pos.m_positionX += dist * cos(angle);
-    pos.m_positionY += dist * sin(angle);
+    float destx, desty, destz, ground, floor;
+    destx = pos.m_positionX + dist * cos(angle);
+    desty = pos.m_positionY + dist * sin(angle);
+
+    // Prevent invalid coordinates here, position is unchanged
+    if (!Trinity::IsValidMapCoord(destx, desty))
+    {
+        sLog->outCrash("WorldObject::MovePosition invalid coordinates X: %f and Y: %f were passed!", destx, desty);
+        return;
+    }
+
+    ground = GetMap()->GetHeight(GetPhaseMask(), destx, desty, MAX_HEIGHT, true);
+    floor = GetMap()->GetHeight(GetPhaseMask(), destx, desty, pos.m_positionZ, true);
+    destz = fabs(ground - pos.m_positionZ) <= fabs(floor - pos.m_positionZ) ? ground : floor;
+
+    float step = dist/10.0f;
+
+    for (uint8 j = 0; j < 10; ++j)
+    {
+        // do not allow too big z changes
+        if (fabs(pos.m_positionZ - destz) > 6)
+        {
+            destx -= step * cos(angle);
+            desty -= step * sin(angle);
+            ground = GetMap()->GetHeight(GetPhaseMask(), destx, desty, MAX_HEIGHT, true);
+            floor = GetMap()->GetHeight(GetPhaseMask(), destx, desty, pos.m_positionZ, true);
+            destz = fabs(ground - pos.m_positionZ) <= fabs(floor - pos.m_positionZ) ? ground : floor;
+        }
+        // we have correct destz now
+        else
+        {
+            pos.Relocate(destx, desty, destz);
+            break;
+        }
+    }
+
     Trinity::NormalizeMapCoord(pos.m_positionX);
     Trinity::NormalizeMapCoord(pos.m_positionY);
     UpdateGroundPositionZ(pos.m_positionX, pos.m_positionY, pos.m_positionZ);
@@ -2825,15 +2888,6 @@ void WorldObject::UpdateObjectVisibility(bool /*forced*/)
     Trinity::VisibleChangesNotifier notifier(*this);
     VisitNearbyWorldObject(GetVisibilityRange(), notifier);
 }
-
- Player* WorldObject::FindNearestPlayer(float range, bool alive)
- {
-     Player* player = NULL;
-     Trinity::AnyPlayerInObjectRangeCheck checker(this, range, alive);
-     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, checker);
-     VisitNearbyWorldObject(range, searcher);
-     return player;
- }
  
  std::list<Player*> WorldObject::GetNearestPlayersList(float range, bool alive) {
      std::list<Player*> players;

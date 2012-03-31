@@ -402,6 +402,27 @@ enum PlayerFlags
     PLAYER_FLAGS_UNK31             = 0x80000000,
 };
 
+#define PLAYER_TITLE_MASK_ALLIANCE_PVP             \
+    (PLAYER_TITLE_PRIVATE | PLAYER_TITLE_CORPORAL |  \
+      PLAYER_TITLE_SERGEANT_A | PLAYER_TITLE_MASTER_SERGEANT | \
+      PLAYER_TITLE_SERGEANT_MAJOR | PLAYER_TITLE_KNIGHT | \
+      PLAYER_TITLE_KNIGHT_LIEUTENANT | PLAYER_TITLE_KNIGHT_CAPTAIN | \
+      PLAYER_TITLE_KNIGHT_CHAMPION | PLAYER_TITLE_LIEUTENANT_COMMANDER | \
+      PLAYER_TITLE_COMMANDER | PLAYER_TITLE_MARSHAL | \
+      PLAYER_TITLE_FIELD_MARSHAL | PLAYER_TITLE_GRAND_MARSHAL)
+
+#define PLAYER_TITLE_MASK_HORDE_PVP                           \
+    (PLAYER_TITLE_SCOUT | PLAYER_TITLE_GRUNT |  \
+      PLAYER_TITLE_SERGEANT_H | PLAYER_TITLE_SENIOR_SERGEANT | \
+      PLAYER_TITLE_FIRST_SERGEANT | PLAYER_TITLE_STONE_GUARD | \
+      PLAYER_TITLE_BLOOD_GUARD | PLAYER_TITLE_LEGIONNAIRE | \
+      PLAYER_TITLE_CENTURION | PLAYER_TITLE_CHAMPION | \
+      PLAYER_TITLE_LIEUTENANT_GENERAL | PLAYER_TITLE_GENERAL | \
+      PLAYER_TITLE_WARLORD | PLAYER_TITLE_HIGH_WARLORD)
+
+#define PLAYER_TITLE_MASK_ALL_PVP  \
+    (PLAYER_TITLE_MASK_ALLIANCE_PVP | PLAYER_TITLE_MASK_HORDE_PVP)
+
 // used for PLAYER__FIELD_KNOWN_TITLES field (uint64), (1<<bit_index) without (-1)
 // can't use enum for uint64 values
 #define PLAYER_TITLE_DISABLED              UI64LIT(0x0000000000000000)
@@ -1057,6 +1078,21 @@ private:
     bool _isPvP;
 };
 
+/* World of Warcraft Armory */
+struct WowarmoryFeedEntry {
+    uint32 guid;         // Player GUID
+    time_t date;         // Log date
+    uint32 type;         // TYPE_ACHIEVEMENT_FEED, TYPE_ITEM_FEED, TYPE_BOSS_FEED
+    uint32 data;         // TYPE_ITEM_FEED: item_entry, TYPE_BOSS_FEED: creature_entry
+    uint32 item_guid;    // Can be 0
+    uint32 item_quality; // Can be 0
+    uint8  difficulty;   // Can be 0
+    int    counter;      // Can be 0
+};
+
+typedef std::vector<WowarmoryFeedEntry> WowarmoryFeeds;
+/* World of Warcraft Armory */
+
 class Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
@@ -1064,7 +1100,7 @@ class Player : public Unit, public GridObject<Player>
     friend void Item::RemoveFromUpdateQueueOf(Player* player);
     public:
         explicit Player (WorldSession* session);
-        ~Player ();
+        ~Player();
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
@@ -1511,7 +1547,7 @@ class Player : public Unit, public GridObject<Player>
         static uint32 GetLevelFromDB(uint64 guid);
         static bool   LoadPositionFromDB(uint32& mapid, float& x, float& y, float& z, float& o, bool& in_flight, uint64 guid);
 
-        static bool IsValidGender(uint8 Gender) { return Gender <= GENDER_FEMALE ; }
+        static bool IsValidGender(uint8 Gender) { return Gender <= GENDER_FEMALE; }
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -2046,6 +2082,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetMaxPersonalArenaRatingRequirement(uint32 minarenaslot) const;
         void SetHonorPoints(uint32 value);
         void SetArenaPoints(uint32 value);
+        void UpdateKnownTitles();
 
         //End of PvP System
 
@@ -2357,6 +2394,11 @@ class Player : public Unit, public GridObject<Player>
         void SendCinematicStart(uint32 CinematicSequenceId);
         void SendMovieStart(uint32 MovieId);
 
+        /* World of Warcraft Armory */
+        void CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uint32 item_quality);
+        void InitWowarmoryFeeds();
+        /* World of Warcraft Armory */
+
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
         /*********************************************************/
@@ -2419,8 +2461,8 @@ class Player : public Unit, public GridObject<Player>
         PartyResult CanUninviteFromGroup() const;
 
         // Battleground Group System
-        void SetBattlegroundOrBattlefieldRaid(Group *group, int8 subgroup = -1);
-        void RemoveFromBattlegroundOrBattlefieldRaid();
+        void SetBattlegroundRaid(Group* group, int8 subgroup = -1);
+        void RemoveFromBattlegroundRaid();
         Group* GetOriginalGroup() { return m_originalGroup.getTarget(); }
         GroupReference& GetOriginalGroupRef() { return m_originalGroup; }
         uint8 GetOriginalSubGroup() const { return m_originalGroup.getSubGroup(); }
@@ -2462,7 +2504,7 @@ class Player : public Unit, public GridObject<Player>
         AchievementMgr const& GetAchievementMgr() const { return m_achievementMgr; }
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, Unit* unit = NULL);
         void CompletedAchievement(AchievementEntry const* entry);
-		bool HasAchieved(uint32 entry);
+
         bool HasTitle(uint32 bitIndex);
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
         void SetTitle(CharTitlesEntry const* title, bool lost = false);
@@ -2481,9 +2523,6 @@ class Player : public Unit, public GridObject<Player>
         void AddWhisperWhiteList(uint64 guid) { WhisperList.push_back(guid); }
         bool IsInWhisperWhiteList(uint64 guid);
 
-        #pragma region Player Movement
-
-                
         /*! These methods send different packets to the client in apply and unapply case.
             These methods are only sent to the current unit.
         */
@@ -2525,8 +2564,6 @@ class Player : public Unit, public GridObject<Player>
                 return modelData->CollisionHeight;
             }
         }
-        #pragma endregion Player Movement
-
 
     protected:
         // Gamemaster whisper whitelist
@@ -2858,6 +2895,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_timeSyncTimer;
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
+        // World of Warcraft Armory Feeds
+        WowarmoryFeeds m_wowarmory_feeds;
 
         InstanceTimeMap _instanceResetTimes;
         uint32 _pendingBindId;

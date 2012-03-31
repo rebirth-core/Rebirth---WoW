@@ -260,7 +260,7 @@ void ScriptMgr::Initialize()
 void ScriptMgr::Unload()
 {
     #define SCR_CLEAR(T) \
-        FOR_SCRIPTS(T, itr, end) \
+        for (SCR_REG_ITR(T) itr = SCR_REG_LST(T).begin(); itr != SCR_REG_LST(T).end(); ++itr) \
             delete itr->second; \
         SCR_REG_LST(T).clear();
 
@@ -849,14 +849,6 @@ CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
 
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, NULL);
     return tmpscript->GetAI(creature);
-}
-
-GameObjectAI* ScriptMgr::GetGameObjectAI(GameObject* gameobject)
-{
-    ASSERT(gameobject);
-        
-    GET_SCRIPT_RET(GameObjectScript, gameobject->GetScriptId(), tmpscript, NULL);
-    return tmpscript->GetAI(gameobject);
 }
 
 void ScriptMgr::OnCreatureUpdate(Creature* creature, uint32 diff)
