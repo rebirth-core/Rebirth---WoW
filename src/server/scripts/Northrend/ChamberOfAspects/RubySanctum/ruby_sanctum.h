@@ -40,18 +40,18 @@ enum DataTypes
     DATA_XERESTRASZA                        = 5,
     DATA_CRYSTAL_CHANNEL_TARGET             = 6,
     DATA_BALTHARUS_SHARED_HEALTH            = 7,
-    DATA_ZARITHRIAN_SPAWN_STALKER_1         = 8,
-    DATA_ZARITHRIAN_SPAWN_STALKER_2         = 9,
+    DATA_ZARITHRIAN_SPAWN_STALKER_1          = 8,
+    DATA_ZARITHRIAN_SPAWN_STALKER_2          = 9,
     DATA_HALION_CONTROLLER                  = 10,
     DATA_ORB_CARRIER                        = 11,
     DATA_ORB_ROTATION_FOCUS                 = 12,
-    DATA_BURNING_TREE_1                     = 13,
-    DATA_BURNING_TREE_2                     = 14,
-    DATA_BURNING_TREE_3                     = 15,
-    DATA_BURNING_TREE_4                     = 16,
-    DATA_FLAME_RING                         = 17,
-    DATA_TWILIGHT_FLAME_RING                = 18,
-    DATA_COMBAT_STALKER                     = 19,
+    DATA_HALION_SHARED_HEALTH               = 13,
+    DATA_BURNING_TREE_1                     = 14,
+    DATA_BURNING_TREE_2                     = 15,
+    DATA_BURNING_TREE_3                     = 16,
+    DATA_BURNING_TREE_4                     = 17,
+    DATA_FLAME_RING                         = 18,
+    DATA_TWILIGHT_FLAME_RING                = 19,
 };
 
 enum SharedActions
@@ -71,7 +71,7 @@ enum CreaturesIds
     // General Zarithrian
     NPC_GENERAL_ZARITHRIAN                  = 39746,
     NPC_ONYX_FLAMECALLER                    = 39814,
-    NPC_ZARITHRIAN_SPAWN_STALKER            = 39794,
+    NPC_ZARITHRIAN_SPAWN_STALKER             = 39794,
 
     // Saviana Ragefire
     NPC_SAVIANA_RAGEFIRE                    = 39747,
@@ -86,7 +86,7 @@ enum CreaturesIds
     NPC_ORB_ROTATION_FOCUS                  = 40091,
     NPC_SHADOW_ORB_N                        = 40083,
     NPC_SHADOW_ORB_S                        = 40100,
-    NPC_SHADOW_ORB_E                        = 40468, // Not sure which entry is east and west.
+    NPC_SHADOW_ORB_E                        = 40468, // Not use which entry is east and west.
     NPC_SHADOW_ORB_W                        = 40469,
     NPC_METEOR_STRIKE_MARK                  = 40029,
     NPC_METEOR_STRIKE_NORTH                 = 40041,
@@ -96,7 +96,6 @@ enum CreaturesIds
     NPC_METEOR_STRIKE_FLAME                 = 40055,
     NPC_COMBUSTION                          = 40001,
     NPC_CONSUMPTION                         = 40135,
-    NPC_COMBAT_STALKER                      = 40151,
 
     // Xerestrasza
     NPC_XERESTRASZA                         = 40429,
@@ -127,6 +126,7 @@ enum WorldStatesRS
 enum InstanceSpell
 {
     SPELL_BERSERK                       = 26662,
+    SPELL_TWILIGHT_REALM                = 74807,
 };
 
 template<class AI>
