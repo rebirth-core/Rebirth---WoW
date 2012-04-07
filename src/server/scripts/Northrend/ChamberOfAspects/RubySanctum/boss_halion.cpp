@@ -238,7 +238,7 @@ class boss_halion : public CreatureScript
 
             void Reset()
             {
-                instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
                 instance->SetData(DATA_HALION_SHARED_HEALTH, me->GetMaxHealth());
                 PLAYERS_IN_TWILIGHT_PHASE = 0;
                 PLAYERS_IN_NORMAL_PHASE = 0;
@@ -249,7 +249,7 @@ class boss_halion : public CreatureScript
             {
                 _EnterCombat();
                 Talk(SAY_AGGRO);
-                instance->SendEncounterUnit(ENCOUNTER_FRAME_ADD, me, 1);
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me, 1);
 
                 events.Reset();
                 events.SetPhase(PHASE_ONE);
@@ -271,7 +271,7 @@ class boss_halion : public CreatureScript
             {
                 _JustDied();
                 Talk(SAY_DEATH);
-                instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 instance->DoCastSpellOnPlayers(SPELL_LEAVE_TWILIGHT_REALM);
 
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
@@ -285,7 +285,7 @@ class boss_halion : public CreatureScript
             void JustReachedHome()
             {
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 instance->DoCastSpellOnPlayers(SPELL_LEAVE_TWILIGHT_REALM);
 
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HALION_CONTROLLER)))
@@ -444,7 +444,7 @@ class boss_twilight_halion : public CreatureScript
 
             void EnterCombat(Unit* /*who*/)
             {
-                _instance->SendEncounterUnit(ENCOUNTER_FRAME_ADD, me, 2);
+                _instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me, 2);
                 events.Reset();
                 events.SetPhase(PHASE_TWO);
                 //! All of Twilight Halion's abilities are not phase dependant as he is never on Phase One.
@@ -478,7 +478,7 @@ class boss_twilight_halion : public CreatureScript
                 }
 
                 _instance->DoCastSpellOnPlayers(SPELL_LEAVE_TWILIGHT_REALM);
-                _instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
+                _instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             }
 
             void JustReachedHome()
@@ -488,7 +488,7 @@ class boss_twilight_halion : public CreatureScript
                 if (events.GetPhaseMask() & PHASE_TWO_MASK)
                     return;
 
-                _instance->SendEncounterUnit(ENCOUNTER_FRAME_REMOVE, me);
+                _instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 ScriptedAI::JustReachedHome();
             }
 
