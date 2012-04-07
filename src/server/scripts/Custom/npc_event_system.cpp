@@ -231,19 +231,20 @@ class event_npc : public CreatureScript
                                                pPlayer->PlayerTalkClass->ClearMenus();
                                                OnGossipHello(pPlayer, pCreature);
                                                pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
-
+                                               OnGossipHello(pPlayer, pCreature);
                                                return true;
                                            }
                                        }
                                        sLog->outError("Rebirth Debug: 'ItemBuy' ItemID: %d  -- ItemCount: %d",param1,param2);
                                        pPlayer->AddItem(param1, param2);
+                                       OnGossipHello(pPlayer, pCreature);
                                        LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                    }
 
                                    else
                                    {
                                        char str_info[200];
-                                       sprintf(str_info,"Du hast nicht genug Evenpunkte um diese Belohnung zu kaufen!");
+                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
                                        OnGossipHello(pPlayer, pCreature);
                                        pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
@@ -254,12 +255,13 @@ class event_npc : public CreatureScript
                                    {
                                        pPlayer->ModifyHonorPoints(param1);
                                        LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                       OnGossipHello(pPlayer, pCreature);
                                    }
 
                                    else
                                    {
                                        char str_info[200];
-                                       sprintf(str_info,"Du hast nicht genug Evenpunkte um diese Belohnung zu kaufen!");
+                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
                                        OnGossipHello(pPlayer, pCreature);
                                        pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
@@ -272,16 +274,45 @@ class event_npc : public CreatureScript
                                        title = sCharTitlesStore.LookupEntry(param1);
                                        pPlayer->SetTitle(title);
                                        LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                       OnGossipHello(pPlayer, pCreature);
                                    }
 
                                    else
                                    {
                                        char str_info[200];
-                                       sprintf(str_info,"Du hast nicht genug Evenpunkte um diese Belohnung zu kaufen!");
+                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
                                        OnGossipHello(pPlayer, pCreature);
                                        pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
 
+                                   break;
+
+                               case 3: 
+                                   if (cost <= pEP)
+                                   {
+                                       if (pPlayer->getLevel() < 80)
+                                       {
+                                           pPlayer->GiveXP(param1,pPlayer,1.0f);
+                                           LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                           OnGossipHello(pPlayer, pCreature);
+                                       }
+
+                                       else
+                                       {
+                                           char str_info[200];
+                                           sprintf(str_info,"Du kannst keine Erfahrung mehr erhalten!");
+                                           OnGossipHello(pPlayer, pCreature);
+                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                       }
+                                   }
+
+                                   else
+                                   {
+                                       char str_info[200];
+                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
+                                       OnGossipHello(pPlayer, pCreature);
+                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                   }
                                    break;
                             }
                         }
