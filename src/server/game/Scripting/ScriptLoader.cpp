@@ -67,6 +67,8 @@ void AddSC_tele_commandscript();
 void AddSC_titles_commandscript();
 void AddSC_wp_commandscript();
 void AddSC_gps_commandscript();
+void AddSC_rebirth_commandscript();
+void AddSC_event_npc();
 
 #ifdef SCRIPTS
 //world
@@ -679,6 +681,8 @@ void AddCommandScripts()
     AddSC_titles_commandscript();
     AddSC_wp_commandscript();
     AddSC_gps_commandscript();
+    AddSC_rebirth_commandscript();
+    AddSC_event_npc();
 }
 
 void AddWorldScripts()

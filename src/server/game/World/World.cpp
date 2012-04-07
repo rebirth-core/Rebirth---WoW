@@ -1238,6 +1238,10 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_REBIRTH_PVP_ANTIFARM_ENABLED] = ConfigMgr::GetIntDefault("Rebirth.PvP.AntiFarm.Enabled", true);
     m_bool_configs[CONFIG_REBIRTH_ARENA_STATS_ENABLED] = ConfigMgr::GetIntDefault("Rebirth.Arena.Stats.Enabled", true);
     m_bool_configs[CONFIG_REBIRTH_ULDUAR_BETA_ENABLED] = ConfigMgr::GetIntDefault("Rebirth.Ulduar.Beta.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.NextEvent.Info.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_TELEPORT_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Teleport.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Rewards.Enabled", false);
 
     // Management for channels with flag CHANNEL_DBC_FLAG_CITY_ONLY.
     m_bool_configs[CONFIG_CHANNEL_ON_CITY_ONLY_FLAG]  = ConfigMgr::GetBoolDefault("Channel.CityOnlyFlag", true);
@@ -1257,6 +1261,9 @@ void World::LoadConfigSettings(bool reload)
     // call ScriptMgr if we're reloading the configuration
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
+	
+    sScriptMgr->OnConfigLoad(reload);
+
 }
 
 extern void LoadGameObjectModelList();

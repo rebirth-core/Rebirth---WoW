@@ -3321,52 +3321,74 @@ OutdoorPvP.Wintergrasp.MaxPlayers = 100
 ###################################################################################################
 
 ###################################################################################################
-# Rebirth.WGStats.Enabled
-# Ist für das Eintragen der Tausendwinter Stats in die Datenbank da.
-# Default: 1 = Enable
-# 0 = Disable
+#    Rebirth.WGStats.Enabled
+#       Ist für das Eintragen der Tausendwinter Stats in die Datenbank da.
+#       Default: 1 = Enable
+#                0 = Disable
 
 Rebirth.WGStats.Enabled = 1
 
 #
-# Rebirth.WGStats.Update.Interval
-# Dies ist der Intervall (in Sekunden) in dem die Tausendwinter Stats in die Datenbank geschrieben werden
-# Default (60 Sekunden)
+#    Rebirth.WGStats.Update.Interval
+#       Dies ist der Intervall (in Sekunden) in dem die Tausendwinter Stats in die Datenbank geschrieben werden
+#       Default (60 Sekunden)
 
-Rebirth.WGStats.Update.Interval = 5
+Rebirth.WGStats.Update.Interval = 60
 
 #
-# Rebirth.WGStats.Data.Id
-# Hier wird die ID definiert, die der Datensatz in der Table bekommt
-# Default (1)
+#   Rebirth.WGStats.Data.Id
+#      Hier wird die ID definiert, die der Datensatz in der Table bekommt
+#      Default (1)
 
 Rebirth.WGStats.Data.Id = 1
 
 #
-# Rebirth.PvP.AntiFarm.Enabled
-# Wenn aktiviert, erhalten Spieler für den Kill an anderen Spielern mit der selben IP Adresse keine Ehre.
-# Davon ausgenommen sind Arenen und Battlegrounds
-# Default: 1 = Enable
-# 0 = Disable
-
-Rebirth.PvP.AntiFarm.Enabled = 1
-
-#
-# Rebirth.Arena.Stats.Enabled
-# Diese Option ist für das WoWArmory von RebirthWoW.
-# Default: 1 = Enable
-# 0 = Disable
+#    Rebirth.Arena.Stats.Enabled
+#       Diese Option ist für das WoWArmory von RebirthWoW.
+#       Default: 1 = Enable
+#                0 = Disable
 
 Rebirth.Arena.Stats.Enabled = 1
 
-#
-# Rebirth.Ulduar.Beta.Enabled
-# Über diese Option können die Ulduar Boss ab
-# der Vorkammer von Ulduar aktiviert werden.
-# 1 = Enable
-# Default: 0 = Disable
+#    Rebirth.Ulduar.Beta.Enabled
+#       Über diese Option können die Ulduar Boss ab
+#       der Vorkammer von Ulduar aktiviert werden.
+#                1 = Enable
+#       Default: 0 = Disable
 
 Rebirth.Ulduar.Beta.Enabled = 0
+
+#   Rebirth.Event.System.Enabled
+#      Eventssystem aktivieren bzw deaktivieren
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.Event.System.Enabled = 0
+
+#
+#   Rebirth.Event.System.NextEvent.Info.Enabled
+#      Aktiviert die Option "Wann finden die naechsten Events statt?"
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.Event.System.NextEvent.Info.Enabled = 0
+
+#
+#   Rebirth.Event.System.Teleport.Enabled
+#      Aktiviert die Option "Teleportiere mich zum Event!"
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.Event.System.Teleport.Enabled = 0
+
+#
+#   Rebirth.Event.System.Rewards.Enabled
+#      Aktiviert die Option "Ich will Eventbelohnungen kaufen!"
+#      Hierfür werden die Tables "rebirth_event_rewards" und "rebirth_event_reward_categorie" benötigt!
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.Event.System.Rewards.Enabled = 0
 
 #
 ###################################################################################################
