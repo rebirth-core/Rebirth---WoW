@@ -157,7 +157,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recv_data)
             return;
         }
 
-        if (_player->InBattlegroundQueue() && bgTypeId == BATTLEGROUND_RB)
+        if ((_player->InBattlegroundQueue() || _player->InOutdoorPVP()) && bgTypeId == BATTLEGROUND_RB)
         {
             //player is already in queue, can't start random queue
             WorldPacket data;
@@ -172,7 +172,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recv_data)
             return;
 
         // check if has free queue slots
-        if (!_player->HasFreeBattlegroundQueueId())
+        if (!_player->HasFreeBattlegroundQueueId() || _player->InOutdoorPVP())
         {
             WorldPacket data;
             sBattlegroundMgr->BuildGroupJoinedBattlegroundPacket(&data, ERR_BATTLEGROUND_TOO_MANY_QUEUES);
@@ -642,7 +642,7 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recv_data)
     recv_data >> guid >> arenaslot >> asGroup >> isRated;
 
     // ignore if we already in BG or BG queue
-    if (_player->InBattleground())
+    if (_player->InBattleground() || _player->InOutdoorPVP())
         return;
 
     Creature* unit = GetPlayer()->GetMap()->GetCreature(guid);

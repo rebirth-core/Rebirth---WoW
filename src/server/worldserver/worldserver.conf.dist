@@ -3305,6 +3305,18 @@ OutdoorPvP.Wintergrasp.Antifarm.Atk = 5
 
 OutdoorPvP.Wintergrasp.Antifarm.Def = 5
 
+#   OutdoorPvP.Wintergrasp.Minlevel
+#    Mindestlevel für Spieler um an der Schlacht teilzunehmen
+#              (Default: 74)
+
+OutdoorPvP.Wintergrasp.Minlevel = 74
+
+#   OutdoorPvP.Wintergrasp.MaxPlayers
+#    Maximale Spieler, die an der Schlacht teilnehmen können
+#              (Default: 100)
+
+OutdoorPvP.Wintergrasp.MaxPlayers = 100
+
 #
 ###################################################################################################
 
