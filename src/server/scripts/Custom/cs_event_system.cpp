@@ -17,8 +17,8 @@ class rebirth_commandscript : public CommandScript
                return false;
 
             LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte + %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
-            handler->PSendSysMessage("Spieler %s wurden %d Eventpunkte hinzugefügt.",handler->getSelectedPlayer()->GetName(), points);
-            (ChatHandler(handler->getSelectedPlayer())).PSendSysMessage("Du hast %d Eventpunkte erhalten!", points);
+            handler->PSendSysMessage("%d Eventpunkte wurden hinzugefügt.",points);
+            (ChatHandler(handler->getSelectedPlayer())).PSendSysMessage("Du hast %d Eventpunkt(e) erhalten!", points);
 
             return true;
         }
@@ -143,6 +143,31 @@ class rebirth_commandscript : public CommandScript
             if (result)
             {
                 LoginDatabase.PExecute("UPDATE rebirth_next_event SET active = 1 WHERE id = %d", eventID);
+                handler->PSendSysMessage("Event wurde aktiviert!");
+                return true;
+            }
+            else
+            {
+                handler->PSendSysMessage("Event nicht gefunden!");
+                return true;
+            }
+        }
+
+        static bool HandleDeactivateCommand(ChatHandler* handler, const char* args)
+        {
+            if (!*args)
+            {
+                handler->PSendSysMessage(".rebirth event deactivate #ID");
+                return true;
+            }
+
+            int eventID = atoi((char*)args);
+
+            QueryResult result = LoginDatabase.PQuery("SELECT * FROM rebirth_next_event WHERE id = %d", eventID);
+            if (result)
+            {
+                LoginDatabase.PExecute("UPDATE rebirth_next_event SET active = 0 WHERE id = %d", eventID);
+                handler->PSendSysMessage("Event wurde deaktiviert!");
                 return true;
             }
             else
@@ -157,7 +182,7 @@ class rebirth_commandscript : public CommandScript
 
             static ChatCommand RebirthSubSubSubCommandTable[] =
             {
-                { "item", SEC_MODERATOR, true, &HandleAddRewardItemCommand, "", NULL },
+                //{ "item", SEC_MODERATOR, true, &HandleAddRewardItemCommand, "", NULL },
                 //{ "honor", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
 				//{ "title", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
@@ -165,8 +190,8 @@ class rebirth_commandscript : public CommandScript
 
             static ChatCommand RebirthSetCommandTable[] =
             {
-                { "cost", SEC_MODERATOR, true, &HandleSetCostCommand, "", NULL },
-                { "count", SEC_MODERATOR, true, &HandleSetCountCommand, "", NULL },
+                //{ "cost", SEC_MODERATOR, true, &HandleSetCostCommand, "", NULL },
+                //{ "count", SEC_MODERATOR, true, &HandleSetCountCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
@@ -175,9 +200,10 @@ class rebirth_commandscript : public CommandScript
                 { "addpoints", SEC_MODERATOR, true, &HandleAddPointsCommand, "", NULL },
                 { "removepoints", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
                 { "activate", SEC_MODERATOR, true, &HandleActivateCommand, "", NULL },
-                { "addreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
+                { "deactivate", SEC_MODERATOR, true, &HandleDeactivateCommand, "", NULL },
+                //{ "addreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 //{ "delreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
-                { "set", SEC_MODERATOR, true, NULL, "", RebirthSetCommandTable  },
+                //{ "set", SEC_MODERATOR, true, NULL, "", RebirthSetCommandTable  },
                 { NULL, 0, false, NULL, "", NULL }
             };
 		
