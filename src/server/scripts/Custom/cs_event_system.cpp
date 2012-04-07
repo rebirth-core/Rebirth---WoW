@@ -18,6 +18,7 @@ class rebirth_commandscript : public CommandScript
 
             LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte + %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
             handler->PSendSysMessage("Spieler %s wurden %d Eventpunkte hinzugefügt.",handler->getSelectedPlayer()->GetName(), points);
+            (ChatHandler(handler->getSelectedPlayer())).PSendSysMessage("Du hast %d Eventpunkte erhalten!", points);
 
             return true;
         }
