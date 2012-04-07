@@ -133,29 +133,35 @@ class event_npc : public CreatureScript
        	 
             switch (uiAction)
             {
-            case 1:
-                RequestEventPoints(pPlayer, pCreature);
-                break;
-            case 2:
-                RequestNextEvents(pPlayer, pCreature);
-                break;
-            case 3:
-                TeleportToEvent(pPlayer, pCreature);
-                break;
-            case 4:
-                QueryResult result = WorldDatabase.PQuery("SELECT id, name FROM rebirth_event_reward_categorie");
-                if (result)
-                {
-                    do
+
+                case 1:
+                    RequestEventPoints(pPlayer, pCreature);
+                    break;
+                case 2:
+                    RequestNextEvents(pPlayer, pCreature);
+                    break;
+                case 3:
+                    TeleportToEvent(pPlayer, pCreature);
+                    break;
+                case 5:
+                    OnGossipHello(pPlayer,pCreature);
+                    break;
+                case 4:
+                    QueryResult result = WorldDatabase.PQuery("SELECT id, name FROM rebirth_event_reward_categorie");
+                    if (result)
                     {
-                        Field* field = result->Fetch();
-                        int catId = field[0].GetInt32();
-                        std::string catName = field[1].GetCString();
-                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, catName.c_str(), GOSSIP_SENDER_MAIN, catId+100);
-                    } while (result->NextRow());
-                    pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
-                }
-                break;
+                        do
+                        {
+                            Field* field = result->Fetch();
+                            int catId = field[0].GetInt32();
+                            std::string catName = field[1].GetCString();
+                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, catName.c_str(), GOSSIP_SENDER_MAIN, catId+100);
+                        } while (result->NextRow());
+                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<<Hauptmenue>>", GOSSIP_SENDER_MAIN, 5);
+                        pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
+                    }
+                    break;
+
             }
 
                 if (uiAction >= 100 && uiAction < 1000)
@@ -176,6 +182,7 @@ class event_npc : public CreatureScript
                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, str_info, GOSSIP_SENDER_MAIN, id+1000);
                            
                         } while (result->NextRow());
+                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<<Kategorien>>", GOSSIP_SENDER_MAIN, 4);
                         pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
                     }
                 }
@@ -237,7 +244,6 @@ class event_npc : public CreatureScript
                                    {
                                        char str_info[200];
                                        sprintf(str_info,"Du hast nicht genug Evenpunkte um diese Belohnung zu kaufen!");
-                                       pPlayer->PlayerTalkClass->ClearMenus();
                                        OnGossipHello(pPlayer, pCreature);
                                        pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
@@ -249,6 +255,15 @@ class event_npc : public CreatureScript
                                        pPlayer->ModifyHonorPoints(param1);
                                        LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                    }
+
+                                   else
+                                   {
+                                       char str_info[200];
+                                       sprintf(str_info,"Du hast nicht genug Evenpunkte um diese Belohnung zu kaufen!");
+                                       OnGossipHello(pPlayer, pCreature);
+                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                   }
+
                                    break;
                                case 2:
                                    if (cost <= pEP)
@@ -258,6 +273,15 @@ class event_npc : public CreatureScript
                                        pPlayer->SetTitle(title);
                                        LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                    }
+
+                                   else
+                                   {
+                                       char str_info[200];
+                                       sprintf(str_info,"Du hast nicht genug Evenpunkte um diese Belohnung zu kaufen!");
+                                       OnGossipHello(pPlayer, pCreature);
+                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                   }
+
                                    break;
                             }
                         }
