@@ -204,7 +204,7 @@ class event_npc : public CreatureScript
                         switch (type)
                         {
                            case 0:
-                               if (cost >= pEP)
+                               if (cost <= pEP)
                                {
                                    Item* item = pPlayer->GetItemByEntry(param1);
                                    if (pPlayer->HasItemCount(param1, 1, true))
@@ -220,20 +220,20 @@ class event_npc : public CreatureScript
                                            return true;
                                        }
                                    }
-
+                                   
                                    pPlayer->AddItem(param1, param2);
                                    LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                }
                                break;
                            case 1:
-                               if (cost >= pEP)
+                               if (cost <= pEP)
                                {
                                    pPlayer->ModifyHonorPoints(param1);
                                    LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                }
                                break;
                            case 2:
-                               if (cost >= pEP)
+                               if (cost <= pEP)
                                {
                                    CharTitlesEntry const* title;
                                    title = sCharTitlesStore.LookupEntry(param1);
