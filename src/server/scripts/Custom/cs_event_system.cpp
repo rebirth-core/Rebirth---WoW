@@ -129,6 +129,29 @@ class rebirth_commandscript : public CommandScript
             return true;
         }
 
+        static bool HandleActivateCommand(ChatHandler* handler, const char* args)
+        {
+            if (!*args)
+            {
+                handler->PSendSysMessage(".rebirth event activate #ID");
+                return true;
+            }
+
+            int eventID = atoi((char*)args);
+
+            QueryResult result = LoginDatabase.PQuery("SELECT * FROM rebirth_next_event WHERE id = %d", eventID);
+            if (result)
+            {
+                LoginDatabase.PExecute("UPDATE rebirth_next_event SET active = 1 WHERE id = %d", eventID);
+                return true;
+            }
+            else
+            {
+                handler->PSendSysMessage("Event nicht gefunden!");
+                return true;
+            }
+        }
+
         ChatCommand* GetCommands() const
         {
 
@@ -151,6 +174,7 @@ class rebirth_commandscript : public CommandScript
             {
                 { "addpoints", SEC_MODERATOR, true, &HandleAddPointsCommand, "", NULL },
                 { "removepoints", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
+                { "activate", SEC_MODERATOR, true, &HandleActivateCommand, "", NULL },
                 { "addreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 //{ "delreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 { "set", SEC_MODERATOR, true, NULL, "", RebirthSetCommandTable  },
