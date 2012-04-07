@@ -122,7 +122,7 @@ class event_npc : public CreatureScript
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleportiere mich zum Event!", GOSSIP_SENDER_MAIN, 3);
             if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED))
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Eventbelohnungen kaufen!", GOSSIP_SENDER_MAIN, 4);
-            pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
+            pPlayer->PlayerTalkClass->SendGossipMenu(120100, pCreature->GetGUID());
           }
           return true;
     	}
