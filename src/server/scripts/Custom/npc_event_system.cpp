@@ -113,7 +113,7 @@ class event_npc : public CreatureScript
 
     	bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     	{
-          if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_ENABLED));
+          if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_ENABLED))
           {
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Event Punkte habe ich?", GOSSIP_SENDER_MAIN, 1);
             if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED))
@@ -152,7 +152,6 @@ class event_npc : public CreatureScript
                         int catId = field[0].GetInt32();
                         std::string catName = field[1].GetCString();
                         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, catName.c_str(), GOSSIP_SENDER_MAIN, catId+100);
-                        sLog->outError("%u",catId+100);
                     } while (result->NextRow());
                     pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
                 }
@@ -161,9 +160,8 @@ class event_npc : public CreatureScript
 
                 if (uiAction >= 100 && uiAction < 1000)
                 {
-                    sLog->outError("(uiAction <= 100 && uiAction < 1000)");
-                    sLog->outError("%u",uiAction);
                     QueryResult result = WorldDatabase.PQuery("SELECT id, name, type, param1, param2, param3, cost FROM rebirth_event_rewards WHERE catid = %u", uiAction-100);
+                    sLog->outError("Rebirth Debug: Kategorie == %d", uiAction-100);
                     if (result)
                     {
                         do
@@ -176,7 +174,7 @@ class event_npc : public CreatureScript
                            char str_info[200];
                            sprintf(str_info,"%s (%d EP)",name.c_str(), cost);
                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, str_info, GOSSIP_SENDER_MAIN, id+1000);
-                           sLog->outError("%d",id);
+                           
                         } while (result->NextRow());
                         pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
                     }
@@ -184,63 +182,84 @@ class event_npc : public CreatureScript
 
                 if (uiAction >= 1000 && uiAction < 10000)
                 {
-                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost FROM rebirth_event_rewards WHERE id = %u AND catid != NULL", uiAction-1000);
+                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost FROM rebirth_event_rewards WHERE id = %u AND catid != ''", uiAction-1000);
                     QueryResult resulta = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
                     int pEP = 0;
                     if (resulta)
                     {
+                        sLog->outError("Rebirth Debug: resulta == true");
                         Field* field = resulta->Fetch();
                         int pEP = field[0].GetInt32();
-                    }
-                    if (result)
-                    {
-                        Field* field = result->Fetch();
-                        int type = field[0].GetInt32();
-                        int param1 = field[1].GetInt32();
-                        int param2 = field[2].GetInt32();
-                        int param3 = field[3].GetInt32();
-                        int cost = field[4].GetInt32();
-
-                        switch (type)
+                        sLog->outError("Rebirth Debug: pEP = %d",pEP);
+                    
+                        if (result)
                         {
-                           case 0:
-                               if (cost <= pEP)
-                               {
-                                   Item* item = pPlayer->GetItemByEntry(param1);
-                                   if (pPlayer->HasItemCount(param1, 1, true))
+                            sLog->outError("Rebirth Debug: pEP = %d",pEP);
+                            sLog->outError("Rebirth Debug: result == true");
+                            Field* field = result->Fetch();
+                            int type = field[0].GetInt32();
+                            int param1 = field[1].GetInt32();
+                            int param2 = field[2].GetInt32();
+                            int param3 = field[3].GetInt32();
+                            int cost = field[4].GetInt32();
+                            sLog->outError("Rebirth Debug: GetRewards %d %d %d %d %d",type,param1,param2,param3,cost);
+                            switch (type)
+                            {
+                               sLog->outError("Rebirth Debug: pEP = %d",pEP);
+                               sLog->outError("Rebirth Debug: 'OnBuy' case: %d",type);
+                               case 0:
+                                   sLog->outError("Rebirth Debug: 'ItemBuy' %d <= %d",cost,pEP);
+                                   sLog->outError("Rebirth Debug: pEP = %d",pEP);
+                                   if (cost <= pEP)
                                    {
-                                       if (item->GetTemplate()->MaxCount <= pPlayer->GetItemCount(param1, true, 0))
+                                       sLog->outError("Rebirth Debug: pEP = %d",pEP);
+                                       Item* item = pPlayer->GetItemByEntry(param1);
+                                       sLog->outError("Rebirth Debug: 'ItemBuy' %d <= %d  >>true<<",cost,pEP);
+                                       if (pPlayer->HasItemCount(param1, 1, true))
                                        {
-                                           char str_info[200];
-                                           sprintf(str_info,"Du hast bereits die maximale Anzahl dieses Gegenstands erreicht. Du kannst keine weiteren aufnehmen!");
-                                           pPlayer->PlayerTalkClass->ClearMenus();
-                                           OnGossipHello(pPlayer, pCreature);
-                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                           if (item->GetTemplate()->MaxCount <= pPlayer->GetItemCount(param1, true, 0))
+                                           {
+                                               char str_info[200];
+                                               sprintf(str_info,"Du hast bereits die maximale Anzahl dieses Gegenstands erreicht. Du kannst keine weiteren aufnehmen!");
+                                               pPlayer->PlayerTalkClass->ClearMenus();
+                                               OnGossipHello(pPlayer, pCreature);
+                                               pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
 
-                                           return true;
+                                               return true;
+                                           }
                                        }
+                                       sLog->outError("Rebirth Debug: 'ItemBuy' ItemID: %d  -- ItemCount: %d",param1,param2);
+                                       pPlayer->AddItem(param1, param2);
+                                       LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                    }
-                                   
-                                   pPlayer->AddItem(param1, param2);
-                                   LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                               }
-                               break;
-                           case 1:
-                               if (cost <= pEP)
-                               {
-                                   pPlayer->ModifyHonorPoints(param1);
-                                   LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                               }
-                               break;
-                           case 2:
-                               if (cost <= pEP)
-                               {
-                                   CharTitlesEntry const* title;
-                                   title = sCharTitlesStore.LookupEntry(param1);
-                                   pPlayer->SetTitle(title);
-                                   LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                               }
-                               break;
+
+                                   else
+                                   {
+                                       char str_info[200];
+                                       sprintf(str_info,"Du hast nicht genug Evenpunkte um diese Belohnung zu kaufen!");
+                                       pPlayer->PlayerTalkClass->ClearMenus();
+                                       OnGossipHello(pPlayer, pCreature);
+                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                   }
+
+                                   break;
+                               case 1:
+                                   if (cost <= pEP)
+                                   {
+                                       pPlayer->ModifyHonorPoints(param1);
+                                       LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                   }
+                                   break;
+                               case 2:
+                                   if (cost <= pEP)
+                                   {
+                                       CharTitlesEntry const* title;
+                                       title = sCharTitlesStore.LookupEntry(param1);
+                                       pPlayer->SetTitle(title);
+                                       LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                   }
+                                   break;
+                            }
                         }
                     }
                 }
