@@ -19,7 +19,7 @@ class rebirth_commandscript : public CommandScript
             LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte + %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
             (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%d Eventpunkte wurden hinzugefügt.",points);
             (ChatHandler(handler->getSelectedPlayer())).PSendSysMessage("Du hast %d Eventpunkt(e) erhalten!", points);
-            LoginDatabase.PExecute("INSERT INTO rebirth_command_log (command, fromAccount, toAccount, param1, date) VALUE 'rebirth event addpoints',%d,%d,%d,UNIX_TIMESTAMP()",handler->getSelectedPlayer()->GetSession()->GetAccountId(), handler->GetSession()->GetAccountId(), points);
+            LoginDatabase.PExecute("INSERT INTO rebirth_command_log (command, fromAccount, toAccount, param1, date) VALUES ('rebirth event addpoints',%d,%d,%d,UNIX_TIMESTAMP())",handler->getSelectedPlayer()->GetSession()->GetAccountId(), handler->GetSession()->GetAccountId(), points);
             return true;
         }
 
@@ -74,7 +74,7 @@ class rebirth_commandscript : public CommandScript
 
             LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
             (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("Spieler %s wurden %d Eventpunkte abgezogen.",handler->getSelectedPlayer()->GetName(), points);
-            LoginDatabase.PExecute("INSERT INTO rebirth_command_log (command, fromAccount, toAccount, param1, date) VALUE 'rebirth event removepoints',%d,%d,%d,UNIX_TIMESTAMP()",handler->getSelectedPlayer()->GetSession()->GetAccountId(), handler->GetSession()->GetAccountId(), points);
+            LoginDatabase.PExecute("INSERT INTO rebirth_command_log (command, fromAccount, toAccount, param1, date) VALUES ('rebirth event removepoints',%d,%d,%d,UNIX_TIMESTAMP())",handler->getSelectedPlayer()->GetSession()->GetAccountId(), handler->GetSession()->GetAccountId(), points);
             return true;
         }
 
