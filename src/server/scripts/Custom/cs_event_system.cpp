@@ -17,7 +17,7 @@ class rebirth_commandscript : public CommandScript
                return false;
 
             LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte + %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
-            handler->PSendSysMessage("%d Eventpunkte wurden hinzugefügt.",points);
+            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%d Eventpunkte wurden hinzugefügt.",points);
             (ChatHandler(handler->getSelectedPlayer())).PSendSysMessage("Du hast %d Eventpunkt(e) erhalten!", points);
 
             return true;
@@ -73,7 +73,7 @@ class rebirth_commandscript : public CommandScript
                 points = eventPoints;
 
             LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
-            handler->PSendSysMessage("Spieler %s wurden %d Eventpunkte abgezogen.",handler->getSelectedPlayer()->GetName(), points);
+            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("Spieler %s wurden %d Eventpunkte abgezogen.",handler->getSelectedPlayer()->GetName(), points);
             return true;
         }
 
@@ -153,6 +153,50 @@ class rebirth_commandscript : public CommandScript
             }
         }
 
+        static bool HandlePlayerInfoCommand(ChatHandler* handler, const char* args)
+        {
+            int accountid = 0;
+            std::string charname = "";
+            if (!*args)
+            {
+                Player* player = NULL;
+
+                if (player = handler->getSelectedPlayer())
+                {
+                    accountid = player->GetSession()->GetAccountId();
+                    charname = player->GetSession()->GetPlayerName();
+                }
+
+                else
+                {
+                    accountid = handler->GetSession()->GetAccountId();
+                    charname = player->GetSession()->GetPlayerName();
+                }
+            }
+            else
+            {
+                char* cname = strtok((char*)args, " ");
+                std::string name = cname;
+                charname = name;
+                QueryResult result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'", name.c_str());
+                if (!result)
+                {
+                    handler->PSendSysMessage("Charakter nicht gefunden");
+                    return true;
+                }
+                Field* field = result->Fetch();
+                accountid = field[0].GetInt32();
+            }
+            QueryResult result = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %d", accountid);
+            int punkte = 0;
+            if (result)
+            {
+                Field* field = result->Fetch();
+                punkte = field[0].GetInt32();
+            }
+            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%s verfuegt ueber %d Eventpunkte",charname.c_str(), punkte);
+        }
+
         static bool HandleDeactivateCommand(ChatHandler* handler, const char* args)
         {
             if (!*args)
@@ -210,6 +254,7 @@ class rebirth_commandscript : public CommandScript
             static ChatCommand RebirthSubCommandTable[] =
             {
                 { "event", SEC_MODERATOR, true, NULL, "", RebirthSubSubCommandTable  },
+                { "playerinfo", SEC_MODERATOR, true, &HandlePlayerInfoCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
