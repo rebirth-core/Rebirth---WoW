@@ -6,6 +6,7 @@ class rebirth_commandscript : public CommandScript
     public:
         rebirth_commandscript() : CommandScript("rebirth_commandscript") { }
 
+
         static bool HandleAddPointsCommand(ChatHandler* handler, const char* args)
         {
             if (!*args)
@@ -17,8 +18,9 @@ class rebirth_commandscript : public CommandScript
                return false;
 
             LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte + %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
-            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%d Eventpunkte wurden hinzugefügt.",points);
+            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%d Eventpunkt(e) wurden hinzugefuegt.",points);
             (ChatHandler(handler->getSelectedPlayer())).PSendSysMessage("Du hast %d Eventpunkt(e) erhalten!", points);
+            
             LoginDatabase.PExecute("INSERT INTO rebirth_command_log (command, fromAccount, toAccount, param1, date) VALUES ('rebirth event addpoints',%d,%d,%d,UNIX_TIMESTAMP())",handler->getSelectedPlayer()->GetSession()->GetAccountId(), handler->GetSession()->GetAccountId(), points);
             return true;
         }
@@ -73,7 +75,8 @@ class rebirth_commandscript : public CommandScript
                 points = eventPoints;
 
             LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
-            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("Spieler %s wurden %d Eventpunkte abgezogen.",handler->getSelectedPlayer()->GetName(), points);
+            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("Spieler %s wurden %d Eventpunkt(e) abgezogen.",handler->getSelectedPlayer()->GetName(), points);
+            (ChatHandler(handler->getSelectedPlayer())).PSendSysMessage("Dir wurden %d Eventpunkt(e) abgezogen", points);
             LoginDatabase.PExecute("INSERT INTO rebirth_command_log (command, fromAccount, toAccount, param1, date) VALUES ('rebirth event removepoints',%d,%d,%d,UNIX_TIMESTAMP())",handler->getSelectedPlayer()->GetSession()->GetAccountId(), handler->GetSession()->GetAccountId(), points);
             return true;
         }
