@@ -1,3 +1,12 @@
+INSERT INTO `command` (`name`, `security`, `help`) VALUES 
+('rebirth', 2, NULL),
+('rebirth event', 2, NULL),
+('rebirth playerinfo', 2, NULL),
+('rebirth event addpoints', 4, NULL),
+('rebirth event removepoints', 4, NULL),
+('rebirth event activate', 3, NULL),
+('rebirth event deactivate', 3, NULL);
+
 --
 -- Quests fixes for YTDB and TDB
 --
@@ -232,9 +241,6 @@ UPDATE `creature_template` SET `ScriptName` = 'npc_arcanist_tybalin' WHERE `entr
 -- set visible intendants of The Sons of Hodir and Knights of the Ebon Blade
 UPDATE `creature` SET phaseMask=65535 WHERE `id` in (32538,32540);
 
--- Open access to heroic ICC without achievement
-UPDATE `access_requirement` SET `completed_achievement`=0 WHERE `mapId`=631 and `difficulty` in (2,3);
-
 -- [Dungeon Finder] Fix Drak'Tharon Keep reward for DF
 UPDATE `instance_encounters` SET `creditType` = '0', `creditEntry` = '26632' WHERE `entry` IN ('376', '375');
 -- [Dungeon Finder] Fix reward for Utgarde Keep.
@@ -424,8 +430,6 @@ INSERT INTO `spell_proc_event` (`entry`, `SchoolMask`, `SpellFamilyName`, `Spell
 (34859, 0, 6, 6144, 4, 4096, 0, 2, 0, 0, 0), -- rank2
 (34860, 0, 6, 6144, 4, 4096, 0, 2, 0, 0, 0); -- rank3
 
--- Fixed spell Wyvern Sting
-DELETE FROM `spell_linked_spell` WHERE `comment` = 'Wyvern Sting';
 
 -- Fixed talent Threat of Thassarian of Death Knights
 UPDATE `spell_proc_event` SET `SpellFamilyMask0`=`SpellFamilyMask0`|0x00000001 WHERE `entry` IN (66192,66191,65661);
@@ -54945,266 +54949,6 @@ INSERT INTO `spell_scripts` (`id`, `command`, `x`, `y`, `z`, `o`) VALUES
 DELETE FROM `spell_dbc` WHERE `id` = '75517';
 INSERT INTO `spell_dbc` VALUES ('75517', '0', '0', '384', '1024', '4', '0', '0', '0', '0', '0', '0', '0', '1', '0', '0', '0', '0', '0', '0', '0', '0', '21', '13', '0', '-1', '0', '0', '6', '0', '0', '0', '0', '0', '0', '0', '0', '1', '0', '0', '0', '0', '0', '25', '0', '0', '0', '0', '0', '0', '0', '0', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '[DND] Bind Sight');
 
--- waypoints for the last battle --
-
-DELETE FROM `script_waypoint` WHERE `entry` IN ('39271', '39273', '39910');
-INSERT INTO `script_waypoint` VALUES ('39271', '0', '-5420.67', '528.775', '386.713', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '1', '-5409.16', '533.555', '386.748', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '2', '-5387.22', '542.998', '386.062', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '3', '-5387.22', '542.998', '386.062', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '4', '-5363.67', '555.368', '387.222', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '5', '-5352.78', '571.801', '386.329', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '6', '-5348.4', '554.581', '385.103', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '7', '-5334.2', '548.422', '384.389', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '8', '-5320.33', '589.94', '389.282', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '9', '-5304.74', '579.818', '389.878', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '10', '-5296.44', '574.425', '387.195', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '11', '-5284.05', '583.055', '386.916', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '12', '-5273.44', '562.343', '386.416', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '13', '-5234.36', '526.2', '386.764', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '14', '-5190.17', '519.923', '387.845', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '15', '-5182.69', '494.296', '387.976', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '16', '-5162.55', '476.988', '390.1', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '17', '-5133.19', '446.746', '395.009', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '18', '-5102.61', '459.28', '403.119', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '19', '-5083.89', '449.192', '410.409', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '20', '-5073.83', '441.95', '410.966', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '21', '-5083.89', '449.192', '410.409', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '22', '-5094.04', '461.049', '404.753', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '23', '-5099.45', '463.045', '403.707', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '24', '-5102.38', '461.128', '403.291', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '25', '-5111.06', '456.148', '400.845', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '26', '-5130.05', '448.678', '395.097', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '27', '-5142.41', '457.047', '393.074', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '28', '-5156.83', '472.722', '390.558', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '29', '-5162.18', '477.146', '390.118', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '30', '-5171.85', '482.398', '388.832', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '31', '-5184.8', '495.179', '387.975', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '32', '-5188.27', '511.978', '387.774', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '33', '-5188.67', '519.197', '387.827', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '34', '-5189.08', '532.199', '388.979', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '35', '-5188.2', '548.319', '393.302', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '36', '-5184.14', '581.337', '403.195', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '37', '-5183.25', '600.234', '409.013', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '38', '-5182.88', '611.582', '408.964', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '39', '-5181.33', '629.587', '398.547', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '40', '-5181.18', '633.698', '398.547', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '41', '-5179.62', '655.145', '388.96', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '42', '-5179.33', '658.935', '388.96', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '43', '-5177.68', '680.319', '379.373', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '44', '-5177.34', '684.68', '379.279', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '45', '-5175.27', '705.866', '369.766', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '46', '-5174.38', '714.979', '369.766', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '47', '-5159.94', '714.156', '369.766', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '48', '-5159.84', '705.217', '369.766', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '49', '-5162.77', '665.875', '348.932', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '50', '-5163.54', '655.233', '348.281', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '51', '-5164.36', '649.379', '348.531', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '52', '-5164.36', '649.379', '247.268', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '53', '-5160.58', '691.629', '247.369', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '54', '-5150.96', '724.722', '247.369', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '55', '-5143.21', '723.851', '247.369', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '56', '-5119.14', '721.632', '254.27', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '57', '-5115.13', '721.586', '254.307', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '58', '-5095.03', '720.342', '260.506', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '59', '-5078.62', '722.355', '260.543', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '60', '-5055.71', '729.623', '260.559', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '61', '-5053.57', '730.578', '261.236', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '62', '-5046.74', '733.553', '256.475', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '63', '-5032.67', '734.978', '256.475', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '64', '-4974.75', '730.193', '256.261', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '65', '-4948.22', '728.136', '260.438', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '66', '-4946.75', '728.089', '261.646', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '67', '-4937.45', '728.895', '261.646', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '68', '-4944.71', '728.062', '261.645', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '69', '-4946.95', '727.975', '261.646', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '70', '-4948.56', '728.227', '260.382', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '71', '-4981.64', '730.998', '256.327', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '72', '-4974.27', '730.200', '256.257', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '73', '-4948.23', '727.982', '260.438', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '74', '-4947.24', '727.969', '261.506', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39271', '75', '-4938.09', '728.934', '261.646', '0', '');
-
-INSERT INTO `script_waypoint` VALUES ('39273', '0', '-5420.402832', '532.782776', '386.462921', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '1', '-5413.188477', '535.881653', '386.570923', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '2', '-5391.552246', '544.664673', '386.394592', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '3', '-5366.873535', '557.704712', '386.987396', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '4', '-5357.714355', '569.594055', '386.843536', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '5', '-5347.485840', '559.449036', '384.522247', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '6', '-5337.935547', '551.479126', '384.372162', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '7', '-5321.748047', '584.958923', '388.036346', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '8', '-5305.991211', '583.735352', '389.782196', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '9', '-5297.886719', '578.137695', '388.633179', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '10', '-5283.689941', '587.856506', '387.076050', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '11', '-5272.595703', '566.956177', '386.519623', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '12', '-5236.533203', '530.369751', '387.070984', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '13', '-5189.522461', '524.215027', '388.070892', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '14', '-5181.116211', '499.922943', '387.990204', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '15', '-5163.294434', '482.087555', '389.972443', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '16', '-5134.145020', '452.650818', '394.293671', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '17', '-5106.144043', '460.529114', '402.411102', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '18', '-5083.545410', '452.273163', '409.631439', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '19', '-5082.151855', '450.770660', '410.434784', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '20', '-5083.367188', '452.029633', '409.771332', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '21', '-5090.745605', '462.081818', '405.188080', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '22', '-5094.800781', '464.407684', '404.231567', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '23', '-5098.551270', '464.187897', '403.823486', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '24', '-5109.258789', '459.713531', '401.694031', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '25', '-5125.863770', '452.030670', '395.953247', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '26', '-5138.246582', '456.800995', '393.498688', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '27', '-5151.615723', '470.463165', '390.977905', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '28', '-5159.138184', '477.868378', '390.390503', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '29', '-5166.544434', '482.103271', '389.501068', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '30', '-5179.772949', '493.101166', '388.037781', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '31', '-5185.578613', '509.315033', '387.862335', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '32', '-5186.571289', '515.156555', '387.784119', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '33', '-5186.854980', '528.101440', '388.403992', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '34', '-5186.819336', '543.251831', '391.710083', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '35', '-5182.299805', '576.332642', '401.499268', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '36', '-5180.895508', '596.640320', '408.112335', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '37', '-5180.009766', '610.448669', '408.964294', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '38', '-5179.010254', '629.560303', '398.546448', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '39', '-5178.824219', '633.018311', '398.546082', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '40', '-5177.220703', '654.860657', '388.959839', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '41', '-5176.970215', '658.702515', '388.959839', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '42', '-5175.649902', '678.966553', '379.909698', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '43', '-5175.290527', '684.310486', '379.352386', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '44', '-5173.214355', '705.574524', '369.766937', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '45', '-5172.834473', '712.714966', '369.765472', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '46', '-5163.152344', '712.508667', '369.765472', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '47', '-5162.308594', '705.768188', '369.765472', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '48', '-5165.507324', '666.178040', '348.932495', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '49', '-5166.233887', '656.292297', '348.279694', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '50', '-5166.872070', '649.750427', '348.489136', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '51', '-5166.872070', '649.750427', '247.841827', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '52', '-5162.357910', '689.594788', '247.369598', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '53', '-5151.636230', '727.016418', '247.369598', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '54', '-5145.094727', '726.401733', '247.369598', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '55', '-5119.512207', '724.035522', '254.095673', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '56', '-5116.247070', '723.778198', '254.307098', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '57', '-5098.798828', '722.279053', '259.285217', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '58', '-5081.573730', '724.174316', '260.555847', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '59', '-5054.638184', '732.560059', '261.248962', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '60', '-5048.257813', '735.472778', '257.336182', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '61', '-5033.412109', '737.746399', '256.475433', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '62', '-4976.061035', '733.267578', '256.275848', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '63', '-4948.415527', '730.725708', '260.374939', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '64', '-4946.948730', '730.632813', '261.566132', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '65', '-4939.745117', '731.451355', '261.645691', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '66', '-4940.826660', '730.935669', '261.645691', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '67', '-4976.375000', '733.288513', '256.280151', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '68', '-4948.928223', '730.775269', '260.292114', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '69', '-4946.928711', '730.578186', '261.582672', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39273', '70', '-4941.870117', '731.079346', '261.645782', '0', '');
-
-INSERT INTO `script_waypoint` VALUES ('39910', '0', '-5424.904785', '529.018250', '386.907135', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '1', '-5409.412598', '529.308472', '386.815735', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '2', '-5389.864258', '537.651489', '386.400970', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '3', '-5362.293945', '552.092041', '387.345825', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '4', '-5351.015625', '568.830688', '385.658569', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '5', '-5352.846680', '556.917725', '385.812195', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '6', '-5331.118652', '550.053711', '384.222687', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '7', '-5317.275879', '586.008179', '388.921997', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '8', '-5305.580078', '576.558838', '389.430603', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '9', '-5299.335449', '572.321472', '387.363373', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '10', '-5287.414063', '579.508423', '386.900696', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '11', '-5279.070801', '564.824463', '386.324402', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '12', '-5237.998047', '523.175537', '386.834412', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '13', '-5195.938477', '518.082886', '387.628754', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '14', '-5187.843750', '496.516663', '387.960724', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '15', '-5169.045898', '477.416107', '389.567505', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '16', '-5140.520020', '448.746094', '394.346405', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '17', '-5103.534668', '454.931732', '402.526276', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '18', '-5087.425293', '447.815735', '409.280487', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '19', '-5085.774414', '446.122864', '410.010529', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '20', '-5087.396973', '447.636505', '409.314209', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '21', '-5092.096191', '455.544373', '406.078674', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '22', '-5096.645508', '459.132782', '404.369598', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '23', '-5099.127441', '459.274902', '403.712097', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '24', '-5106.294922', '455.985779', '402.018951', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '25', '-5128.013672', '445.234467', '395.625244', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '26', '-5139.292969', '451.904663', '393.962158', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '27', '-5155.541992', '468.300476', '390.728790', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '28', '-5160.116699', '472.721527', '390.356110', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '29', '-5168.042480', '477.739838', '389.631897', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '30', '-5183.694336', '489.820190', '388.044525', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '31', '-5190.432129', '508.433350', '387.769104', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '32', '-5191.108398', '514.904297', '387.729156', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '33', '-5191.555176', '527.512756', '388.405853', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '34', '-5190.826172', '545.530029', '392.304321', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '35', '-5187.698730', '575.555298', '401.323792', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '36', '-5186.026855', '597.184814', '408.193695', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '37', '-5185.793457', '610.082031', '408.964874', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '38', '-5183.908691', '629.966553', '398.547729', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '39', '-5183.680664', '633.795776', '398.545227', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '40', '-5181.918945', '655.113708', '388.982178', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '41', '-5181.717285', '658.493713', '388.960114', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '42', '-5179.924316', '678.677795', '380.190948', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '43', '-5179.567383', '684.666199', '379.353027', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '44', '-5177.982910', '705.807007', '369.818054', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '45', '-5176.126953', '715.995422', '369.766388', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '46', '-5160.162598', '716.361267', '369.766388', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '47', '-5157.438965', '705.328491', '369.766388', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '48', '-5160.029297', '665.752869', '348.932465', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '49', '-5160.773926', '655.525208', '348.280701', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '50', '-5161.148926', '649.951538', '348.936096', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '51', '-5161.270996', '648.982727', '247.909073', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '52', '-5157.797363', '689.493164', '247.369415', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '53', '-5151.696289', '721.441223', '247.369415', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '54', '-5145.410156', '721.279846', '247.369415', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '55', '-5119.867676', '719.472656', '254.097168', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '56', '-5116.398926', '719.157898', '254.307388', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '57', '-5098.915527', '717.599792', '259.362640', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '58', '-5079.908203', '719.716125', '260.552216', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '59', '-5054.856445', '727.103699', '261.248871', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '60', '-5047.593750', '730.491272', '257.369171', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '61', '-5033.518555', '732.164917', '256.475372', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '62', '-4976.188477', '727.239563', '256.272461', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '63', '-4949.388184', '724.849670', '260.293152', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '64', '-4947.241211', '724.775208', '261.645844', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '65', '-4940.058105', '725.943787', '261.645844', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '66', '-4941.194336', '724.833923', '261.645844', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '67', '-4976.979492', '727.399170', '256.280396', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '68', '-4950.066406', '725.069885', '260.181854', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '69', '-4947.596191', '725.010742', '261.424683', '0', '');
-INSERT INTO `script_waypoint` VALUES ('39910', '70', '-4941.947266', '726.680725', '261.646057', '0', '');
-/*NOTE! Included Cyrillic Fonts - open it in UTF8 coding*/
-
-SET NAMES 'utf8';
-
-DELETE FROM `trinity_string` WHERE entry IN (756,757,758,759,760,761,762,763,764,765,766,767,768,769,770,771,772,780,781,782,783);
-INSERT INTO `trinity_string` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`) VALUES
-('756', 'Battle begins!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Битва началась'),
-('757', '%s has successfully defended the fortress!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '%s успешно защитил(а) крепость!'),
-('758', '%s has taken over the fortress!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '%s захватил(а) крепость'),
-('759', 'The %s siege workshop has been damaged by the %s!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('760', 'The %s siege workshop has been destroyed by the %s!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('761', 'The %s tower has been damaged!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '%s башня повреждена'),
-('762', 'The %s tower has been destroyed!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '%s башня уничтожена!'),
-('763', 'Wintergrasp fortress is under attack!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('764', 'Wintergrasp is now under the control of the %s.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('765', 'Wintergrasp timer set to %s.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('766', 'Wintergrasp battle started.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('767', 'Wintergrasp battle finished.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('768', 'Wintergrasp info: %s controlled. Timer: %s. Wartime: %s. Number of Players: (Horde: %u, Alliance: %u)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('769', 'Wintergrasp outdoorPvP is disabled.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('770', 'Wintergrasp outdoorPvP is enabled.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('771', 'You have reached Rank 1: Corporal', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Вы достигли Ранга 1: Капрал'),
-('772', 'You have reached Rank 2: First Lieutenant', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Вы достигли Ранга 2: Лейтенант'),
-('780', 'Before the Battle of  Wintergrasp left 30 minutes!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'До битвы на  Озере Ледяных Оков осталось 30 минут!'),
-('781', 'Before the Battle of  Wintergrasp left 10 minutes! Portal from Dalaran will work at begin of the battle.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'До битвы на  Озере Ледяных Оков осталось 10 минут! Портал с Даларана начнет работу во время боя.'),
-('782', 'The battle for Wintergrasp  has stopped! Not enough defenders. Wintergrasp Fortress remains  Attackers.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Битва за Озеро Ледяных Оков Остановлена. Не хватает защитников. Крепость переходит атакующей  стороне.'),
-('783', 'The battle for Wintergrasp  has stopped! Not enough attackers. Wintergrasp Fortress remains  Defenders.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Битва за Озеро Ледяных Оков Остановлена. Не хватает нападающих. Крепость остается защитникам.');
-
-DELETE FROM `command` WHERE name IN ('wg','wg enable','wg start','wg status','wg stop','wg switch','wg timer');
-INSERT INTO `command` (`name`, `security`, `help`) VALUES
-('wg', '3', 'Syntax: .wg $subcommand.'),
-('wg enable', '3', 'Syntax: .wg enable [on/off] Enable/Disable Wintergrasp outdoorPvP.'),
-('wg start', '3', 'Syntax: .wg start\r\nForce Wintergrasp battle start.'),
-('wg status', '3', 'Syntax: .wg status\r\nWintergrasp info, defender, timer, wartime.'),
-('wg stop', '3', 'Syntax: .wg stop\r\nForce Wintergrasp battle stop (No rewards).'),
-('wg switch', '3', 'Syntax: .wg switch\r\nSwitchs Wintergrasp defender team.'),
-('wg timer', '3', 'Syntax: .wg timer $minutes\r\nChange the current timer. Min value = 1, Max value 60 (Wartime), 1440 (Not Wartime)');
 
 /* WG scriptname */
 DELETE FROM `outdoorpvp_template` WHERE TypeId=7;
@@ -55283,46 +55027,6 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 (13, 0, 56669, 0, 18, 1, 27852, 0, 0, '', NULL),
 (13, 0, 61408, 0, 18, 1, 27852, 0, 0, '', NULL);
 
-/*WG Spell area Data For wg antifly */
-DELETE FROM `spell_area` WHERE spell IN (58730, 57940, 58045);
-INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_start_active`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`) VALUES
-(58730, 4197, 0, 0, 0, 0, 0, 2, 1),
-(58730, 4584, 0, 0, 0, 0, 0, 2, 1),
-(58730, 4581, 0, 0, 0, 0, 0, 2, 1),
-(58730, 4585, 0, 0, 0, 0, 0, 2, 1),
-(58730, 4612, 0, 0, 0, 0, 0, 2, 1),
-(58730, 4582, 0, 0, 0, 0, 0, 2, 1),
-(58730, 4611, 0, 0, 0, 0, 0, 2, 1),
-(58730, 4578, 0, 0, 0, 0, 0, 2, 1),
-(58730, 4576, 0, 0, 0, 0, 0, 2, 1),
-(58730, 4538, 0, 0, 0, 0, 0, 2, 1),
-(57940, 65, 0, 0, 0, 0, 0, 2, 1),
-(57940, 66, 0, 0, 0, 0, 0, 2, 1),
-(57940, 67, 0, 0, 0, 0, 0, 2, 1),
-(57940, 206, 0, 0, 0, 0, 0, 2, 1),
-(57940, 210, 0, 0, 0, 0, 0, 2, 1),
-(57940, 394, 0, 0, 0, 0, 0, 2, 1),
-(57940, 395, 0, 0, 0, 0, 0, 2, 1),
-(57940, 1196, 0, 0, 0, 0, 0, 2, 1),
-(57940, 2817, 0, 0, 0, 0, 0, 2, 1),
-(57940, 3456, 0, 0, 0, 0, 0, 2, 1),
-(57940, 3477, 0, 0, 0, 0, 0, 2, 1),
-(57940, 3537, 0, 0, 0, 0, 0, 2, 1),
-(57940, 3711, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4100, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4196, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4228, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4264, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4265, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4272, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4273, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4395, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4415, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4416, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4493, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4494, 0, 0, 0, 0, 0, 2, 1),
-(57940, 4603, 0, 0, 0, 0, 0, 2, 1),
-(58045, 4197, 0, 0, 0, 0, 0, 2, 1);
 
 /* Spell target conditions for spawning WG siege machines in proper place while building it */
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=13 AND `SourceEntry` IN (56575,56661,56663,61408);
@@ -55330,185 +55034,7 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 (13, 1, 56575, 0, 0, 31, 0, 3, 27852, 0, 0, 0, '', NULL),
 (13, 1, 56661, 0, 0, 31, 0, 3, 27852, 0, 0, 0, '', NULL),
 (13, 1, 56663, 0, 0, 31, 0, 3, 27852, 0, 0, 0, '', NULL),
-(13, 1, 61408, 0, 0, 31, 0, 3, 27852, 0, 0, 0, '', NULL);DELETE FROM gameobject WHERE 
-       id IN (192317,192335,192313,192316,192332,192331,192330,192329,192487,192310,192314,192308,192309,192324,192326,192312,192325,192304,187433,193984,193983,192377,192321,192318,192322,192320,192269,192273,192274,192277,192278,192280,192283,192284,192285,192289,192290,192336,192338,192339,192349,192350,192351,192352,192353,192354,192355,192356,192357,192358,192359,192360,192361,192362,192363,192364,192366,192367,192368,192369,192370,192371,192372,192373,192374,192375,192378,192379,192406,192407,192414,192416,192417,192418,192429,192433,192434,192435,192458,192459,192460,192461,192488,192501,192254,192255,192688,192686,180398,193764,193762,192319,192287,192323,192305,192286,192334,192307,192306,192328,192252,192253,192292,192299,192327,192267,192449,192450) 
-          AND map=571;
-INSERT INTO `gameobject` VALUES (NULL, 192317, 571, 1, 385, 5363.39, 2781.28, 435.634, 1.58825, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192335, 571, 1, 385, 5363.72, 2763.25, 445.023, -1.54462, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192313, 571, 1, 1, 5392.65, 3037.11, 433.713, -1.52716, 0, 0, -0.691512, 0.722365, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192316, 571, 1, 385, 5322.01, 2781.13, 435.673, 1.57952, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192332, 571, 1, 1, 5289.46, 2704.68, 435.875, -0.017451, 0, 0, -0.00872539, 0.999962, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192331, 571, 1, 1, 5350.95, 2640.36, 435.408, 1.5708, 0, 0, 0.707108, 0.707106, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192330, 571, 1, 1, 5392.27, 2639.74, 435.331, 1.50971, 0, 0, 0.685183, 0.728371, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192329, 571, 1, 1, 5350.88, 2622.72, 444.686, -1.5708, 0, 0, -0.707108, 0.707106, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 1, 5278.38, 2613.83, 432.721, -1.58825, 0, 0, -0.713251, 0.700909, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 1, 5260.82, 2631.8, 433.324, 3.05433, 0, 0, 0.999048, 0.0436174, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192310, 571, 1, 1, 5271.8, 2704.87, 445.183, -3.13286, 0, 0, -0.99999, 0.00436634, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192314, 571, 1, 1, 5236.27, 2739.46, 444.992, -1.59698, 0, 0, -0.716303, 0.697789, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 1, 5163.78, 2729.68, 432.009, -1.58825, 0, 0, -0.713251, 0.700909, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192308, 571, 1, 1, 5237.07, 2757.03, 435.796, 1.51844, 0, 0, 0.688356, 0.725373, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192309, 571, 1, 1, 5235.34, 2924.34, 435.04, -1.5708, 0, 0, -0.707108, 0.707106, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 1, 5262.54, 3047.95, 430.979, 3.10665, 0, 0, 0.999847, 0.0174704, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 1, 5163.13, 2952.59, 433.503, 1.53589, 0, 0, 0.694658, 0.71934, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192324, 571, 1, 1, 5235.19, 2942, 443.948, 1.58825, 0, 0, 0.713251, 0.700909, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192326, 571, 1, 1, 5272.73, 2976.55, 443.81, 3.12412, 0, 0, 0.999962, 0.00873622, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192312, 571, 1, 1, 5352.37, 3037.09, 435.252, -1.5708, 0, 0, -0.707108, 0.707106, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192325, 571, 1, 1, 5290.35, 2976.56, 435.221, 0.017452, 0, 0, 0.00872589, 0.999962, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192304, 571, 1, 385, 5397.76, 2873.08, 455.321, 3.10665, 0, 0, 0.999847, 0.0174704, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 187433, 571, 1, 1, 2832.84, 6184.45, 84.6827, -2.58308, 0, 0, 0, 0, 300, 100, 1);
-INSERT INTO `gameobject` VALUES (NULL, 187433, 571, 1, 1, 2835.96, 6180.37, 84.6827, 1.50098, 0, 0, 0, 0, 180, 100, 1);
-INSERT INTO `gameobject` VALUES (NULL, 187433, 571, 1, 1, 2830.12, 6188.96, 84.6827, -0.855211, 0, 0, 0, 0, 300, 100, 1);
-INSERT INTO `gameobject` VALUES (NULL, 187433, 571, 1, 1, 2831.88, 6188.72, 84.6827, -1.65806, 0, 0, 0, 0, 300, 100, 1);
-INSERT INTO `gameobject` VALUES (NULL, 193984, 571, 1, 1, 7647.47, 2055.55, 599.399, -0.279252, 0, 0, 0, 0, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 193984, 571, 1, 1, 7647.42, 2065.23, 599.308, 0.279252, 0, 0, 0, 0, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 193984, 571, 1, 1, 7609.86, 2055.53, 599.494, -2.86234, 0, 0, 0, 0, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 193984, 571, 1, 1, 7610.18, 2065.31, 599.426, 2.87979, 0, 0, 0, 0, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 193983, 571, 1, 1, 7906.95, 2053.04, 599.626, -0.296705, 0, 0, 0, 0, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 193983, 571, 1, 1, 7907.01, 2063.02, 599.587, 0.261798, 0, 0, 0, 0, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 193983, 571, 1, 1, 7870.43, 2053.35, 599.669, -2.87979, 0, 0, 0, 0, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 193983, 571, 1, 1, 7870.36, 2063.25, 599.628, 2.86234, 0, 0, 0, 0, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192377, 571, 1, 1, 5414.19, 3069.8, 415.187, 1.64061, 0, 0, 0, 0, 5, 100, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192321, 571, 1, 385, 5288.85, 2861.82, 435.591, 0.026179, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192318, 571, 1, 385, 5322.25, 2898.95, 435.643, -1.57952, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192322, 571, 1, 385, 5322.89, 2917.14, 445.154, 1.56207, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192320, 571, 1, 385, 5289.05, 2820.23, 435.674, 0, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192269, 571, 1, 1, 4526.46, 2810.18, 391.2, -2.99322, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192273, 571, 1, 1, 4417.94, 2324.81, 371.577, 3.08051, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192274, 571, 1, 1, 4424.15, 3286.54, 371.546, 3.12412, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192277, 571, 1, 1, 4572.93, 3475.52, 363.009, 1.42244, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192278, 571, 1, 1, 4433.9, 3534.14, 360.275, -1.85005, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192280, 571, 1, 1, 4857.97, 3335.44, 368.881, -2.94959, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192283, 571, 1, 1, 5006.34, 3280.4, 371.163, 2.22529, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192284, 571, 1, 65, 5372.48, 2862.5, 409.049, 3.14159, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192285, 571, 1, 65, 5371.49, 2820.8, 409.177, 3.14159, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192289, 571, 1, 1, 4778.19, 2438.06, 345.644, -2.94088, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192290, 571, 1, 1, 5024.57, 2532.75, 344.023, -1.93732, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192336, 571, 1, 1, 5154.49, 2862.15, 445.012, 3.14159, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192338, 571, 1, 65, 5397.76, 2873.08, 455.461, 3.10665, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192339, 571, 1, 65, 5397.39, 2809.33, 455.344, 3.10665, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192349, 571, 1, 1, 5155.31, 2820.74, 444.979, -3.13286, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192350, 571, 1, 1, 5270.69, 2861.78, 445.058, -3.11539, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192351, 571, 1, 1, 5271.28, 2820.16, 445.201, -3.13286, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192352, 571, 1, 1, 5173.02, 2820.93, 435.72, 0.017452, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192353, 571, 1, 1, 5172.11, 2862.57, 435.721, 0.017452, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192354, 571, 1, 1, 5288.41, 2861.79, 435.721, 0.017452, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192355, 571, 1, 1, 5288.92, 2820.22, 435.721, 0.017452, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192356, 571, 1, 1, 5237.07, 2757.03, 435.796, 1.51844, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192357, 571, 1, 1, 5235.34, 2924.34, 435.04, -1.5708, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192358, 571, 1, 65, 5322.23, 2899.43, 435.808, -1.58825, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192359, 571, 1, 65, 5364.35, 2899.4, 435.839, -1.5708, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192360, 571, 1, 65, 5352.37, 3037.09, 435.252, -1.5708, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192361, 571, 1, 65, 5392.65, 3037.11, 433.713, -1.52716, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192362, 571, 1, 65, 5322.12, 2763.61, 444.974, -1.55334, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192363, 571, 1, 65, 5363.61, 2763.39, 445.024, -1.54462, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192364, 571, 1, 1, 5350.88, 2622.72, 444.686, -1.5708, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192366, 571, 1, 1, 5236.27, 2739.46, 444.992, -1.59698, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192367, 571, 1, 1, 5271.8, 2704.87, 445.183, -3.13286, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192368, 571, 1, 65, 5289.46, 2704.68, 435.875, -0.017451, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192369, 571, 1, 1, 5350.95, 2640.36, 435.408, 1.5708, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192370, 571, 1, 1, 5392.27, 2639.74, 435.331, 1.50971, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192371, 571, 1, 65, 5364.29, 2916.94, 445.331, 1.57952, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192372, 571, 1, 65, 5322.86, 2916.95, 445.154, 1.56207, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192373, 571, 1, 1, 5290.35, 2976.56, 435.221, 0.017452, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192374, 571, 1, 1, 5272.94, 2976.55, 444.492, 3.12412, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192375, 571, 1, 1, 5235.19, 2941.9, 444.278, 1.58825, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192378, 571, 1, 65, 5322.02, 2781.13, 435.811, 1.5708, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192379, 571, 1, 65, 5363.42, 2781.03, 435.763, 1.5708, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192406, 571, 1, 1, 4438.3, 3361.08, 371.568, -0.017451, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192407, 571, 1, 1, 4448.17, 3235.63, 370.412, -1.56207, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192414, 571, 1, 1, 4387.62, 2719.57, 389.935, -1.54462, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192416, 571, 1, 1, 4408.57, 2422.61, 377.179, 1.58825, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192417, 571, 1, 1, 4416.59, 2414.08, 377.196, 0, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192418, 571, 1, 1, 4417.25, 2301.14, 377.214, 0.026179, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192429, 571, 1, 1, 4464.12, 2855.45, 406.111, 0.829032, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192433, 571, 1, 1, 4401.63, 3377.46, 363.365, 1.55334, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192434, 571, 1, 1, 5041.61, 3294.4, 382.15, -1.63188, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192435, 571, 1, 1, 4855.63, 3297.62, 376.739, -3.13286, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192458, 571, 1, 1, 4811.4, 2441.9, 358.207, -2.0333, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192459, 571, 1, 1, 4805.67, 2407.48, 358.191, 1.78023, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192460, 571, 1, 1, 5004.35, 2486.36, 358.449, 2.17294, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192461, 571, 1, 1, 4983.28, 2503.09, 358.177, -0.427603, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 1, 5160.34, 2798.61, 430.769, 3.14159, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 1, 5158.81, 2883.13, 431.618, 3.14159, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 1, 5278.38, 2613.83, 433.409, -1.58825, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 1, 5260.82, 2631.8, 433.324, 3.05433, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 1, 5163.13, 2952.59, 433.503, 1.53589, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 1, 5145.11, 2935, 433.386, 3.14159, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 1, 5262.54, 3047.95, 432.055, 3.10665, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 1, 5146.04, 2747.21, 433.584, 3.07177, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 1, 5163.78, 2729.68, 433.394, -1.58825, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192501, 571, 1, 1, 4398.82, 2804.7, 429.792, -1.58825, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192501, 571, 1, 1, 4416, 2822.67, 429.851, -0.017452, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192501, 571, 1, 1, 4559.11, 3606.22, 419.999, -1.48353, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192501, 571, 1, 1, 4539.42, 3622.49, 420.034, -3.07177, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192501, 571, 1, 1, 4555.26, 3641.65, 419.974, 1.67551, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192501, 571, 1, 1, 4574.87, 3625.91, 420.079, 0.087266, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192501, 571, 1, 1, 4466.79, 1960.42, 459.144, 1.15192, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192501, 571, 1, 1, 4475.35, 1937.03, 459.07, -0.436332, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192501, 571, 1, 1, 4451.76, 1928.1, 459.076, -2.00713, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192501, 571, 1, 1, 4442.99, 1951.9, 459.093, 2.74016, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192254, 571, 1, 1, 5154.46, 2828.94, 409.189, 3.14159, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192255, 571, 1, 1, 5154.52, 2853.31, 409.183, 3.14159, 0, 0, 0, 1, 180, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192688, 571, 1, 1, 5916.1, 566.209, 639.625, -2.72271, 0, 0, 0, 1, 180, 100, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192686, 571, 1, 1, 5664.81, 791.002, 653.698, -0.663223, 0, 0, 0, 1, 180, 100, 1);
-INSERT INTO `gameobject` VALUES (NULL, 180398, 571, 1, 1, 5665.02, 790.2, 653.698, -0.610864, 0, 0, 0, 1, 180, 100, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 256, 4855.63, 3297.62, 376.281, -3.13286, 0, 0, -0.99999, 0.00436634, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192290, 571, 1, 256, 4526.46, 2810.18, 391.2, -2.99322, 0, 0, -0.997249, 0.0741182, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 256, 4517.75, 2717.23, 387.812, -1.53589, 0, 0, -0.694658, 0.71934, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 256, 4475.35, 1937.03, 459.07, -0.436332, 0, 0, -0.216439, 0.976296, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 256, 4451.76, 1928.1, 459.076, -2.00713, 0, 0, -0.843392, 0.537299, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 256, 4442.99, 1951.9, 459.093, 2.74016, 0, 0, 0.979924, 0.199371, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 256, 4466.8, 1960.44, 459.841, 1.15192, 0, 0, 0.54464, 0.83867, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 256, 5041.61, 3294.4, 382.15, -1.63188, 0, 0, -0.72837, 0.685184, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192278, 571, 1, 256, 5006.34, 3280.4, 371.163, 2.22529, 0, 0, 0.896872, 0.442291, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192278, 571, 1, 256, 4857.97, 3335.44, 368.881, -2.94959, 0, 0, -0.995395, 0.0958539, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192290, 571, 1, 256, 4433.9, 3534.14, 360.275, -1.85005, 0, 0, -0.798636, 0.601815, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192290, 571, 1, 256, 4572.93, 3475.52, 363.009, 1.42244, 0, 0, 0.652758, 0.757566, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 256, 4555.26, 3641.65, 419.974, 1.67551, 0, 0, 0.743143, 0.669133, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 256, 4574.87, 3625.91, 420.079, 0.087266, 0, 0, 0.0436192, 0.999048, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 256, 4559.11, 3606.22, 419.999, -1.48353, 0, 0, -0.67559, 0.737277, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 256, 4539.42, 3622.49, 420.034, -3.07177, 0, 0, -0.999391, 0.0349043, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192290, 571, 1, 256, 4401.63, 3377.46, 363.365, 1.55334, 0, 0, 0.700908, 0.713252, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 256, 4448.17, 3235.63, 370.412, -1.56207, 0, 0, -0.704015, 0.710185, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192488, 571, 1, 256, 4438.3, 3361.08, 371.299, -0.017451, 0, 0, -0.00872539, 0.999962, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192290, 571, 1, 256, 4424.15, 3286.54, 371.546, 3.12412, 0, 0, 0.999962, 0.00873622, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192461, 571, 1, 1, 4416.03, 2822.68, 430.475, -0.017452, 0, 0, -0.00872589, 0.999962, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192461, 571, 1, 1, 4464.12, 2855.45, 406.111, 0.829032, 0, 0, 0.402747, 0.915311, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192461, 571, 1, 1, 4398.82, 2804.7, 429.792, -1.58825, 0, 0, -0.713251, 0.700909, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192461, 571, 1, 1, 4408.57, 2422.61, 377.179, 1.58825, 0, 0, 0.713251, 0.700909, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192461, 571, 1, 1, 4416.59, 2414.08, 377.13, 0, 0, 0, 0, 1, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192461, 571, 1, 1, 4417.25, 2301.14, 377.214, 0.026179, 0, 0, 0.0130891, 0.999914, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192418, 571, 1, 1, 4805.67, 2407.48, 358.191, 1.78023, 0, 0, 0.777144, 0.629323, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192418, 571, 1, 1, 4811.4, 2441.9, 358.207, -2.0333, 0, 0, -0.85035, 0.526218, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192273, 571, 1, 1, 4778.19, 2438.06, 345.644, -2.94088, 0, 0, -0.994969, 0.100188, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192273, 571, 1, 1, 5024.57, 2532.75, 344.023, -1.93732, 0, 0, -0.824127, 0.566404, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192418, 571, 1, 1, 5004.35, 2486.36, 358.449, 2.17294, 0, 0, 0.884989, 0.465612, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192418, 571, 1, 1, 4983.28, 2503.09, 358.177, -0.427603, 0, 0, -0.212176, 0.977231, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192290, 571, 1, 1, 4417.94, 2324.81, 371.577, 3.08051, 0, 0, 0.999534, 0.0305366, 300, 0, 1);
-INSERT INTO `gameobject` VALUES (NULL, 193764, 571, 1, 1, 7625.87, 2060.05, 604.27, 0.07854, 0, 0, 0.99999, 0.004363, 180, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 193762, 571, 1, 1, 7625.66, 2060.04, 604.195, -3.05428, 0, 0, 0.99999, 0.004363, 180, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192319, 571, 1, 385, 5364.3, 2899.22, 435.691, -1.55334, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192287, 571, 1, 385, 5372.42, 2862.48, 409.366, 3.14159, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192323, 571, 1, 385, 5364.28, 2917.26, 445.332, 1.58825, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192305, 571, 1, 385, 5397.31, 2809.26, 455.102, 3.13286, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192286, 571, 1, 385, 5371.45, 2820.79, 409.427, 3.12412, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192334, 571, 1, 385, 5322.17, 2763.2, 444.974, -1.56207, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192307, 571, 1, 385, 5271.16, 2820.11, 445.109, -3.13286, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192306, 571, 1, 385, 5270.56, 2861.68, 444.917, -3.12412, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 385, 5160.28, 2798.6, 430.604, -3.12412, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 385, 5146.04, 2747.3, 433.527, 3.12412, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192328, 571, 1, 385, 5173.13, 2820.96, 435.658, 0.026179, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192252, 571, 1, 385, 5154.37, 2853.23, 409.183, 3.14159, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192253, 571, 1, 385, 5154.42, 2828.93, 409.189, 3.14159, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192292, 571, 1, 385, 5154.35, 2862.08, 445.01, 3.14159, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192299, 571, 1, 385, 5155.22, 2820.63, 444.979, -3.11539, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192327, 571, 1, 385, 5172.34, 2862.57, 435.658, 0, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 385, 5158.71, 2882.9, 431.274, 3.14159, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192487, 571, 1, 385, 5145.11, 2934.95, 433.255, -3.10665, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192267, 571, 1, 385, 4452.76, 2639.14, 358.444, 1.67552, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192449, 571, 1, 385, 4517.75, 2717.23, 387.812, -1.53589, 0, 0, 0, 1, 300, 255, 1);
-INSERT INTO `gameobject` VALUES (NULL, 192450, 571, 1, 385, 4387.59, 2719.9, 390.201, -1.51843, 0, 0, 0, 1, 300, 255, 1);
-
+(13, 1, 61408, 0, 0, 31, 0, 3, 27852, 0, 0, 0, '', NULL);
 --
 -- Damage scaling from stats fixes (ap, spd and other) for YTDb and TDB
 -- 
@@ -55609,10 +55135,6 @@ INSERT INTO `spell_bonus_data` (`entry`, `direct_bonus`, `dot_bonus`,`ap_bonus`,
 ('5672','0.0827','-1','-1','-1','Shaman - Healing Stream Totem Rank 1');
 
 -- Warrior spells
-REPLACE INTO `spell_bonus_data` (`entry`, `direct_bonus`, `dot_bonus`, `ap_bonus`, `ap_dot_bonus`, `comments`) VALUES 
-(23922,0,0,0,0,'Warrior - Shield Slam');
-﻿DELETE FROM `creature_template` WHERE `entry` = 39509;
-REPLACE INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction_A`, `faction_H`, `npcflag`, `scale`, `rank`, `mindmg`, `maxdmg`, `dmgschool`, `attackpower`, `dmg_multiplier`, `baseattacktime`, `rangeattacktime`, `unit_class`, `unit_flags`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `minrangedmg`, `maxrangedmg`, `rangedattackpower`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `resistance1`, `resistance2`, `resistance3`, `resistance4`, `resistance5`, `resistance6`, `spell1`, `spell2`, `spell3`, `spell4`, `spell5`, `spell6`, `spell7`, `spell8`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `Health_mod`, `Mana_mod`, `RacialLeader`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `movementId`, `RegenHealth`, `equipment_id`, `mechanic_immune_mask`, `flags_extra`, `ScriptName`) VALUES (39509, 0, 0, 0, 0, 0, 31474, 0, 0, 0, 'Aronen', 'Apprentice to Ormus', '', 0, 80, 80, 2, 2216, 2216, 3, 1, 0, 420, 630, 0, 157, 1, 2000, 2000, 1, 768, 8, 0, 0, 0, 0, 0, 336, 504, 126, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, '');
 DELETE FROM `creature_questrelation` WHERE `quest` = 24845;
 DELETE FROM `gameobject_questrelation` WHERE `quest` = 24845;
 UPDATE `item_template` SET `StartQuest`=0 WHERE `StartQuest` = 24845;
@@ -55803,7 +55325,7 @@ INSERT INTO `script_waypoint` VALUES
 (35491,13,744.841,634.505,411.575,0,'');
 -- Griphon of black Knight before battle start
 REPLACE INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction_A`, `faction_H`, `npcflag`, `speed_run`, `scale`, `rank`, `mindmg`, `maxdmg`, `dmgschool`, `attackpower`, `dmg_multiplier`, `baseattacktime`, `rangeattacktime`, `unit_class`, `unit_flags`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `minrangedmg`, `maxrangedmg`, `rangedattackpower`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `resistance1`, `resistance2`, `resistance3`, `resistance4`, `resistance5`, `resistance6`, `spell1`, `spell2`, `spell3`, `spell4`, `spell5`, `spell6`, `spell7`, `spell8`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `Health_mod`, `Mana_mod`, `RacialLeader`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `movementId`, `RegenHealth`, `equipment_id`, `mechanic_immune_mask`, `flags_extra`, `ScriptName`) VALUES
-(35492, 0, 0, 0, 0, 0, 29842, 0, 0, 0, 'Black Knight\'s Skeletal Gryphon', '', '', 0, 80, 80, 2, 35, 35, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 33554432, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 1048576, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 486, 0, 0, '', 0, 3, 15, 1, 0, 0, 0, 0, 0, 0, 0, 164, 1, 0, 0, 0, 'npc_gr');
+(35492, 0, 0, 0, 0, 0, 29842, 0, 0, 0, 'Black Knights Skeletal Gryphon', '', '', 0, 80, 80, 2, 35, 35, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 33554432, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 1048576, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 486, 0, 0, '', 0, 3, 15, 1, 0, 0, 0, 0, 0, 0, 0, 164, 1, 0, 0, 0, 'npc_gr');
 DELETE FROM `script_waypoint` WHERE `entry`=35492;
 INSERT INTO `script_waypoint` VALUES
 (35492,1,741.067078, 634.471558, 411.569366,0,''),
@@ -55870,8 +55392,45 @@ REPLACE INTO `creature_template_addon` VALUES
 (35332, 0, 0, 0, 1, 0, '63406 62852 64723'),
 (36086, 0, 0, 0, 1, 0, '63406 62852 64723'),
 (34657, 0, 0, 0, 1, 0, '63406 62852 64723');
--- Immunes (crash fix xD )
+
 UPDATE `creature_template` SET `mechanic_immune_mask`=`mechanic_immune_mask`|1073741823 WHERE `entry` IN
 (35309,35310, -- Argent Lightwielder
 35305,35306, -- Argent Monk
 35307,35308); -- Argent Priestess
+DELETE FROM disables WHERE sourceType = 0 AND entry = 36444 AND flags = 1;
+INSERT INTO disables (sourceType, entry, flags, comment) 
+VALUES 
+(0, 36444, 1, 'Wasser aus Tausendwinter');
+
+INSERT INTO `npc_text` (`ID`, `text0_0`, `text0_1`, `prob0`, `em0_1`) VALUES 
+('120100', '##### REBIRTH-WoW #####$B\r\n##### Event-System ######$B\r\n####################$B\r\n$B\r\nWillkommen im Rebirth WoW Event Menue!\r\n$B$B\r\nHier kannst du die Anzahl deiner Eventpunkte abfragen,$B\r\ndeine Eventpunkte gegen einzigartige Belohnungen einlösen,$B\r\nerfahren, wann das nächste Event statt findet und $B\r\ndich zu einem bereits laufenden Event teleportieren!$B\r\n$B\r\nDein Rebirth-WoW Team ', '##### REBIRTH-WoW #####$B\r\n##### Event-System ######$B\r\n####################$B\r\n$B\r\nWillkommen im Rebirth WoW Event Menue!\r\n$B$B\r\nHier kannst du die Anzahl deiner Eventpunkte abfragen,$B\r\ndeine Eventpunkte gegen einzigartige Belohnungen einlösen,$B\r\nerfahren, wann das nächste Event statt findet und $B\r\ndich zu einem bereits laufenden Event teleportieren!$B\r\n$B\r\nDein Rebirth-WoW Team ', '1', '6');
+
+UPDATE `npc_text` 
+SET 
+`text0_0`='##### REBIRTH-WoW #####\r\n##### Event-System ######\r\n######################\r\n\r\nWillkommen im Rebirth WoW Event Menue!\r\n\r\nHier kannst du die Anzahl deiner Eventpunkte abfragen,\r\ndeine Eventpunkte gegen einzigartige Belohnungen einlösen,\r\nerfahren, wann das nächste Event statt findet und \r\ndich zu einem bereits laufenden Event teleportieren!\r\n\r\nDein Rebirth-WoW Team ' ,
+`text0_1`='##### REBIRTH-WoW #####\r\n##### Event-System ######\r\n######################\r\n\r\nWillkommen im Rebirth WoW Event Menue!\r\n\r\nHier kannst du die Anzahl deiner Eventpunkte abfragen,\r\ndeine Eventpunkte gegen einzigartige Belohnungen einlösen,\r\nerfahren, wann das nächste Event statt findet und \r\ndich zu einem bereits laufenden Event teleportieren!\r\n\r\nDein Rebirth-WoW Team ' 
+WHERE (`ID`='120100');
+DELETE FROM creature_template WHERE entry = 96700;
+
+INSERT INTO `creature_template` 
+(`entry`, `modelid1`, `name`, `subname`, `minlevel`, `maxlevel`, `exp`, `faction_A`, `faction_H`, `npcflag`, `rank`, `mindmg`, `maxdmg`, `attackpower`, `dmg_multiplier`, `baseattacktime`, `unit_class`, `ScriptName`) 
+VALUES 
+('96700', '10045', 'Rebirth', 'Event Master', '80', '80', '2', '35', '35', '1', '1', '1000', '2000', '192', '15', '2000', '1', 'event_npc');DROP TABLE IF EXISTS `rebirth_event_rewards`;
+CREATE TABLE `rebirth_event_rewards` (
+  `id` int(11) NOT NULL,
+  `catid` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `type` int(11) NOT NULL,
+  `param1` int(11) NOT NULL,
+  `param2` int(11) NOT NULL,
+  `param3` int(11) NOT NULL,
+  `cost` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `rebirth_event_reward_categorie`;
+CREATE TABLE `rebirth_event_reward_categorie` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
