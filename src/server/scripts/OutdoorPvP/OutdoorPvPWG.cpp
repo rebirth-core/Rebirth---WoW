@@ -1,22 +1,23 @@
 /*
-* Copyright (C) 2008 - 2012 Trinity <http://www.trinitycore.org/>
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-*
-* Patch supported by ChaosUA & TCRU community http://trinity-core.ru/
-*/
+ * Copyright (C) 2008 - 2012 Trinity <http://www.trinitycore.org/>
+ *
+ * Copyright (C) 2012 Patch supported by ChaosUA & TCRU community http://trinity-core.ru/
+ * Copyright (C) 2012 Rebirth-Core http://www.rebirth-wow.de
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 #include "OutdoorPvPWG.h"
 #include "SpellAuras.h"
@@ -1172,18 +1173,33 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                creature->setFaction(35);
            }
            return false;
-       case CREATURE_OTHER:
-           if (isWarTime())
-           {
-               creature->SetVisible(false);
-               creature->setFaction(35);
-           }
-           else
-           {
-               creature->RestoreFaction();
-               creature->SetVisible(true);
-           }
-           return false;
+        case CREATURE_OTHER:
+        {
+            if (isWarTime())
+            {
+                creature->SetVisible(false);
+                creature->setFaction(35);
+
+                // Prevent from hiding
+                switch (entry)
+                {
+                    case 30560: // The RP-GG
+                    case 27852: // This creature is neded for spell_target in workshops while building siege machines
+                    case 27869: // Wintergrasp Detection Unit
+                    case 23472: // World Trigger (Large AOI, Not Immune PC/NPC)
+                    {
+                        creature->SetPhaseMask(1, true);
+                        creature->RestoreFaction();
+                        creature->SetVisible(true);
+                    }
+                    break;
+                }
+            } else {
+                creature->RestoreFaction();
+                creature->SetVisible(true);
+            }
+            return false;
+        }
        case CREATURE_SPIRIT_GUIDE:
            /* Vehicle teleport system */
            pMap = creature->GetMap();
@@ -2910,7 +2926,7 @@ bool OutdoorPvPWG::IncrementQuest(Player *player, uint32 quest, bool complete)
 
 void OutdoorPvPWG::DoCompleteOrIncrementAchievement(uint32 achievement, Player * player, uint8 /*incrementNumber*/)
 {
-   AchievementEntry const* AE = GetAchievementStore()->LookupEntry(achievement);
+   AchievementEntry const* AE = sAchievementStore.LookupEntry(achievement);
    
    switch (achievement)
    {

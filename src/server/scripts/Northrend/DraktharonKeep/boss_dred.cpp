@@ -161,7 +161,7 @@ class boss_dred : public CreatureScript
                 return 0;
             }
 
-            void JustDied(Unit* /*who*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (instance)
                     instance->SetData(DATA_DRED_EVENT, DONE);
@@ -211,10 +211,10 @@ class npc_drakkari_gutripper : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(Unit* /*who*/)
+            void JustDied(Unit* /*killer*/)
             {
-                if (Creature* Dred = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_DRED)))
-                    Dred->AI()->DoAction(ACTION_RAPTOR_KILLED);
+                //if (Creature* Dred = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_DRED)))
+                //    Dred->AI()->DoAction(ACTION_RAPTOR_KILLED);
             }
         };
 
@@ -261,10 +261,10 @@ class npc_drakkari_scytheclaw : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(Unit* /*who*/)
+            void JustDied(Unit* /*killer*/)
             {
-                if (Creature* Dred = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_DRED)))
-                    Dred->AI()->DoAction(ACTION_RAPTOR_KILLED);
+                //if (Creature* Dred = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_DRED)))
+                //    Dred->AI()->DoAction(ACTION_RAPTOR_KILLED);
             }
         };
 

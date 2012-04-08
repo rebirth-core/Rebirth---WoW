@@ -25,6 +25,7 @@
 #include "Log.h"
 #include "MapReference.h"
 #include "Player.h"
+#include "CreatureTextMgr.h"
 #include "Group.h"
 
 //Disable CreatureAI when charmed
@@ -160,7 +161,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature /*= NULL*/, float maxRangeToN
          }
      }
  }
-
+ 
 // scripts does not take care about MoveInLineOfSight loops
 // MoveInLineOfSight can be called inside another MoveInLineOfSight and cause stack overflow
 void CreatureAI::MoveInLineOfSight_Safe(Unit* who)

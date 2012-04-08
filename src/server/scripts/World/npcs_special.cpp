@@ -39,6 +39,7 @@ npc_sayge               100%    Darkmoon event fortune teller, buff player based
 npc_snake_trap_serpents  80%    AI for snakes that summoned by Snake Trap
 npc_shadowfiend         100%   restore 5% of owner's mana when shadowfiend die from damage
 npc_locksmith            75%    list of keys needs to be confirmed
+npc_argent_squire       100%    Script for the Argent Squire/Gruntling
 npc_firework            100%    NPC's summoned by rockets and rocket clusters, for making them cast visual
 EndContentData */
 
@@ -315,7 +316,7 @@ public:
 
     struct npc_chicken_cluckAI : public ScriptedAI
     {
-        npc_chicken_cluckAI(Creature* c) : ScriptedAI(c) {}
+        npc_chicken_cluckAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 ResetFlagTimer;
 
@@ -407,7 +408,7 @@ public:
 
     struct npc_dancing_flamesAI : public ScriptedAI
     {
-        npc_dancing_flamesAI(Creature* c) : ScriptedAI(c) {}
+        npc_dancing_flamesAI(Creature* creature) : ScriptedAI(creature) {}
 
         bool Active;
         uint32 CanIteract;
@@ -421,7 +422,7 @@ public:
             float x, y, z;
             me->GetPosition(x, y, z);
             me->Relocate(x, y, z + 0.94f);
-            me->SetLevitate(true);
+            me->SetDisableGravity(true);
             me->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
             WorldPacket data;                       //send update position to client
             me->BuildHeartBeatMsg(&data);
@@ -558,7 +559,7 @@ public:
 
     struct npc_doctorAI : public ScriptedAI
     {
-        npc_doctorAI(Creature* c) : ScriptedAI(c) {}
+        npc_doctorAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 PlayerGUID;
 
@@ -703,7 +704,7 @@ public:
 
     struct npc_injured_patientAI : public ScriptedAI
     {
-        npc_injured_patientAI(Creature* c) : ScriptedAI(c) {}
+        npc_injured_patientAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 DoctorGUID;
         Location* Coord;
@@ -905,7 +906,7 @@ public:
 
     struct npc_garments_of_questsAI : public npc_escortAI
     {
-        npc_garments_of_questsAI(Creature* c) : npc_escortAI(c) {Reset();}
+        npc_garments_of_questsAI(Creature* creature) : npc_escortAI(creature) {Reset();}
 
         uint64 CasterGUID;
 
@@ -1040,8 +1041,9 @@ public:
             }
         }
 
-        void WaypointReached(uint32 /*point*/)
+        void WaypointReached(uint32 /*waypointId*/)
         {
+
         }
 
         void UpdateAI(uint32 const diff)
@@ -1105,7 +1107,7 @@ public:
 
     struct npc_guardianAI : public ScriptedAI
     {
-        npc_guardianAI(Creature* c) : ScriptedAI(c) {}
+        npc_guardianAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset()
         {
@@ -1477,7 +1479,7 @@ public:
 
     struct npc_steam_tonkAI : public ScriptedAI
     {
-        npc_steam_tonkAI(Creature* c) : ScriptedAI(c) {}
+        npc_steam_tonkAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset() {}
         void EnterCombat(Unit* /*who*/) {}
@@ -1495,7 +1497,6 @@ public:
             else
                 me->SetReactState(REACT_AGGRESSIVE);
         }
-
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -1513,7 +1514,7 @@ public:
 
     struct npc_tonk_mineAI : public ScriptedAI
     {
-        npc_tonk_mineAI(Creature* c) : ScriptedAI(c)
+        npc_tonk_mineAI(Creature* creature) : ScriptedAI(creature)
         {
             me->SetReactState(REACT_PASSIVE);
         }
@@ -1547,10 +1548,11 @@ public:
     }
 };
 
+
 /*####
 ## npc_brewfest_reveler
 ####*/
-
+/*
 class npc_brewfest_reveler : public CreatureScript
 {
 public:
@@ -1558,7 +1560,7 @@ public:
 
     struct npc_brewfest_revelerAI : public ScriptedAI
     {
-        npc_brewfest_revelerAI(Creature* c) : ScriptedAI(c) {}
+        npc_brewfest_revelerAI(Creature* creature) : ScriptedAI(creature) {}
         void ReceiveEmote(Player* player, uint32 emote)
         {
             if (!IsHolidayActive(HOLIDAY_BREWFEST))
@@ -1574,6 +1576,7 @@ public:
         return new npc_brewfest_revelerAI(creature);
     }
 };
+*/
 
 /*####
 ## npc_winter_reveler
@@ -1594,7 +1597,7 @@ class npc_winter_reveler : public CreatureScript
 
         struct npc_winter_revelerAI : public ScriptedAI
         {
-            npc_winter_revelerAI(Creature* c) : ScriptedAI(c) {}
+            npc_winter_revelerAI(Creature* creature) : ScriptedAI(creature) {}
 
             void ReceiveEmote(Player* player, uint32 emote)
             {
@@ -1639,7 +1642,7 @@ public:
 
     struct npc_snake_trap_serpentsAI : public ScriptedAI
     {
-        npc_snake_trap_serpentsAI(Creature* c) : ScriptedAI(c) {}
+        npc_snake_trap_serpentsAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 SpellTimer;
         bool IsViper;
@@ -1650,7 +1653,7 @@ public:
         {
             SpellTimer = 0;
 
-            CreatureTemplate const* Info = me->GetCreatureInfo();
+            CreatureTemplate const* Info = me->GetCreatureTemplate();
 
             IsViper = Info->Entry == C_VIPER ? true : false;
 
@@ -1753,15 +1756,13 @@ public:
 
     struct mob_mojoAI : public ScriptedAI
     {
-        mob_mojoAI(Creature* c) : ScriptedAI(c) {Reset();}
-
-        uint32 Hearts;
-        uint64 VictimGUID;
-
+        mob_mojoAI(Creature* creature) : ScriptedAI(creature) {Reset();}
+        uint32 hearts;
+        uint64 victimGUID;
         void Reset()
         {
-            VictimGUID = 0;
-            Hearts = 15000;
+            victimGUID = 0;
+            hearts = 15000;
             if (Unit* own = me->GetOwner())
                 me->GetMotionMaster()->MoveFollow(own, 0, 0);
         }
@@ -1772,12 +1773,11 @@ public:
         {
             if (me->HasAura(20372))
             {
-                if (Hearts <= diff)
+                if (hearts <= diff)
                 {
                     me->RemoveAurasDueToSpell(20372);
-                    Hearts = 15000;
-                }
-                Hearts -= diff;
+                    hearts = 15000;
+                } hearts -= diff;
             }
         }
 
@@ -1821,14 +1821,14 @@ public:
                 }
 
                 me->MonsterWhisper(whisp.c_str(), player->GetGUID());
-                if (VictimGUID)
-                    if (Player* victim = Unit::GetPlayer(*me, VictimGUID))
+                if (victimGUID)
+                    if (Player* victim = Unit::GetPlayer(*me, victimGUID))
                         victim->RemoveAura(43906);//remove polymorph frog thing
                 me->AddAura(43906, player);//add polymorph frog thing
-                VictimGUID = player->GetGUID();
+                victimGUID = player->GetGUID();
                 DoCast(me, 20372, true);//tag.hearts
                 me->GetMotionMaster()->MoveFollow(player, 0, 0);
-                Hearts = 15000;
+                hearts = 15000;
             }
         }
     };
@@ -1846,7 +1846,7 @@ public:
 
     struct npc_mirror_imageAI : CasterAI
     {
-        npc_mirror_imageAI(Creature* c) : CasterAI(c) {}
+        npc_mirror_imageAI(Creature* creature) : CasterAI(creature) {}
 
         void InitializeAI()
         {
@@ -1892,9 +1892,9 @@ public:
 
     struct npc_ebon_gargoyleAI : CasterAI
     {
-        npc_ebon_gargoyleAI(Creature* c) : CasterAI(c) {}
+        npc_ebon_gargoyleAI(Creature* creature) : CasterAI(creature) {}
 
-        uint32 DespawnTimer;
+        uint32 despawnTimer;
 
         void InitializeAI()
         {
@@ -1903,7 +1903,7 @@ public:
             if (!ownerGuid)
                 return;
             // Not needed to be despawned now
-            DespawnTimer = 0;
+            despawnTimer = 0;
             // Find victim of Summon Gargoyle spell
             std::list<Unit*> targets;
             Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 30);
@@ -1941,6 +1941,7 @@ public:
             me->CastSpell(me, 54661, true);
             me->SetReactState(REACT_PASSIVE);
 
+            //! HACK: Creature's can't have MOVEMENTFLAG_FLYING
             // Fly Away
             me->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY|MOVEMENTFLAG_ASCENDING|MOVEMENTFLAG_FLYING);
             me->SetSpeed(MOVE_FLIGHT, 0.75f, true);
@@ -1952,15 +1953,15 @@ public:
             me->GetMotionMaster()->MovePoint(0, x, y, z);
 
             // Despawn as soon as possible
-            DespawnTimer = 4 * IN_MILLISECONDS;
+            despawnTimer = 4 * IN_MILLISECONDS;
         }
 
         void UpdateAI(const uint32 diff)
         {
-            if (DespawnTimer > 0)
+            if (despawnTimer > 0)
             {
-                if (DespawnTimer > diff)
-                    DespawnTimer -= diff;
+                if (despawnTimer > diff)
+                    despawnTimer -= diff;
                 else
                     me->DespawnOrUnsummon();
                 return;
@@ -1982,7 +1983,7 @@ public:
 
     struct npc_lightwellAI : public PassiveAI
     {
-        npc_lightwellAI(Creature* c) : PassiveAI(c) {}
+        npc_lightwellAI(Creature* creature) : PassiveAI(creature) {}
 
         void Reset()
         {
@@ -2021,20 +2022,20 @@ public:
     {
         npc_training_dummyAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {
-            Entry = creature->GetEntry();
+            entry = creature->GetEntry();
         }
 
-        uint32 Entry;
-        uint32 ResetTimer;
-        uint32 DespawnTimer;
+        uint32 entry;
+        uint32 resetTimer;
+        uint32 despawnTimer;
 
         void Reset()
         {
             me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
 
-            ResetTimer = 5000;
-            DespawnTimer = 15000;
+            resetTimer = 5000;
+            despawnTimer = 15000;
         }
 
         void EnterEvadeMode()
@@ -2047,13 +2048,13 @@ public:
 
         void DamageTaken(Unit* /*doneBy*/, uint32& damage)
         {
-            ResetTimer = 5000;
+            resetTimer = 5000;
             damage = 0;
         }
 
         void EnterCombat(Unit* /*who*/)
         {
-            if (Entry != NPC_ADVANCED_TARGET_DUMMY && Entry != NPC_TARGET_DUMMY)
+            if (entry != NPC_ADVANCED_TARGET_DUMMY && entry != NPC_TARGET_DUMMY)
                 return;
         }
 
@@ -2065,23 +2066,23 @@ public:
             if (!me->HasUnitState(UNIT_STATE_STUNNED))
                 me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
 
-            if (Entry != NPC_ADVANCED_TARGET_DUMMY && Entry != NPC_TARGET_DUMMY)
+            if (entry != NPC_ADVANCED_TARGET_DUMMY && entry != NPC_TARGET_DUMMY)
             {
-                if (ResetTimer <= diff)
+                if (resetTimer <= diff)
                 {
                     EnterEvadeMode();
-                    ResetTimer = 5000;
+                    resetTimer = 5000;
                 }
                 else
-                    ResetTimer -= diff;
+                    resetTimer -= diff;
                 return;
             }
             else
             {
-                if (DespawnTimer <= diff)
+                if (despawnTimer <= diff)
                     me->DespawnOrUnsummon();
                 else
-                    DespawnTimer -= diff;
+                    despawnTimer -= diff;
             }
         }
         void MoveInLineOfSight(Unit* /*who*/){return;}
@@ -2726,6 +2727,213 @@ public:
     }
 };
 
+/*######
+## npc_argent_squire/gruntling
+######*/
+
+enum Misc
+{
+    STATE_BANK      = 0x1,
+    STATE_SHOP      = 0x2,
+    STATE_MAIL      = 0x4,
+
+    GOSSIP_ACTION_MAIL = 3,
+    ACHI_PONY_UP                = 3736,
+
+    SPELL_CHECK_MOUNT           = 67039,
+    SPELL_CHECK_TIRED           = 67334,
+    SPELL_SQUIRE_BANK_ERRAND    = 67368,
+    SPELL_SQUIRE_POSTMAN        = 67376,
+    SPELL_SQUIRE_SHOP           = 67377,
+    SPELL_SQUIRE_TIRED          = 67401
+};
+enum Quests
+{
+    QUEST_CHAMP_ORGRIMMAR       = 13726,
+    QUEST_CHAMP_UNDERCITY       = 13729,
+    QUEST_CHAMP_SENJIN          = 13727,
+    QUEST_CHAMP_SILVERMOON      = 13731,
+    QUEST_CHAMP_THUNDERBLUFF    = 13728,
+    QUEST_CHAMP_STORMWIND       = 13699,
+    QUEST_CHAMP_IRONFORGE       = 13713,
+    QUEST_CHAMP_GNOMEREGAN      = 13723,
+    QUEST_CHAMP_DARNASSUS       = 13725,
+    QUEST_CHAMP_EXODAR          = 13724
+};
+enum Pennants
+{
+    SPELL_DARNASSUS_PENNANT     = 63443,
+    SPELL_EXODAR_PENNANT        = 63439,
+    SPELL_GNOMEREGAN_PENNANT    = 63442,
+    SPELL_IRONFORGE_PENNANT     = 63440,
+    SPELL_ORGRIMMAR_PENNANT     = 63444,
+    SPELL_SENJIN_PENNANT        = 63446,
+    SPELL_SILVERMOON_PENNANT    = 63438,
+    SPELL_STORMWIND_PENNANT     = 62727,
+    SPELL_THUNDERBLUFF_PENNANT  = 63445,
+    SPELL_UNDERCITY_PENNANT     = 63441
+};
+
+class npc_argent_squire : public CreatureScript
+{
+public:
+    npc_argent_squire() : CreatureScript("npc_argent_squire") { }
+
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    {
+        // Argent Pony Bridle options
+        const AchievementEntry * achiPonyUp = sAchievementStore.LookupEntry(ACHI_PONY_UP);
+        if (pPlayer->GetAchievementMgr().HasAchieved(ACHI_PONY_UP))
+            if (!pCreature->HasAura(SPELL_SQUIRE_TIRED))
+            {
+                uint8 uiBuff = (STATE_BANK | STATE_SHOP | STATE_MAIL);
+                if (pCreature->HasAura(SPELL_SQUIRE_BANK_ERRAND))
+                    uiBuff = STATE_BANK;
+                if (pCreature->HasAura(SPELL_SQUIRE_SHOP))
+                    uiBuff = STATE_SHOP;
+                if (pCreature->HasAura(SPELL_SQUIRE_POSTMAN))
+                    uiBuff = STATE_MAIL;
+
+                if (uiBuff & STATE_BANK)
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Visit a bank.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_BANK);
+                if (uiBuff & STATE_SHOP)
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Visit a trader.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+                if (uiBuff & STATE_MAIL)
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Visit a mailbox.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_MAIL);
+            }
+
+        // Horde
+        if (pPlayer->GetQuestRewardStatus(QUEST_CHAMP_SENJIN))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Darkspear Champion's Pennant", GOSSIP_SENDER_MAIN, SPELL_SENJIN_PENNANT);
+        if (pPlayer->GetQuestRewardStatus(QUEST_CHAMP_UNDERCITY))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Forsaken Champion's Pennant", GOSSIP_SENDER_MAIN, SPELL_UNDERCITY_PENNANT);
+        if (pPlayer->GetQuestRewardStatus(QUEST_CHAMP_ORGRIMMAR))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Orgrimmar Champion's Pennant", GOSSIP_SENDER_MAIN, SPELL_ORGRIMMAR_PENNANT);
+        if (pPlayer->GetQuestRewardStatus(QUEST_CHAMP_SILVERMOON))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Silvermoon Champion's Pennant", GOSSIP_SENDER_MAIN, SPELL_SILVERMOON_PENNANT);
+        if (pPlayer->GetQuestRewardStatus(QUEST_CHAMP_THUNDERBLUFF))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Thunder Bluff Champion's Pennant", GOSSIP_SENDER_MAIN, SPELL_THUNDERBLUFF_PENNANT);
+
+        //Alliance
+        if (pPlayer->GetQuestRewardStatus(QUEST_CHAMP_DARNASSUS))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Darnassus Champion's Pennant", GOSSIP_SENDER_MAIN, SPELL_DARNASSUS_PENNANT);
+        if (pPlayer->GetQuestRewardStatus(QUEST_CHAMP_EXODAR))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Exodar Champion's Pennant", GOSSIP_SENDER_MAIN, SPELL_EXODAR_PENNANT);
+        if (pPlayer->GetQuestRewardStatus(QUEST_CHAMP_GNOMEREGAN))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Gnomeregan Champion's Pennant", GOSSIP_SENDER_MAIN, SPELL_GNOMEREGAN_PENNANT);
+        if (pPlayer->GetQuestRewardStatus(QUEST_CHAMP_IRONFORGE))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ironforge Champion's Pennant", GOSSIP_SENDER_MAIN, SPELL_IRONFORGE_PENNANT);
+        if (pPlayer->GetQuestRewardStatus(QUEST_CHAMP_STORMWIND))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Stormwind Champion's Pennant", GOSSIP_SENDER_MAIN, SPELL_STORMWIND_PENNANT);
+
+        pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        pPlayer->PlayerTalkClass->ClearMenus();
+        if (uiAction >= 1000) // remove old pennant aura
+            pCreature->AI()->SetData(0, 0);
+        switch (uiAction)
+        {
+            case GOSSIP_ACTION_BANK:
+                pCreature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BANKER);
+                pPlayer->GetSession()->SendShowBank(pCreature->GetGUID());
+                if (!pCreature->HasAura(SPELL_SQUIRE_BANK_ERRAND))
+                    pCreature->AddAura(SPELL_SQUIRE_BANK_ERRAND, pCreature);
+                if (!pPlayer->HasAura(SPELL_CHECK_TIRED))
+                    pPlayer->AddAura(SPELL_CHECK_TIRED, pPlayer);
+                break;
+            case GOSSIP_ACTION_TRADE:
+                pCreature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR);
+                pPlayer->GetSession()->SendListInventory(pCreature->GetGUID());
+                if (!pCreature->HasAura(SPELL_SQUIRE_SHOP))
+                    pCreature->AddAura(SPELL_SQUIRE_SHOP, pCreature);
+                if (!pPlayer->HasAura(SPELL_CHECK_TIRED))
+                    pPlayer->AddAura(SPELL_CHECK_TIRED, pPlayer);
+                break;
+            case GOSSIP_ACTION_MAIL:
+                pCreature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_MAILBOX);
+                pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                if (!pCreature->HasAura(SPELL_SQUIRE_POSTMAN))
+                    pCreature->AddAura(SPELL_SQUIRE_POSTMAN, pCreature);
+                if (!pPlayer->HasAura(SPELL_CHECK_TIRED))
+                    pPlayer->AddAura(SPELL_CHECK_TIRED, pPlayer);
+                break;
+
+            case SPELL_SENJIN_PENNANT:
+            case SPELL_UNDERCITY_PENNANT:
+            case SPELL_ORGRIMMAR_PENNANT:
+            case SPELL_SILVERMOON_PENNANT:
+            case SPELL_THUNDERBLUFF_PENNANT:
+            case SPELL_DARNASSUS_PENNANT:
+            case SPELL_EXODAR_PENNANT:
+            case SPELL_GNOMEREGAN_PENNANT:
+            case SPELL_IRONFORGE_PENNANT:
+            case SPELL_STORMWIND_PENNANT:
+                pCreature->AI()->SetData(1, uiAction);
+                break;
+        }
+        pPlayer->PlayerTalkClass->SendCloseGossip();
+        return true;
+    }
+
+    struct npc_argent_squireAI : public ScriptedAI
+    {
+        npc_argent_squireAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            m_current_pennant = 0;
+            check_timer = 1000;
+        }
+
+        uint32 m_current_pennant;
+        uint32 check_timer;
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            // have to delay the check otherwise it wont work
+            if (check_timer && (check_timer <= uiDiff))
+            {
+                me->AddAura(SPELL_CHECK_MOUNT, me);
+                if (Aura* tired = me->GetOwner()->GetAura(SPELL_CHECK_TIRED))
+                {
+                    int32 duration = tired->GetDuration();
+                    tired = me->AddAura(SPELL_SQUIRE_TIRED, me);
+                    tired->SetDuration(duration);
+                }
+                check_timer = 0;
+            }
+            else check_timer -= uiDiff;
+
+            if (me->HasAura(SPELL_SQUIRE_TIRED) && me->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BANKER | UNIT_NPC_FLAG_MAILBOX | UNIT_NPC_FLAG_VENDOR))
+            {
+                me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BANKER | UNIT_NPC_FLAG_MAILBOX | UNIT_NPC_FLAG_VENDOR);
+                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+            }
+        }
+
+        void SetData(uint32 add, uint32 spell)
+        {
+            if (add)
+            {
+                me->AddAura(spell, me);
+                m_current_pennant = spell;
+            }
+            else if (m_current_pennant)
+            {
+                me->RemoveAura(m_current_pennant);
+                m_current_pennant = 0;
+            }
+        }
+    };
+
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new npc_argent_squireAI(creature);
+    }
+};
+
 enum Fireworks
 {
     NPC_OMEN                = 15467,
@@ -3031,7 +3239,7 @@ public:
 
     struct npc_spring_rabbitAI : public ScriptedAI
     {
-        npc_spring_rabbitAI(Creature* c) : ScriptedAI(c) { }
+        npc_spring_rabbitAI(Creature* creature) : ScriptedAI(creature) { }
 
         bool inLove;
         uint32 jumpTimer;
@@ -3115,7 +3323,7 @@ void AddSC_npcs_special()
     new npc_steam_tonk;
     new npc_tonk_mine;
     new npc_winter_reveler;
-    new npc_brewfest_reveler;
+    //new npc_brewfest_reveler;
     new npc_snake_trap;
     new npc_mirror_image;
     new npc_ebon_gargoyle;
@@ -3128,6 +3336,7 @@ void AddSC_npcs_special()
     new npc_locksmith;
     new npc_tabard_vendor;
     new npc_experience;
+    new npc_argent_squire;
     new npc_fire_elemental;
     new npc_earth_elemental;
     new npc_firework;

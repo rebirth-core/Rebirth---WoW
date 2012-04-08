@@ -136,7 +136,8 @@ enum ZLiquidStatus
 
 struct LiquidData
 {
-    uint32 type;
+    uint32 type_flags;
+    uint32 entry;
     float  level;
     float  depth_level;
 };
@@ -163,7 +164,8 @@ class GridMap
 
     // Liquid data
     float _liquidLevel;
-    uint8* _liquidData;
+    uint16* _liquidEntry;
+    uint8* _liquidFlags;
     float* _liquidMap;
     uint16 _gridArea;
     uint16 _liquidType;
@@ -205,30 +207,6 @@ public:
 #pragma pack(push, 1)
 #endif
 
- class DynamicLOSObject
- {
-     public:
-         DynamicLOSObject();
-         bool IsBetween(float x, float y, float z, float x2, float y2, float z2);
-         bool IsInside(float x, float y);
-         bool IsOverOrUnder(float z);
-         float GetDistance(float x, float y);
-         bool IsActive();
-         void SetActiveState(bool state);
-         void SetCoordinates(float x, float y);
-         void SetZ(float z);
-         void SetRadius(float r);
-         void SetHeight(float h);
-         bool HasHeightInfo();
-     private:
-         float _x;
-         float _y;
-         float _z;
-         float _height;
-         float _radius;
-         bool _active;
- };
-
 struct InstanceTemplate
 {
     uint32 Parent;
@@ -267,8 +245,12 @@ class Map : public GridRefManager<NGridType>
         // currently unused for normal maps
         bool CanUnload(uint32 diff)
         {
-            if (!m_unloadTimer) return false;
-            if (m_unloadTimer <= diff) return true;
+            if (!m_unloadTimer)
+                return false;
+
+            if (m_unloadTimer <= diff)
+                return true;
+
             m_unloadTimer -= diff;
             return false;
         }
@@ -473,7 +455,6 @@ class Map : public GridRefManager<NGridType>
 
         void SendInitTransports(Player* player);
         void SendRemoveTransports(Player* player);
-		void SendInitTransportsInInstance(Player* player);
 
         bool CreatureCellRelocation(Creature* creature, Cell new_cell);
 

@@ -323,7 +323,7 @@ SpellInfo const* SpellScript::GetSpellInfo()
 WorldLocation const* SpellScript::GetTargetDest()
 {
     if (m_spell->m_targets.HasDst())
-        return m_spell->m_targets.GetDst();
+        return m_spell->m_targets.GetDstPos();
     return NULL;
 }
 
@@ -403,6 +403,16 @@ GameObject* SpellScript::GetHitGObj()
     return m_spell->gameObjTarget;
 }
 
+WorldLocation const* SpellScript::GetHitDest()
+{
+    if (!IsInEffectHook())
+    {
+        sLog->outError("TSCR: Script: `%s` Spell: `%u`: function SpellScript::GetHitGObj was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
+        return NULL;
+    }
+    return m_spell->destTarget;
+}
+
 int32 SpellScript::GetHitDamage()
 {
     if (!IsInTargetHook())
@@ -468,11 +478,6 @@ void SpellScript::PreventHitAura()
         m_spell->m_spellAura->Remove();
 }
 
-void SpellScript::GetSummonPosition(uint32 i, Position &pos, float radius = 0.0f, uint32 count = 0)
-{
-    m_spell->GetSummonPosition(i, pos, radius, count);
-}
-
 void SpellScript::PreventHitEffect(SpellEffIndex effIndex)
 {
     if (!IsInHitPhase() && !IsInEffectHook())
@@ -512,6 +517,16 @@ Item* SpellScript::GetCastItem()
 void SpellScript::CreateItem(uint32 effIndex, uint32 itemId)
 {
     m_spell->DoCreateItem(effIndex, itemId);
+}
+
+int32 SpellScript::GetTrueDamage()
+{
+    if (!IsInAfterHitPhase())
+    {
+        sLog->outError("TSCR: Script: `%s` Spell: `%u`: function SpellScript::GetHitHeal was called while spell not in after-hit phase!", m_scriptName, m_scriptSpellId);
+        return NULL;
+    }
+    return m_spell->m_true_damage;
 }
 
 SpellInfo const* SpellScript::GetTriggeringSpell()

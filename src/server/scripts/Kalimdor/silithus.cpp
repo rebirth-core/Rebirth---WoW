@@ -49,10 +49,10 @@ class npc_highlord_demitrian : public CreatureScript
 public:
     npc_highlord_demitrian() : CreatureScript("npc_highlord_demitrian") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
-        switch (uiAction)
+        switch (action)
         {
         case GOSSIP_ACTION_INFO_DEF:
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_DEMITRIAN2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -134,10 +134,10 @@ class npcs_rutgar_and_frankal : public CreatureScript
 public:
     npcs_rutgar_and_frankal() : CreatureScript("npcs_rutgar_and_frankal") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
-        switch (uiAction)
+        switch (action)
         {
             case GOSSIP_ACTION_INFO_DEF:
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
@@ -373,8 +373,13 @@ static QuestCinematic EventAnim[]=
     {0, 0, 0}
 };
 
+struct Location
+{
+   float x, y, z, o;
+};
+
 //Cordinates for Spawns
-static const Position SpawnLocation[]=
+static Location SpawnLocation[]=
 {
     {-8085.0f, 1528.0f, 2.61f, 3.141592f}, //Kaldorei Infantry
     {-8080.0f, 1526.0f, 2.61f, 3.141592f}, //Kaldorei Infantry
@@ -485,14 +490,14 @@ class npc_anachronos_the_ancient : public CreatureScript
 public:
     npc_anachronos_the_ancient() : CreatureScript("npc_anachronos_the_ancient") { }
 
-    CreatureAI* GetAI(Creature* c) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_anachronos_the_ancientAI(c);
+        return new npc_anachronos_the_ancientAI(creature);
     }
 
     struct npc_anachronos_the_ancientAI : public ScriptedAI
     {
-        npc_anachronos_the_ancientAI(Creature* c) : ScriptedAI(c) {}
+        npc_anachronos_the_ancientAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 AnimationTimer;
         uint8 AnimationCount;
@@ -576,7 +581,7 @@ public:
                         break;
                     case 10:
                         Merithra->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-                        Merithra->SetLevitate(true);
+                        Merithra->SetDisableGravity(true);
                         Merithra->GetMotionMaster()->MoveCharge(-8065, 1530, 6.61f, 3);
                         break;
                     case 11:
@@ -603,7 +608,7 @@ public:
                         break;
                     case 18:
                         Arygos->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-                        Arygos->SetLevitate(true);
+                        Arygos->SetDisableGravity(true);
                         Arygos->GetMotionMaster()->MoveCharge(-8065, 1530, 6.61f, 42);
                         break;
                     case 19:
@@ -630,7 +635,7 @@ public:
                         break;
                     case 26:
                         Caelestrasz->HandleEmoteCommand(254);
-                        Caelestrasz->SetLevitate(true);
+                        Caelestrasz->SetDisableGravity(true);
                         Caelestrasz->GetMotionMaster()->MoveCharge(-8065, 1530, 7.61f, 4);
                         break;
                     case 27:
@@ -769,7 +774,7 @@ public:
                         break;
                     case 63:
                         me->HandleEmoteCommand(254);
-                        me->SetLevitate(true);
+                        me->SetDisableGravity(true);
                         break;
                     case 64:
                         me->GetMotionMaster()->MoveCharge(-8000, 1400, 150, 9);
@@ -813,14 +818,14 @@ class mob_qiraj_war_spawn : public CreatureScript
 public:
     mob_qiraj_war_spawn() : CreatureScript("mob_qiraj_war_spawn") { }
 
-    CreatureAI* GetAI(Creature* c) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_qiraj_war_spawnAI(c);
+        return new mob_qiraj_war_spawnAI(creature);
     }
 
     struct mob_qiraj_war_spawnAI : public ScriptedAI
     {
-        mob_qiraj_war_spawnAI(Creature* c) : ScriptedAI(c) {}
+        mob_qiraj_war_spawnAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 MobGUID;
         uint64 PlayerGUID;
@@ -928,14 +933,14 @@ class npc_anachronos_quest_trigger : public CreatureScript
 public:
     npc_anachronos_quest_trigger() : CreatureScript("npc_anachronos_quest_trigger") { }
 
-    CreatureAI* GetAI(Creature* c) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_anachronos_quest_triggerAI(c);
+        return new npc_anachronos_quest_triggerAI(creature);
     }
 
     struct npc_anachronos_quest_triggerAI : public ScriptedAI
     {
-        npc_anachronos_quest_triggerAI(Creature* c) : ScriptedAI(c) {}
+        npc_anachronos_quest_triggerAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 PlayerGUID;
 
@@ -974,7 +979,14 @@ public:
             //uint8 QirajiWaspCount = 0;
             for (uint8 i = 0; i < 67; ++i)
             {
-                if (Creature* spawn = me->SummonCreature(WavesInfo[WaveCount].CreatureId, SpawnLocation[locIndex + i], TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, WavesInfo[WaveCount].DespTimer))
+                float X = SpawnLocation[locIndex + i].x;
+                float Y = SpawnLocation[locIndex + i].y;
+                float Z = SpawnLocation[locIndex + i].z;
+                float O = SpawnLocation[locIndex + i].o;
+                uint32 desptimer = WavesInfo[WaveCount].DespTimer;
+                Creature* spawn = me->SummonCreature(WavesInfo[WaveCount].CreatureId, X, Y, Z, O, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, desptimer);
+
+                if (spawn)
                 {
                     spawn->LoadCreaturesAddon();
                     if (spawn->GetEntry() == 15423)

@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
+# Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -10,8 +10,11 @@
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
-#Custom/npc_ranking_info.cpp
-#Custom/player_ranking.cpp
+
+  Custom/argent_tournament.cpp
+  Custom/dalaran_squirrel.cpp
+  Custom/cs_event_system.cpp
+  Custom/npc_event_system.cpp
 )
 
 message("  -> Prepared: Custom")

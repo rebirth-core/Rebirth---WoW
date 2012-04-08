@@ -73,7 +73,7 @@ inline uint32 secsToTimeBitFields(time_t secs)
  double rand_norm(void);
 
 /* Return a random double from 0.0 to 99.9999999999999. Floats support only 7 valid decimal digits.
- * A double supports up to 15 valid decimal digits and is used internaly (RAND32_MAX has 10 digits).
+ * A double supports up to 15 valid decimal digits and is used internally (RAND32_MAX has 10 digits).
  * With an FPU, there is usually no difference in performance between float and double. */
  double rand_chance(void);
 
@@ -147,6 +147,24 @@ template <class T>
 inline T AddPctU(T& base, uint32 pct)
 {
     return base += CalculatePctU(base, pct);
+}
+
+template <class T>
+inline T AddFlatPctF(T& base, float pct)
+{
+    return base += (pct >= 0) ? pct / 100.0f : CalculatePctF(base, pct);
+}
+
+template <class T>
+inline T AddFlatPctN(T& base, int32 pct)
+{
+    return base += (pct >= 0) ? float(pct) / 100.0f : CalculatePctN(base, pct);
+}
+
+template <class T>
+inline T AddFlatPctU(T& base, uint32 pct)
+{
+    return base += (pct >= 0) ? float(pct) / 100.0f : CalculatePctU(base, pct);
 }
 
 template <class T>

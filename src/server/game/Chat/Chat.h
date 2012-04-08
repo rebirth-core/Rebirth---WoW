@@ -143,9 +143,11 @@ class ChatHandler
         bool HandleBanIPCommand(const char* args);
         bool HandleBanInfoAccountCommand(const char* args);
         bool HandleBanInfoCharacterCommand(const char* args);
+        bool HandleBanInfoAccountByCharCommand(const char* args);
         bool HandleBanInfoIPCommand(const char* args);
         bool HandleBanListAccountCommand(const char* args);
         bool HandleBanListCharacterCommand(const char* args);
+        bool HandleBanListPlayerAccountCommand(const char* args);
         bool HandleBanListIPCommand(const char* args);
 
         bool HandleCastCommand(const char *args);
@@ -351,15 +353,14 @@ class ChatHandler
         bool HandleSaveAllCommand(const char* args);
 
         // Utility methods for commands
-        bool LookupPlayerSearchCommand(QueryResult result, int32 limit);
-        bool HandleBanListHelper(QueryResult result);
+        bool LookupPlayerSearchCommand(PreparedQueryResult result, int32 limit);
+        bool HandleBanListHelper(PreparedQueryResult result);
         bool HandleBanHelper(BanMode mode, char const* args);
         bool HandleBanInfoHelper(uint32 accountid, char const* accountname);
         bool HandleUnBanHelper(BanMode mode, char const* args);
         void HandleCharacterLevel(Player* player, uint64 playerGuid, uint32 oldLevel, uint32 newLevel);
         void HandleLearnSkillRecipesHelper(Player* player, uint32 skill_id);
-		
-		
+
         //Wintergrasp
         bool HandleWintergraspStatusCommand(const char *args);
         bool HandleWintergraspStartCommand(const char *args);

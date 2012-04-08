@@ -1065,40 +1065,6 @@ class spell_q9452_cast_net: public SpellScriptLoader
         }
 };
 
-class spell_q9361_purify_helboar_meat : public SpellScriptLoader
-{
-    public:
-        spell_q9361_purify_helboar_meat() : SpellScriptLoader("q9361_purify_helboar_meat") { }
-
-        class spell_q9361_purify_helboar_meat_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_q9361_purify_helboar_meat_SpellScript);
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                Unit* caster = GetCaster();
-                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
-                    return;
-
-                uint32 spellId = roll_chance_i(50)
-                    ? 29277                             // Summon Purified Helboar Meat
-                    : 29278;                            // Summon Toxic Helboar Meat
-
-                caster->CastSpell(caster, spellId, true);
-            }
-
-            void Register()
-            {
-                OnEffectHit += SpellEffectFn(spell_q9361_purify_helboar_meat_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_q9361_purify_helboar_meat_SpellScript();
-        }
-};
-
 #define SAY_1 "Sons of Hodir! I humbly present to you..."
 #define SAY_2 "The Helm of Hodir!"
 #define NPC_KILLCREDIT 30210 // Hodir's Helm KC Bunny
@@ -1160,6 +1126,5 @@ void AddSC_quest_spell_scripts()
     new spell_q13280_13283_plant_battle_standard();
     new spell_q14112_14145_chum_the_water();
     new spell_q9452_cast_net();
-    new spell_q9361_purify_helboar_meat();
     new spell_q12987_read_pronouncement();
 }

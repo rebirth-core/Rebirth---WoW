@@ -57,7 +57,7 @@ class instance_archavon : public InstanceMapScript
                         player->CastSpell(player, SPELL_TELEPORT_FORTRESS, true);
                 }
             }
-			
+
             void OnCreatureCreate(Creature* creature)
             {
                 switch (creature->GetEntry())

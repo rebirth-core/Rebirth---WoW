@@ -171,7 +171,7 @@ void ScriptedAI::DoPlaySoundToSet(WorldObject* source, uint32 soundId)
     if (!source)
         return;
 
-    if (!GetSoundEntriesStore()->LookupEntry(soundId))
+    if (!sSoundEntriesStore.LookupEntry(soundId))
     {
         sLog->outError("TSCR: Invalid soundId %u used in DoPlaySoundToSet (Source: TypeId %u, GUID %u)", soundId, source->GetTypeId(), source->GetGUIDLow());
         return;
@@ -274,7 +274,7 @@ void ScriptedAI::DoResetThreat()
 
     for (std::list<HostileReference*>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
     {
-        Unit* unit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
+        Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid());
 
         if (unit && DoGetThreat(unit))
             DoModifyThreatPercent(unit, -100);
@@ -475,7 +475,7 @@ BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature),
     _boundary(instance ? instance->GetBossBoundary(bossId) : NULL),
     _bossId(bossId)
 {
-	SetImmuneToPushPullEffects(true);
+    SetImmuneToPushPullEffects(true);
 }
 
 void BossAI::_Reset()
@@ -488,7 +488,7 @@ void BossAI::_Reset()
     summons.DespawnAll();
     if (instance)
         instance->SetBossState(_bossId, NOT_STARTED);
-	inFightAggroCheck_Timer = MAX_AGGRO_PULSE_TIMER;
+    inFightAggroCheck_Timer = MAX_AGGRO_PULSE_TIMER;
 }
 
 void BossAI::_JustDied()
@@ -501,7 +501,7 @@ void BossAI::_JustDied()
         instance->SaveToDB();
     }
 }
-
+ 
  void BossAI::_DoAggroPulse(const uint32 diff)
  {
      if(inFightAggroCheck_Timer < diff)

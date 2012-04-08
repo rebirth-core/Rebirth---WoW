@@ -47,7 +47,7 @@ BattlegroundIC::BattlegroundIC()
     resourceTimer = IC_RESOURCE_TIME;
 
     for (uint8 i = NODE_TYPE_REFINERY; i < MAX_NODE_TYPES; i++)
-        nodePoint[i] =  nodePointInitial[i];
+        nodePoint[i] = nodePointInitial[i];
 
     siegeEngineWorkshopTimer = WORKSHOP_UPDATE_TIME;
 
@@ -359,7 +359,7 @@ void BattlegroundIC::FillInitialWorldStates(WorldPacket& data)
         data << uint32(uws) << uint32(1);
     }
 
-    for (uint8 i = 0 ; i < MAX_NODE_TYPES ; i++)
+    for (uint8 i = 0; i < MAX_NODE_TYPES; i++)
         data << uint32(nodePoint[i].worldStates[nodePoint[i].nodeState]) << uint32(1);
 }
 
@@ -423,6 +423,12 @@ bool BattlegroundIC::SetupBattleground()
     // correcting spawn time for keeps bombs
     for (uint8 i = BG_IC_GO_HUGE_SEAFORIUM_BOMBS_A_1; i < BG_IC_GO_HUGE_SEAFORIUM_BOMBS_H_4; i++)
         GetBGObject(i)->SetRespawnTime(10);
+
+    // Make bosses invisible
+    if (Creature *icBoss = GetBGCreature(BG_IC_NPC_OVERLORD_AGMAR))
+        ActivateBoss(TEAM_ALLIANCE, false);
+    if (Creature *icBoss = GetBGCreature(BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE))
+        ActivateBoss(TEAM_HORDE, false);
 
     return true;
 }
@@ -836,16 +842,27 @@ void BattlegroundIC::DestroyGate(Player* player, GameObject* go)
     switch (go->GetEntry())
     {
         case GO_HORDE_GATE_1:
+            ActivateBoss(TEAM_ALLIANCE);
             lang_entry = LANG_BG_IC_NORTH_GATE_DESTROYED;
+           break;
         case GO_HORDE_GATE_2:
-        case GO_ALLIANCE_GATE_1:
+            ActivateBoss(TEAM_ALLIANCE);
             lang_entry = LANG_BG_IC_WEST_GATE_DESTROYED;
             break;
+        case GO_ALLIANCE_GATE_1:
+           ActivateBoss(TEAM_HORDE);
+           lang_entry = LANG_BG_IC_WEST_GATE_DESTROYED;
+           break;
         case GO_HORDE_GATE_3:
-        case GO_ALLIANCE_GATE_2:
+            ActivateBoss(TEAM_ALLIANCE);
             lang_entry = LANG_BG_IC_EAST_GATE_DESTROYED;
             break;
+        case GO_ALLIANCE_GATE_2:
+           ActivateBoss(TEAM_HORDE);
+           lang_entry = LANG_BG_IC_EAST_GATE_DESTROYED;
+           break;
         case GO_ALLIANCE_GATE_3:
+            ActivateBoss(TEAM_HORDE);
             lang_entry = LANG_BG_IC_SOUTH_GATE_DESTROYED;
             break;
     default:
@@ -858,6 +875,34 @@ void BattlegroundIC::DestroyGate(Player* player, GameObject* go)
 void BattlegroundIC::EventPlayerDamagedGO(Player* /*player*/, GameObject* /*go*/, uint32 /*eventType*/)
 {
 
+}
+
+void BattlegroundIC::ActivateBoss(uint8 faction, bool visible)
+{
+    Creature* icBoss;
+
+    if (faction == TEAM_ALLIANCE)
+    {
+        icBoss = GetBGCreature(BG_IC_NPC_OVERLORD_AGMAR);
+        if (icBoss)
+        {
+            if (visible)
+                icBoss->SetVisible(true);
+            else
+                icBoss->SetVisible(false);
+        }
+    }
+    else
+    {
+        icBoss = GetBGCreature(BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE);
+        if (icBoss)
+        {
+            if (visible)
+                icBoss->SetVisible(true);
+            else
+                icBoss->SetVisible(false);
+        }
+    }
 }
 
 WorldSafeLocsEntry const* BattlegroundIC::GetClosestGraveYard(Player* player)
@@ -926,7 +971,7 @@ Transport* BattlegroundIC::CreateTransport(uint32 goEntry, uint32 period)
 
     float x = t->m_WayPoints[0].x;
     float y = t->m_WayPoints[0].y;
-    float z =  t->m_WayPoints[0].z;
+    float z = t->m_WayPoints[0].z;
     float o = 1;
 
     // creates the Gameobject

@@ -248,7 +248,8 @@ enum SpellCategory
     SPELL_CATEGORY_DRINK            = 59,
 };
 
-const uint32 ItemQualityColors[MAX_ITEM_QUALITY] = {
+const uint32 ItemQualityColors[MAX_ITEM_QUALITY] =
+{
     0xff9d9d9d,        //GREY
     0xffffffff,        //WHITE
     0xff1eff00,        //GREEN
@@ -410,7 +411,7 @@ enum SpellAttr3
 enum SpellAttr4
 {
     SPELL_ATTR4_UNK0                             = 0x00000001, //  0
-    SPELL_ATTR4_PROC_ONLY_ON_DUMMY               = 0x00000002, //  1 proc only on SPELL_EFFECT_DUMMY?
+    SPELL_ATTR4_PROC_ONLY_ON_CASTER              = 0x00000002, //  1 proc only on effects with TARGET_UNIT_CASTER?
     SPELL_ATTR4_UNK2                             = 0x00000004, //  2
     SPELL_ATTR4_UNK3                             = 0x00000008, //  3
     SPELL_ATTR4_UNK4                             = 0x00000010, //  4 This will no longer cause guards to attack on use??
@@ -2589,7 +2590,7 @@ enum CreatureTypeFlags
     CREATURE_TYPEFLAGS_UNK23            = 0x00800000,         // ? First seen in 3.2.2. Related to banner/backpack of creature/companion?
     CREATURE_TYPEFLAGS_UNK24            = 0x01000000,
     CREATURE_TYPEFLAGS_UNK25            = 0x02000000,
-    CREATURE_TYPEFLAGS_UNK26            = 0x04000000,
+    CREATURE_TYPEFLAGS_PARTY_MEMBER     = 0x04000000,         //! Creature can be targeted by spells that require target to be in caster's party/raid
     CREATURE_TYPEFLAGS_UNK27            = 0x08000000,
     CREATURE_TYPEFLAGS_UNK28            = 0x10000000,
     CREATURE_TYPEFLAGS_UNK29            = 0x20000000,
@@ -3423,10 +3424,6 @@ enum ActivateTaxiReply
 };
 
 // Calendar - start
-
-#define MAX_HOLIDAY_DATES 26
-#define MAX_HOLIDAY_FLAGS 10
-#define MAX_HOLIDAY_DURATIONS 10
 
 enum CalendarFlags
 {

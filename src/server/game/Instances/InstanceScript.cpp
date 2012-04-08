@@ -323,7 +323,7 @@ void InstanceScript::DoSendNotifyToInstance(char const* format, ...)
  // Complete Achievement for all players in instance
  void InstanceScript::DoCompleteAchievement(uint32 achievement)
  {
-     AchievementEntry const* pAE = GetAchievementStore()->LookupEntry(achievement);
+     AchievementEntry const* pAE = sAchievementStore.LookupEntry(achievement);
      Map::PlayerList const &PlayerList = instance->GetPlayers();
  
      if (!pAE)
@@ -337,7 +337,7 @@ void InstanceScript::DoSendNotifyToInstance(char const* format, ...)
              if (Player *pPlayer = i->getSource())
                  pPlayer->CompletedAchievement(pAE);
  }
-
+ 
 // Update Achievement Criteria for all players in instance
 void InstanceScript::DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit* unit /*= NULL*/)
 {
@@ -415,22 +415,22 @@ void InstanceScript::SendEncounterUnit(uint32 type, Unit* unit /*= NULL*/, uint8
 
     switch (type)
     {
-        case ENCOUNTER_FRAME_ADD:
-        case ENCOUNTER_FRAME_REMOVE:
-        case 2:
+        case ENCOUNTER_FRAME_ENGAGE:
+        case ENCOUNTER_FRAME_DISENGAGE:
+        case ENCOUNTER_FRAME_UPDATE_PRIORITY:
             data.append(unit->GetPackGUID());
             data << uint8(param1);
             break;
-        case 3:
-        case 4:
-        case 6:
+        case ENCOUNTER_FRAME_ADD_TIMER:
+        case ENCOUNTER_FRAME_ENABLE_OBJECTIVE:
+        case ENCOUNTER_FRAME_DISABLE_OBJECTIVE:
+            data << uint8(param1);
+            break;
+        case ENCOUNTER_FRAME_UPDATE_OBJECTIVE:
             data << uint8(param1);
             data << uint8(param2);
             break;
-        case 5:
-            data << uint8(param1);
-            break;
-        case 7:
+        case ENCOUNTER_FRAME_UNK7:
         default:
             break;
     }

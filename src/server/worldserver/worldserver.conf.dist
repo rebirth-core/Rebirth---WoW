@@ -25,6 +25,7 @@
 #    CONSOLE AND REMOTE ACCESS
 #    CHARACTER DELETE OPTIONS
 #    CUSTOM SERVER OPTIONS
+#    WINTERGRASP BATTLE CONFIGURATION
 #
 ###################################################################################################
 
@@ -1408,10 +1409,10 @@ AllowTickets = 1
 #
 #     DungeonFinder.Enable
 #        Description: Dungeon and raid finder system.
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled, Experimental as of still being in development)
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
 
-DungeonFinder.Enable = 0
+DungeonFinder.Enable = 1
 
 #
 #   DBC.EnforceItemAttributes
@@ -1894,6 +1895,14 @@ PreserveCustomChannels = 1
 #                     0  - (Disabled, Infinite channel storage)
 
 PreserveCustomChannelDuration = 14
+
+#
+# Channel.CityOnlyFlag
+# Description: Management for channels with flag CHANNEL_DBC_FLAG_CITY_ONLY.
+# Default: 1 - (Enabled, Channels with flag CHANNEL_DBC_FLAG_CITY_ONLY will be activated in the cities only (blizzlike))
+# 0 - (Disabled, Channels with flag CHANNEL_DBC_FLAG_CITY_ONLY will connected at any place)
+
+Channel.CityOnlyFlag = 1
 
 #
 ###################################################################################################
@@ -3080,6 +3089,23 @@ Guild.AllowMultipleGuildMaster = 0
 ShowKickInWorld = 0
 
 #
+#     ShowMuteInWorld
+#        Description: Determines whether a message is broadcasted to the entire server when a
+#                     player gets mute
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ShowMuteInWorld = 0
+
+#     ShowBanInWorld
+#        Description: Determines whether a message is broadcasted to the entire server when a
+#                     player gets ban
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ShowBanInWorld = 0
+
+#
 #     RecordUpdateTimeDiffInterval
 #        Description: Time (in milliseconds) update time diff is written to the log file.
 #                     Update diff can be used as a performance indicator. Diff < 300: good
@@ -3145,8 +3171,30 @@ PlayerDump.DisallowPaths = 1
 PlayerDump.DisallowOverwrite = 1
 
 #
-###################################################################################################
+#   DuelResetCooldown
+#	Reseting spell cooldowns and restore health and mana with end duel
+#	Default: 0 - Disable
+#		 1 - Enable
+#
 
+DuelResetCooldown = 0
+
+#   PlayersAccessToGMIsland
+#       Prevent access for players to gm island
+#	Default: 0 - Disable
+#		 1 - Enable
+
+PreventPlayersAccessToGMIsland = 0
+
+#    Armory.Enable
+#        Description: Activates the WowArmory.
+#        Default:     0 - (Disable)
+#                     1 - (Enable)
+
+Armory.Enable = 1
+
+#
+###################################################################################################
 
 ###################################################################################################
 #   OutdoorPvP.Wintergrasp.Enabled
@@ -3238,7 +3286,7 @@ OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding = 750
 OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding = 1500
 
 #   OutdoorPvP.Wintergrasp.Antifarm.Enable
-#    Enable or Disable antifarm system
+#		Enable or Disable antifarm system
 #       Prevents start WG battle event if there are too low players (see options bellow)
 #       Default: 0 - Disabled
 #                1 - Enabled
@@ -3246,13 +3294,13 @@ OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding = 1500
 OutdoorPvP.Wintergrasp.Antifarm.Enable = 0
 
 #   OutdoorPvP.Wintergrasp.Antifarm.Atk
-#    Min count of attackers for antifarm
+#		Min count of attackers for antifarm
 #              (Default: 5)
 
 OutdoorPvP.Wintergrasp.Antifarm.Atk = 5
 
 #   OutdoorPvP.Wintergrasp.Antifarm.Def
-#    Min count of defenders for antifarm
+#		Min count of defenders for antifarm
 #              (Default: 5)
 
 OutdoorPvP.Wintergrasp.Antifarm.Def = 5
@@ -3273,7 +3321,7 @@ OutdoorPvP.Wintergrasp.MaxPlayers = 100
 ###################################################################################################
 
 ###################################################################################################
-#   Rebirth.WGStats.Enabled
+#    Rebirth.WGStats.Enabled
 #       Ist für das Eintragen der Tausendwinter Stats in die Datenbank da.
 #       Default: 1 = Enable
 #                0 = Disable
@@ -3281,9 +3329,9 @@ OutdoorPvP.Wintergrasp.MaxPlayers = 100
 Rebirth.WGStats.Enabled = 1
 
 #
-#   Rebirth.WGStats.Update.Interval
-#      Dies ist der Intervall (in Sekunden) in dem die Tausendwinter Stats in die Datenbank geschrieben werden
-#      Default (60 Sekunden)
+#    Rebirth.WGStats.Update.Interval
+#       Dies ist der Intervall (in Sekunden) in dem die Tausendwinter Stats in die Datenbank geschrieben werden
+#       Default (60 Sekunden)
 
 Rebirth.WGStats.Update.Interval = 60
 
@@ -3295,30 +3343,52 @@ Rebirth.WGStats.Update.Interval = 60
 Rebirth.WGStats.Data.Id = 1
 
 #
-#   Rebirth.PvP.AntiFarm.Enabled
-#      Wenn aktiviert, erhalten Spieler für den Kill an anderen Spielern mit der selben IP Adresse keine Ehre.
-#      Davon ausgenommen sind Arenen und Battlegrounds
-#       Default: 1 = Enable
-#                0 = Disable
-
-Rebirth.PvP.AntiFarm.Enabled = 1
-
-#
-#   Rebirth.Arena.Stats.Enabled
-#      Diese Option ist für das WoWArmory von RebirthWoW.
+#    Rebirth.Arena.Stats.Enabled
+#       Diese Option ist für das WoWArmory von RebirthWoW.
 #       Default: 1 = Enable
 #                0 = Disable
 
 Rebirth.Arena.Stats.Enabled = 1
 
-#
-#   Rebirth.Ulduar.Beta.Enabled
-#      Über diese Option können die Ulduar Boss ab 
-#      der Vorkammer von Ulduar aktiviert werden.
+#    Rebirth.Ulduar.Beta.Enabled
+#       Über diese Option können die Ulduar Boss ab
+#       der Vorkammer von Ulduar aktiviert werden.
 #                1 = Enable
-#      Default:  0 = Disable
+#       Default: 0 = Disable
 
 Rebirth.Ulduar.Beta.Enabled = 0
+
+#   Rebirth.Event.System.Enabled
+#      Eventssystem aktivieren bzw deaktivieren
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.Event.System.Enabled = 0
+
+#
+#   Rebirth.Event.System.NextEvent.Info.Enabled
+#      Aktiviert die Option "Wann finden die naechsten Events statt?"
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.Event.System.NextEvent.Info.Enabled = 0
+
+#
+#   Rebirth.Event.System.Teleport.Enabled
+#      Aktiviert die Option "Teleportiere mich zum Event!"
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.Event.System.Teleport.Enabled = 0
+
+#
+#   Rebirth.Event.System.Rewards.Enabled
+#      Aktiviert die Option "Ich will Eventbelohnungen kaufen!"
+#      Hierfür werden die Tables "rebirth_event_rewards" und "rebirth_event_reward_categorie" benötigt!
+#       Default: 1 = Enable
+#                0 = Disable
+
+Rebirth.Event.System.Rewards.Enabled = 0
 
 #
 ###################################################################################################

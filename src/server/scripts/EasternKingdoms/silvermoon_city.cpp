@@ -53,7 +53,7 @@ public:
 
     struct npc_blood_knight_stillbladeAI : public ScriptedAI
     {
-        npc_blood_knight_stillbladeAI(Creature* c) : ScriptedAI(c) {}
+        npc_blood_knight_stillbladeAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 lifeTimer;
         bool spellHit;
@@ -90,17 +90,16 @@ public:
             if ((Spellkind->Id == SPELL_SHIMMERING_VESSEL) && !spellHit &&
                 (Hitter->GetTypeId() == TYPEID_PLAYER) && (CAST_PLR(Hitter)->IsActiveQuest(QUEST_REDEEMING_THE_DEAD)))
             {
-                CAST_PLR(Hitter)->AreaExploredOrEventHappens(QUEST_REDEEMING_THE_DEAD);
+                CAST_PLR(Hitter)->KilledMonsterCredit(17768, 0);
                 DoCast(me, SPELL_REVIVE_SELF);
                 me->SetStandState(UNIT_STAND_STATE_STAND);
                 me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
                 //me->RemoveAllAuras();
-                DoScriptText(SAY_HEAL, me);
+                DoScriptText(SAY_HEAL, me, Hitter);
                 spellHit = true;
             }
         }
     };
-
 };
 
 void AddSC_silvermoon_city()

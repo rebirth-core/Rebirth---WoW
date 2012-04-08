@@ -31,6 +31,8 @@ enum Yells
     SAY_DEATH                                   = -1595047
 };
 
+#define ACHIEVEMENT_CULLING_OF_TIME 1817
+
 class boss_infinite_corruptor : public CreatureScript
 {
 public:
@@ -43,9 +45,9 @@ public:
 
     struct boss_infinite_corruptorAI : public ScriptedAI
     {
-        boss_infinite_corruptorAI(Creature* c) : ScriptedAI(c)
+        boss_infinite_corruptorAI(Creature* creature) : ScriptedAI(creature)
         {
-            instance = c->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
         InstanceScript* instance;

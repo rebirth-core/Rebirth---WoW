@@ -26,6 +26,7 @@
 #include "Common.h"
 #include "Timer.h"
 #include <ace/Singleton.h>
+#include <ace/Atomic_Op.h>
 #include "SharedDefines.h"
 #include "QueryResult.h"
 #include "Callback.h"
@@ -144,6 +145,8 @@ enum WorldBoolConfigs
     CONFIG_PVP_TOKEN_ENABLE,
     CONFIG_NO_RESET_TALENT_COST,
     CONFIG_SHOW_KICK_IN_WORLD,
+    CONFIG_SHOW_BAN_IN_WORLD,
+    CONFIG_SHOW_MUTE_IN_WORLD,
     CONFIG_CHATLOG_CHANNEL,
     CONFIG_CHATLOG_WHISPER,
     CONFIG_CHATLOG_SYSCHAN,
@@ -155,9 +158,18 @@ enum WorldBoolConfigs
     CONFIG_CHATLOG_BGROUND,
     CONFIG_DUNGEON_FINDER_ENABLE,
     CONFIG_AUTOBROADCAST,
+    CONFIG_DUEL_RESET_COOLDOWN,
+    CONFIG_PREVENT_PLAYERS_ACCESS_TO_GMISLAND,
     CONFIG_ALLOW_TICKETS,
     CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES,
     CONFIG_PRESERVE_CUSTOM_CHANNELS,
+    CONFIG_ARMORY_ENABLE,
+    CONFIG_CHANNEL_ON_CITY_ONLY_FLAG,
+    CONFIG_PDUMP_NO_PATHS,
+    CONFIG_PDUMP_NO_OVERWRITE,
+    CONFIG_QUEST_IGNORE_AUTO_ACCEPT,
+    CONFIG_QUEST_IGNORE_AUTO_COMPLETE,
+    CONFIG_WARDEN_ENABLED,
     CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED,
     CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR,
     CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ENABLE,
@@ -165,11 +177,10 @@ enum WorldBoolConfigs
     CONFIG_REBIRTH_PVP_ANTIFARM_ENABLED,
     CONFIG_REBIRTH_ARENA_STATS_ENABLED,
     CONFIG_REBIRTH_ULDUAR_BETA_ENABLED,
-    CONFIG_PDUMP_NO_PATHS,
-    CONFIG_PDUMP_NO_OVERWRITE,
-    CONFIG_QUEST_IGNORE_AUTO_ACCEPT,
-    CONFIG_QUEST_IGNORE_AUTO_COMPLETE,
-    CONFIG_WARDEN_ENABLED,
+    CONFIG_REBIRTH_EVENTSYSTEM_ENABLED,
+    CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED,
+    CONFIG_REBIRTH_EVENTSYSTEM_TELEPORT_ENABLED,
+    CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED,
     BOOL_CONFIG_VALUE_COUNT
 };
 
@@ -317,6 +328,12 @@ enum WorldIntConfigs
     CONFIG_PRESERVE_CUSTOM_CHANNEL_DURATION,
     CONFIG_PERSISTENT_CHARACTER_CLEAN_FLAGS,
     CONFIG_MAX_INSTANCES_PER_HOUR,
+    CONFIG_WARDEN_CLIENT_RESPONSE_DELAY,
+    CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF,
+    CONFIG_WARDEN_CLIENT_FAIL_ACTION,
+    CONFIG_WARDEN_CLIENT_BAN_DURATION,
+    CONFIG_WARDEN_NUM_MEM_CHECKS,
+    CONFIG_WARDEN_NUM_OTHER_CHECKS,
     CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME,
     CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME,
     CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL,
@@ -327,18 +344,12 @@ enum WorldIntConfigs
     CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING,
     CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING,
     CONFIG_OUTDOORPVP_WINTERGRASP_SAVESTATE_PERIOD,
-    CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ATK,
-    CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_DEF,
-    CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_MINLEVEL,
-    CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_MAXPLAYERS,
     CONFIG_REBIRTH_WGSTATS_UPDATE_INTERVAL,
     CONFIG_REBIRTH_WGSTATS_DATA_ID,
-    CONFIG_WARDEN_CLIENT_RESPONSE_DELAY,
-    CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF,
-    CONFIG_WARDEN_CLIENT_FAIL_ACTION,
-    CONFIG_WARDEN_CLIENT_BAN_DURATION,
-    CONFIG_WARDEN_NUM_MEM_CHECKS,
-    CONFIG_WARDEN_NUM_OTHER_CHECKS,
+    CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ATK,
+    CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_DEF,
+	CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_MINLEVEL,
+    CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_MAXPLAYERS,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -407,8 +418,29 @@ enum Rates
     RATE_DURABILITY_LOSS_PARRY,
     RATE_DURABILITY_LOSS_ABSORB,
     RATE_DURABILITY_LOSS_BLOCK,
+    RATE_PVP_RANK_EXTRA_HONOR,   
     RATE_MOVESPEED,
     MAX_RATES
+};
+	
+enum HonorKillPvPRank
+{
+    HKRANK00,
+    HKRANK01,
+    HKRANK02,
+    HKRANK03,
+    HKRANK04,
+    HKRANK05,
+    HKRANK06,
+    HKRANK07,
+    HKRANK08,
+    HKRANK09,
+    HKRANK10,
+    HKRANK11,
+    HKRANK12,
+    HKRANK13,
+    HKRANK14,
+    HKRANKMAX
 };
 
 /// Can be used in SMSG_AUTH_RESPONSE packet
@@ -665,6 +697,8 @@ class World
         void SendZoneText(uint32 zone, const char *text, WorldSession* self = 0, uint32 team = 0);
         void SendServerMessage(ServerMessageType type, const char *text = "", Player* player = NULL);
 
+        uint32 pvp_ranks[HKRANKMAX];
+
         /// Are we in the middle of a shutdown?
         bool IsShuttingDown() const { return m_ShutdownTimer > 0; }
         uint32 GetShutDownTimeLeft() const { return m_ShutdownTimer; }
@@ -673,7 +707,7 @@ class World
         void ShutdownMsg(bool show = false, Player* player = NULL);
         static uint8 GetExitCode() { return m_ExitCode; }
         static void StopNow(uint8 exitcode) { m_stopEvent = true; m_ExitCode = exitcode; }
-        static bool IsStopped() { return m_stopEvent; }
+        static bool IsStopped() { return m_stopEvent.value(); }
 
         void Update(uint32 diff);
 
@@ -770,7 +804,12 @@ class World
         bool GetEventKill() const { return isEventKillStart; }
 
         bool isEventKillStart;
-		
+
+        CharacterNameData const* GetCharacterNameData(uint32 guid) const;
+        void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass);
+        void UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 gender = GENDER_NONE, uint8 race = RACE_NONE);
+        void DeleteCharaceterNameData(uint32 guid) { _characterNameDataMap.erase(guid); }
+
         // Wintergrasp
         uint32 GetWintergrapsTimer() { return m_WintergrapsTimer; }
         uint32 GetWintergrapsState() { return m_WintergrapsState; }
@@ -783,13 +822,9 @@ class World
             m_WintergrapsState = state;
         }
 
-        CharacterNameData const* GetCharacterNameData(uint32 guid) const;
-        void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass);
-        void UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 gender = GENDER_NONE, uint8 race = RACE_NONE);
-        void DeleteCharaceterNameData(uint32 guid) { _characterNameDataMap.erase(guid); }
-
         uint32 GetCleaningFlags() const { return m_CleaningFlags; }
         void   SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
+		
         void   ResetEventSeasonalQuests(uint16 event_id);
     protected:
         void _UpdateGameTime();
@@ -803,7 +838,7 @@ class World
         void ResetWeeklyQuests();
         void ResetRandomBG();
     private:
-        static volatile bool m_stopEvent;
+        static ACE_Atomic_Op<ACE_Thread_Mutex, bool> m_stopEvent;
         static uint8 m_ExitCode;
         uint32 m_ShutdownTimer;
         uint32 m_ShutdownMask;

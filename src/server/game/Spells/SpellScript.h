@@ -224,6 +224,7 @@ class SpellScript : public _SpellScript
         bool _IsDefaultEffectPrevented(SpellEffIndex effIndex) { return m_hitPreventDefaultEffectMask & (1<<effIndex); }
         void _PrepareScriptCall(SpellScriptHookType hookType);
         void _FinishScriptCall();
+        bool IsInAfterHitPhase() { return (m_currentScriptState == SPELL_SCRIPT_HOOK_AFTER_HIT); };
         bool IsInCheckCastHook() const;
         bool IsInTargetHook() const;
         bool IsInHitPhase() const;
@@ -324,6 +325,8 @@ class SpellScript : public _SpellScript
         Item* GetHitItem();
         // returns: target of current effect if it was GameObject otherwise NULL
         GameObject* GetHitGObj();
+        // returns: destination of current effect
+        WorldLocation const* GetHitDest();
         // setter/getter for for damage done by spell to target of spell hit
         // returns damage calculated before hit, and real dmg done after hit
         int32 GetHitDamage();
@@ -335,7 +338,6 @@ class SpellScript : public _SpellScript
         void SetHitHeal(int32 heal);
         void PreventHitHeal() { SetHitHeal(0); }
         Spell* GetSpell() { return m_spell; }
-        void GetSummonPosition(uint32 i, Position &pos, float radius, uint32 count);
         // returns current spell hit target aura
         Aura* GetHitAura();
         // prevents applying aura on current spell hit target
@@ -360,6 +362,9 @@ class SpellScript : public _SpellScript
 
         // Creates item. Calls Spell::DoCreateItem method.
         void CreateItem(uint32 effIndex, uint32 itemId);
+              
+        // returns total damage of a spell
+        int32 GetTrueDamage();
 
         // Returns SpellInfo from the spell that triggered the current one
         SpellInfo const* GetTriggeringSpell();

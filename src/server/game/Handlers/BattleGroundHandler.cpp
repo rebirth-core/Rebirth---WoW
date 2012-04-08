@@ -34,7 +34,6 @@
 #include "Opcodes.h"
 #include "DisableMgr.h"
 #include "Group.h"
-
 #include "OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 
@@ -63,10 +62,10 @@ void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket & recv_data)
         return;
     }
 
-    SendBattlegGroundList(guid, bgTypeId);
+    SendBattleGroundList(guid, bgTypeId);
 }
 
-void WorldSession::SendBattlegGroundList(uint64 guid, BattlegroundTypeId bgTypeId)
+void WorldSession::SendBattleGroundList(uint64 guid, BattlegroundTypeId bgTypeId)
 {
     WorldPacket data;
     sBattlegroundMgr->BuildBattlegroundListPacket(&data, guid, _player, bgTypeId, 0);
@@ -219,7 +218,8 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recv_data)
         for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
         {
             Player* member = itr->getSource();
-            if (!member) continue;   // this should never happen
+            if (!member)
+                continue;   // this should never happen
 
             WorldPacket data;
 
@@ -584,7 +584,9 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode(WorldPacket & recv_data)
         return;
 
     if (bg)
+    {
         sBattlegroundMgr->SendAreaSpiritHealerQueryOpcode(_player, bg, guid);
+    }
     else
     {  // Wintergrasp Hack till 3.3.5 and it's implemented as BG
         if (GetPlayer()->GetZoneId() == 4197)
@@ -613,7 +615,9 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode(WorldPacket & recv_data)
         return;
 
     if (bg)
+	{
         bg->AddPlayerToResurrectQueue(guid, _player->GetGUID());
+	}
     else
     {  // Wintergrasp Hack till 3.3.5 and it's implemented as BG
         if (GetPlayer()->GetZoneId() == 4197)
