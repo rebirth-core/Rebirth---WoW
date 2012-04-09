@@ -245,7 +245,7 @@ class npc_iron_roots : public CreatureScript
                 me->SetInCombatWith(summoner);
             }
 
-            void JustDied(Unit* /*who*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (Player* target = ObjectAccessor::GetPlayer(*me, summonerGUID))
                 {
@@ -327,7 +327,6 @@ class boss_freya : public CreatureScript
                 {
                     damage = 0;
                     JustDied(who);
-                    instance->SetBossState(BOSS_FREYA, DONE);
                 }
             }
 
@@ -437,7 +436,7 @@ class boss_freya : public CreatureScript
                             break;
                         case EVENT_WAVE:
                             SpawnWave();
-                            if (waveCount < 6)
+                            if (waveCount <= 6) // If set to 6 The Bombs appear during the Final Add wave
                                 events.ScheduleEvent(EVENT_WAVE, WAVE_TIME);
                             else
                                 events.ScheduleEvent(EVENT_NATURE_BOMB, urand(10000, 20000));
@@ -527,7 +526,7 @@ class boss_freya : public CreatureScript
             {
                 uint8 n = 0;
 
-                // Handling recieved data
+                // Handling received data
                 for (uint8 i = 0; i < 5; ++i)                                    // We have created "instances" for keeping informations about last 6 death lashers - needed because of respawning
                 {
                     deforestation[i][0] = deforestation[(i + 1)][0];             // Time
@@ -591,7 +590,7 @@ class boss_freya : public CreatureScript
                 waveCount++;
             }
 
-            void JustDied(Unit* who)
+            void JustDied(Unit* /*killer*/)
             {
                 //! Freya's chest is dynamically spawned on death by different spells.
                 const uint32 summonSpell[2][4] =
@@ -711,12 +710,12 @@ class boss_elder_brightleaf : public CreatureScript
                 DoScriptText(RAND(SAY_BRIGHTLEAF_SLAY_1, SAY_BRIGHTLEAF_SLAY_2), me);
             }
 
-            void JustDied(Unit* who)
+            void JustDied(Unit* killer)
             {
                 _JustDied();
                 DoScriptText(SAY_BRIGHTLEAF_DEATH, me);
 
-                if (who && who->GetTypeId() == TYPEID_PLAYER)
+                if (killer && killer->GetTypeId() == TYPEID_PLAYER)
                 {
                     if (Creature* Ironbranch = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_IRONBRANCH)))
                         Ironbranch->AI()->DoAction(ACTION_ELDER_DEATH);
@@ -831,12 +830,12 @@ class boss_elder_stonebark : public CreatureScript
                 DoScriptText(RAND(SAY_STONEBARK_SLAY_1, SAY_STONEBARK_SLAY_2), me);
             }
 
-            void JustDied(Unit* who)
+            void JustDied(Unit* killer)
             {
                 _JustDied();
                 DoScriptText(SAY_STONEBARK_DEATH, me);
 
-                if (who && who->GetTypeId() == TYPEID_PLAYER)
+                if (killer && killer->GetTypeId() == TYPEID_PLAYER)
                 {
                     if (Creature* Ironbranch = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_IRONBRANCH)))
                         Ironbranch->AI()->DoAction(ACTION_ELDER_DEATH);
@@ -957,12 +956,12 @@ class boss_elder_ironbranch : public CreatureScript
                 DoScriptText(RAND(SAY_IRONBRANCH_SLAY_1, SAY_IRONBRANCH_SLAY_2), me);
             }
 
-            void JustDied(Unit* who)
+            void JustDied(Unit* killer)
             {
                 _JustDied();
                 DoScriptText(SAY_IRONBRANCH_DEATH, me);
 
-                if (who && who->GetTypeId() == TYPEID_PLAYER)
+                if (killer && killer->GetTypeId() == TYPEID_PLAYER)
                 {
                     if (Creature* Brightleaf = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_BRIGHTLEAF)))
                         Brightleaf->AI()->DoAction(ACTION_ELDER_DEATH);
@@ -1139,7 +1138,7 @@ class npc_ancient_water_spirit : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(Unit* /*who*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (Creature* Freya = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_FREYA)))
                 {
@@ -1205,7 +1204,7 @@ class npc_storm_lasher : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(Unit* /*who*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (Creature* Freya = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_FREYA)))
                 {
@@ -1252,7 +1251,7 @@ class npc_snaplasher : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(Unit* /*who*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (Creature* Freya = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_FREYA)))
                 {
@@ -1373,7 +1372,7 @@ class npc_healthy_spore : public CreatureScript
         {
             npc_healthy_sporeAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_NPC);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
                 me->SetReactState(REACT_PASSIVE);
                 DoCast(me, SPELL_HEALTHY_SPORE_VISUAL);
                 DoCast(me, SPELL_POTENT_PHEROMONES);
