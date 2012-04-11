@@ -253,9 +253,19 @@ class event_npc : public CreatureScript
                                case 1:
                                    if (cost <= pEP)
                                    {
-                                       pPlayer->ModifyHonorPoints(param1);
-                                       LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                       OnGossipHello(pPlayer, pCreature);
+                                       if (pPlayer->GetHonorPoints() + param1 <= 75000)
+                                       {
+                                           pPlayer->ModifyHonorPoints(param1);
+                                           LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                           OnGossipHello(pPlayer, pCreature);
+                                       }
+                                       else
+                                       {
+                                           char str_info[200];
+                                           sprintf(str_info,"Das Kaufen dieser Belohnung wuerde deine Ehrecap ueberschreiten!");
+                                           OnGossipHello(pPlayer, pCreature);
+                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                       }
                                    }
 
                                    else
