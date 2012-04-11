@@ -282,9 +282,20 @@ class event_npc : public CreatureScript
                                    {
                                        CharTitlesEntry const* title;
                                        title = sCharTitlesStore.LookupEntry(param1);
-                                       pPlayer->SetTitle(title);
-                                       LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                       OnGossipHello(pPlayer, pCreature);
+
+                                       if (!pPlayer->HasTitle(title))
+                                       {
+                                           pPlayer->SetTitle(title);
+                                           LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                           OnGossipHello(pPlayer, pCreature);
+                                       }
+                                       else
+                                       {
+                                           char str_info[200];
+                                           sprintf(str_info,"Du hast diesen Titel bereits!");
+                                           OnGossipHello(pPlayer, pCreature);
+                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                       }
                                    }
 
                                    else
