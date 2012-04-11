@@ -314,6 +314,33 @@ class event_npc : public CreatureScript
                                        pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
                                    break;
+
+                               case 4:
+                                   if (cost <= pEP)
+                                   {
+                                       if (!pPlayer->HasSpell(param1))
+                                       {
+                                           pPlayer->learnSpell(param1,false);
+                                           LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                           OnGossipHello(pPlayer, pCreature);
+                                       }
+
+                                       else
+                                       {
+                                           char str_info[200];
+                                           sprintf(str_info,"Du hast diesen Zauber bereits!");
+                                           OnGossipHello(pPlayer, pCreature);
+                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                       }
+                                   }
+
+                                   else
+                                   {
+                                       char str_info[200];
+                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
+                                       OnGossipHello(pPlayer, pCreature);
+                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                   }
                             }
                         }
                     }
