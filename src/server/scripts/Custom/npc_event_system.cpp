@@ -253,9 +253,19 @@ class event_npc : public CreatureScript
                                case 1:
                                    if (cost <= pEP)
                                    {
-                                       pPlayer->ModifyHonorPoints(param1);
-                                       LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                       OnGossipHello(pPlayer, pCreature);
+                                       if (pPlayer->GetHonorPoints() + param1 <= 75000)
+                                       {
+                                           pPlayer->ModifyHonorPoints(param1);
+                                           LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                           OnGossipHello(pPlayer, pCreature);
+                                       }
+                                       else
+                                       {
+                                           char str_info[200];
+                                           sprintf(str_info,"Das Kaufen dieser Belohnung wuerde deine Ehrecap ueberschreiten!");
+                                           OnGossipHello(pPlayer, pCreature);
+                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                       }
                                    }
 
                                    else
@@ -272,9 +282,20 @@ class event_npc : public CreatureScript
                                    {
                                        CharTitlesEntry const* title;
                                        title = sCharTitlesStore.LookupEntry(param1);
-                                       pPlayer->SetTitle(title);
-                                       LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                       OnGossipHello(pPlayer, pCreature);
+
+                                       if (!pPlayer->HasTitle(title))
+                                       {
+                                           pPlayer->SetTitle(title);
+                                           LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                           OnGossipHello(pPlayer, pCreature);
+                                       }
+                                       else
+                                       {
+                                           char str_info[200];
+                                           sprintf(str_info,"Du hast diesen Titel bereits!");
+                                           OnGossipHello(pPlayer, pCreature);
+                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                       }
                                    }
 
                                    else
@@ -314,6 +335,33 @@ class event_npc : public CreatureScript
                                        pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
                                    break;
+
+                               case 4:
+                                   if (cost <= pEP)
+                                   {
+                                       if (!pPlayer->HasSpell(param1))
+                                       {
+                                           pPlayer->learnSpell(param1,false);
+                                           LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                           OnGossipHello(pPlayer, pCreature);
+                                       }
+
+                                       else
+                                       {
+                                           char str_info[200];
+                                           sprintf(str_info,"Du hast diesen Zauber bereits!");
+                                           OnGossipHello(pPlayer, pCreature);
+                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                       }
+                                   }
+
+                                   else
+                                   {
+                                       char str_info[200];
+                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
+                                       OnGossipHello(pPlayer, pCreature);
+                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                   }
                             }
                         }
                     }
