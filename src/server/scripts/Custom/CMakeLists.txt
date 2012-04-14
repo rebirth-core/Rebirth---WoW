@@ -15,6 +15,7 @@ set(scripts_STAT_SRCS
   Custom/dalaran_squirrel.cpp
   Custom/cs_event_system.cpp
   Custom/npc_event_system.cpp
+  Custom/rebirth_custom_fixes.cpp
 )
 
 message("  -> Prepared: Custom")
