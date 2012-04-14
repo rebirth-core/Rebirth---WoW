@@ -2765,20 +2765,18 @@ void OutdoorPvPWG::PlayerAcceptInviteToWar(Player *plr)
 
        if (plr->getLevel() > minlevel)
        {
-           if (plr->GetZoneId() != 4197)
+           if (plr->GetTeamId() == getDefenderTeam())
            {
-               if (plr->GetTeamId() == getDefenderTeam())
-               {
-                   plr->TeleportTo(571, 5345.0f, 2842.0f, 410.0f, 3.14f);
-               }
-               else
-               {
-                   if (plr->GetTeamId()==TEAM_HORDE)
-                       plr->TeleportTo(571, 5025.857422f, 3674.628906f, 362.737122f, 4.135169f);
-                   else
-                       plr->TeleportTo(571, 5101.284f, 2186.564f, 373.549f, 3.812f);
-               }   
+              plr->TeleportTo(571, 5345.0f, 2842.0f, 410.0f, 3.14f);
            }
+           else
+           {
+              if (plr->GetTeamId()==TEAM_HORDE)
+                  plr->TeleportTo(571, 5025.857422f, 3674.628906f, 362.737122f, 4.135169f);
+              else
+                  plr->TeleportTo(571, 5101.284f, 2186.564f, 373.549f, 3.812f);
+           }   
+       
 
            plr->CastSpell(plr, SPELL_RECRUIT, true);
 
