@@ -1240,16 +1240,14 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
        case CREATURE_GUARD:
        case CREATURE_SPECIAL:
            {
-               //TDB users comment this block if your guards doesn't spawn by pairs A+H at fortress
-               /* 
                if (creature && creature->GetAreaId() == 4575)
                {
                    switch (entry)
                    {
-                       case 30740://Alliance champion
+                       case 30740://Alliance champion 
                        case 32308://Alliance guard
                        {
-                           if (getDefenderTeamId() == TEAM_ALLIANCE)
+                           if (getDefenderTeam() == TEAM_ALLIANCE)
                                creature->SetPhaseMask(1, true);
                            else 
                                creature->SetPhaseMask(2, true);
@@ -1258,7 +1256,7 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                        case 30739://Horde champion
                        case 32307://Horde guard
                        {
-                           if (getDefenderTeamId() == TEAM_ALLIANCE)
+                           if (getDefenderTeam() == TEAM_ALLIANCE)
                                creature->SetPhaseMask(2, true);
                            else 
                                creature->SetPhaseMask(1, true);
@@ -1269,7 +1267,7 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                    creature->AI()->EnterEvadeMode();
                    return false;
                }
-               else */ //End of block to comment
+               else 
                {
                    TeamPairMap::const_iterator itr = m_creEntryPair.find(creature->GetCreatureData()->id);
                    if (itr != m_creEntryPair.end())
