@@ -28,6 +28,8 @@ void AddSC_example_commandscript();
 void AddSC_ArgentTournament();
 //Revenge od Dalaran squidrrel
 void AddSC_dalaran_squirrel();
+//Rebirth Fixes
+void AddSC_rebirth_fixes();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -1265,5 +1267,6 @@ void AddCustomScripts()
     /* This is where custom scripts should be added. */		
     AddSC_ArgentTournament();
     AddSC_dalaran_squirrel();
+    AddSC_rebirth_fixes();
 #endif
 }
