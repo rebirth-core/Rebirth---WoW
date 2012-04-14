@@ -32,7 +32,8 @@ class npc_datura_blutrose : public CreatureScript
     	bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     	{
 
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Bitte untersucht diese Kette, Datura.", GOSSIP_SENDER_MAIN, 1);
+            if(pPlayer->hasQuest(12637))
+                   pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Bitte untersucht diese Kette, Datura.", GOSSIP_SENDER_MAIN, 1);
             pPlayer->PlayerTalkClass->SendGossipMenu(1, pCreature->GetGUID());
             return true;
     	}

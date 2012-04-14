@@ -1240,16 +1240,14 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
        case CREATURE_GUARD:
        case CREATURE_SPECIAL:
            {
-               //TDB users comment this block if your guards doesn't spawn by pairs A+H at fortress
-               /* 
                if (creature && creature->GetAreaId() == 4575)
                {
                    switch (entry)
                    {
-                       case 30740://Alliance champion
+                       case 30740://Alliance champion 
                        case 32308://Alliance guard
                        {
-                           if (getDefenderTeamId() == TEAM_ALLIANCE)
+                           if (getDefenderTeam() == TEAM_ALLIANCE)
                                creature->SetPhaseMask(1, true);
                            else 
                                creature->SetPhaseMask(2, true);
@@ -1258,7 +1256,7 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                        case 30739://Horde champion
                        case 32307://Horde guard
                        {
-                           if (getDefenderTeamId() == TEAM_ALLIANCE)
+                           if (getDefenderTeam() == TEAM_ALLIANCE)
                                creature->SetPhaseMask(2, true);
                            else 
                                creature->SetPhaseMask(1, true);
@@ -1269,7 +1267,7 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                    creature->AI()->EnterEvadeMode();
                    return false;
                }
-               else */ //End of block to comment
+               else 
                {
                    TeamPairMap::const_iterator itr = m_creEntryPair.find(creature->GetCreatureData()->id);
                    if (itr != m_creEntryPair.end())
@@ -1347,6 +1345,37 @@ bool OutdoorPvPWG::UpdateGameObjectInfo(GameObject *go) const
        case 7909: // Wintergrasp Wall
            go->SetUInt32Value(GAMEOBJECT_FACTION, defFaction);
            return false;
+       case 8256://Alliance Banner
+       case 5651://Alliance Banner
+           if (getDefenderTeam() == TEAM_ALLIANCE)
+           {
+               if (go->GetAreaId()==4575 || go->GetAreaId()==4539 || go->GetAreaId()==4538)
+                   go->SetPhaseMask(1, true);
+               else go->SetPhaseMask(2, true);
+           } 
+           else 
+           {
+               if (go->GetAreaId()==4575 || go->GetAreaId()==4539 || go->GetAreaId()==4538)
+                   go->SetPhaseMask(2, true);
+               else go->SetPhaseMask(1, true);
+           }
+           return true;
+        case 8257://Horde Banner
+        case 5652://Horde Banner
+           if (getDefenderTeam() == TEAM_ALLIANCE)
+           {
+               if (go->GetAreaId()==4575 || go->GetAreaId()==4539 || go->GetAreaId()==4538)
+                   go->SetPhaseMask(2, true);
+               else 
+                   go->SetPhaseMask(1, true);
+           } 
+           else 
+           {
+               if (go->GetAreaId()==4575 || go->GetAreaId()==4539 || go->GetAreaId()==4538)
+                   go->SetPhaseMask(1, true);
+               else go->SetPhaseMask(2, true);
+           }
+           return true;
        case 7900: // Flamewatch Tower - Shadowsight Tower - Winter's Edge Tower
            go->SetUInt32Value(GAMEOBJECT_FACTION, attFaction);
            return false;
@@ -2765,20 +2794,18 @@ void OutdoorPvPWG::PlayerAcceptInviteToWar(Player *plr)
 
        if (plr->getLevel() > minlevel)
        {
-           if (plr->GetZoneId() != 4197)
+           if (plr->GetTeamId() == getDefenderTeam())
            {
-               if (plr->GetTeamId() == getDefenderTeam())
-               {
-                   plr->TeleportTo(571, 5345.0f, 2842.0f, 410.0f, 3.14f);
-               }
-               else
-               {
-                   if (plr->GetTeamId()==TEAM_HORDE)
-                       plr->TeleportTo(571, 5025.857422f, 3674.628906f, 362.737122f, 4.135169f);
-                   else
-                       plr->TeleportTo(571, 5101.284f, 2186.564f, 373.549f, 3.812f);
-               }   
+              plr->TeleportTo(571, 5345.0f, 2842.0f, 410.0f, 3.14f);
            }
+           else
+           {
+              if (plr->GetTeamId()==TEAM_HORDE)
+                  plr->TeleportTo(571, 5025.857422f, 3674.628906f, 362.737122f, 4.135169f);
+              else
+                  plr->TeleportTo(571, 5101.284f, 2186.564f, 373.549f, 3.812f);
+           }   
+       
 
            plr->CastSpell(plr, SPELL_RECRUIT, true);
 
