@@ -112,7 +112,6 @@ class event_npc : public CreatureScript
                         return false;
                     break;
             }
-
             return true;
         }
 
@@ -129,12 +128,11 @@ class event_npc : public CreatureScript
                 sprintf(str_info,"Du hast %u Event Punkte!", eventPunkte);
                 player->PlayerTalkClass->ClearMenus();
                 player->MonsterWhisper(str_info,player->GetGUID(),true);
+                OnGossipHello(player, creature);
             }
 
             else if (!result)
                 SendMessageToPlayer(player, creature,"Es ist ein Fehler aufgetreten. Bitte wende dich an einen Administrator und melde FehlerID 100!");
-
-            OnGossipHello(player, creature);
 
         }
 
@@ -166,13 +164,13 @@ class event_npc : public CreatureScript
                      sprintf(str_info,"Event Info: Datum: %s || Typ: %s || Empfohlenes Level: %u",date.c_str(),eventType.c_str(),reqLevel);
                      player->PlayerTalkClass->ClearMenus();
                      player->MonsterWhisper(str_info,player->GetGUID(),true);
+                     OnGossipHello(player, creature);
 
                 } while (result->NextRow());
             }
             else
                 SendMessageToPlayer(player, creature,"Es ist zurzeit kein Event in Planung!");
 
-            OnGossipHello(player, creature);
         }
 
         void TeleportToEvent(Player* player, Creature* creature)
@@ -193,8 +191,6 @@ class event_npc : public CreatureScript
                     player->TeleportTo(map, x, y, z, 0.0f, 0);
                 else
                     SendMessageToPlayer(player, creature,"Deine Stufe ist zu niedrig um an diesem Event teilnehmen zu koennen!");
-
-                OnGossipHello(player, creature);
 
             }
         }
@@ -294,7 +290,7 @@ class event_npc : public CreatureScript
                 if (uiAction >= 1000 && uiAction < 10000)
                 {
 
-                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition, cond_value1, cond_value2, cond_value3, negation FROM rebirth_event_rewards WHERE id = %u AND catid != ''", uiAction-1000);
+                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition_type, cond_value1, cond_value2, cond_value3, negation FROM rebirth_event_rewards WHERE id = %u AND catid != ''", uiAction-1000);
                     QueryResult resulta = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
                     int pEP = 0;
                     if (resulta)
@@ -338,23 +334,17 @@ class event_npc : public CreatureScript
 
                                        if (CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
-                                           sLog->outError("Rebirth Debug: 'ItemBuy' ItemID: %d  -- ItemCount: %d",param1,param2);
                                            pPlayer->AddItem(param1, param2);
-                                           OnGossipHello(pPlayer, pCreature);
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                        }
                                        else
-                                       {
-                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
-                                           OnGossipHello(pPlayer, pCreature);
-                                       }
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu koennen!");
+
                                    }
 
                                    else
-                                   {
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
-                                       OnGossipHello(pPlayer, pCreature);
-                                   }
 
                                    break;
                                case 1:
@@ -364,20 +354,14 @@ class event_npc : public CreatureScript
                                        {
                                            pPlayer->ModifyHonorPoints(param1);
                                            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           OnGossipHello(pPlayer, pCreature);
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
                                        else
-                                       {
-                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
-                                           OnGossipHello(pPlayer, pCreature);
-                                       }
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu koennen!");
                                    }
 
                                    else
-                                   {
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
-                                       OnGossipHello(pPlayer, pCreature);
-                                   }
 
                                    break;
                                case 2:
@@ -390,20 +374,14 @@ class event_npc : public CreatureScript
                                        {
                                            pPlayer->SetTitle(title);
                                            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           OnGossipHello(pPlayer, pCreature);
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
                                        else
-                                       {
-                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
-                                           OnGossipHello(pPlayer, pCreature);
-                                       }
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu koennen!");
                                    }
 
                                    else
-                                   {
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
-                                       OnGossipHello(pPlayer, pCreature);
-                                   }
 
                                    break;
 
@@ -414,21 +392,15 @@ class event_npc : public CreatureScript
                                        {
                                            pPlayer->GiveXP(param1,pPlayer,1.0f);
                                            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           OnGossipHello(pPlayer, pCreature);
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
 
                                        else
-                                       {
-                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
-                                           OnGossipHello(pPlayer, pCreature);
-                                       }
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu koennen!");
                                    }
 
                                    else
-                                   {
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
-                                       OnGossipHello(pPlayer, pCreature);
-                                   }
                                    break;
 
                                case 4:
@@ -438,21 +410,15 @@ class event_npc : public CreatureScript
                                        {
                                            pPlayer->learnSpell(param1,false);
                                            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           OnGossipHello(pPlayer, pCreature);
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
 
                                        else
-                                       {
-                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
-                                           OnGossipHello(pPlayer, pCreature);
-                                       }
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu koennen!");
                                    }
 
                                    else
-                                   {
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
-                                       OnGossipHello(pPlayer, pCreature);
-                                   }
                             }
                         }
                     }
