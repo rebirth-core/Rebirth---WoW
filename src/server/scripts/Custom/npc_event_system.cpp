@@ -294,7 +294,7 @@ class event_npc : public CreatureScript
                 if (uiAction >= 1000 && uiAction < 10000)
                 {
 
-                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition_type, cond_value1, cond_value2, cond_value3, negation FROM rebirth_event_rewards WHERE id = %u AND catid != ''", uiAction-1000);
+                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition, cond_value1, cond_value2, cond_value3, negation FROM rebirth_event_rewards WHERE id = %u AND catid != ''", uiAction-1000);
                     QueryResult resulta = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
                     int pEP = 0;
                     if (resulta)
