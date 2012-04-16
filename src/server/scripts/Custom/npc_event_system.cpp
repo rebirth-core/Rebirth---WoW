@@ -10,6 +10,104 @@ class event_npc : public CreatureScript
     	{
     	}
 
+        bool CheckCondition(int condition, int cParam1, int cParam2, int cParam3, int negation, Player* player)
+        {
+            int TEAM = 0;
+            switch (condition)
+            {
+
+                case 0:   //Keine Condition
+                    return true;
+                    break;
+
+                case 1:    //Spell Condition
+                    if (player->HasSpell(cParam1) && negation == 0)  //Wenn er den Spell hat und negation = 0 ist dann True
+                        return true;
+                    else if (!player->HasSpell(cParam1) && negation == 0)
+                        return false;
+
+                    if (!player->HasSpell(cParam1) && negation == 1)  //Wenn er den Spell hat und negation = 1 ist dann False
+                        return true;
+                    else if (player->HasSpell(cParam1) && negation == 1)
+                        return false;
+                    break;
+
+                case 2:   //Title Condition
+                    if (player->HasTitle(sCharTitlesStore.LookupEntry(cParam1)) && negation == 0)
+                        return true;
+                    else if (!player->HasTitle(sCharTitlesStore.LookupEntry(cParam1)) && negation == 0)
+                        return false;
+
+                    if (player->HasTitle(sCharTitlesStore.LookupEntry(cParam1)) && negation == 1)
+                        return false;
+                    else if (!player->HasTitle(sCharTitlesStore.LookupEntry(cParam1)) && negation == 1)
+                        return true;
+                    break;
+
+                case 3:   //Item Condition
+                    if (player->HasItemCount(cParam1,cParam2,true) && negation == 0)
+                        return true;
+                    else if (!player->HasItemCount(cParam1,cParam2,true) && negation == 0)
+                        return false;
+
+                    if (player->HasItemCount(cParam1,cParam2,true) && negation == 1)
+                        return false;
+                    else if (!player->HasItemCount(cParam1,cParam2,true) && negation == 1)
+                        return true;
+                    break;
+
+                case 4:  //Level Condition
+                    if (player->getLevel() >= cParam1 && negation == 0)
+                        return true;
+                    else if (player->getLevel() <= cParam1 && negation == 0)
+                        return false;
+                    if (player->getLevel() >= cParam1 && negation == 1)
+                        return false;
+                    else if (player->getLevel() <= cParam1 && negation == 1)
+                        return true;
+                    break;
+
+                case 5: //Faction Condition
+                    TEAM = cParam1 == 1 ? ALLIANCE : HORDE;
+                    if (player->GetTeam() == TEAM && negation == 0)
+                        return true;
+                    else if (player->GetTeam() != TEAM && negation == 0)
+                        return false;
+
+                    if (player->GetTeam() != TEAM && negation == 1)
+                        return true;
+                    else if (player->GetTeam() == TEAM && negation == 1)
+                        return false;
+                    break;
+
+                case 6: //Race Condition
+                    if (player->getRace() == cParam1 && negation == 0)
+                        return true;
+                    else if (player->getRace() != cParam1 && negation == 0) 
+                        return false;
+
+                    if (player->getRace() != cParam1 && negation == 1)
+                        return true;
+                    else if (player->getRace() == cParam1 && negation == 1)
+                        return false;
+                    break;
+
+                case 7: //Class Condition
+                    if (player->getClass() == cParam1 && negation == 0)
+                        return true;
+                    else if (player->getClass() != cParam1 && negation == 0)
+                        return false;
+
+                    if (player->getClass() != cParam1 && negation == 1)
+                        return true;
+                    else if (player->getClass() == cParam1 && negation == 1)
+                        return false;
+                    break;
+            }
+
+            return true;
+        }
+
         void RequestEventPoints(Player* player, Creature* creature)
         {
             QueryResult result = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", player->GetSession()->GetAccountId());
@@ -189,7 +287,7 @@ class event_npc : public CreatureScript
 
                 if (uiAction >= 1000 && uiAction < 10000)
                 {
-                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost FROM rebirth_event_rewards WHERE id = %u AND catid != ''", uiAction-1000);
+                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition_type, cond_value1, cond_value2, cond_value3, negation FROM rebirth_event_rewards WHERE id = %u AND catid != ''", uiAction-1000);
                     QueryResult resulta = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
                     int pEP = 0;
                     if (resulta)
@@ -209,6 +307,12 @@ class event_npc : public CreatureScript
                             int param2 = field[2].GetInt32();
                             int param3 = field[3].GetInt32();
                             int cost = field[4].GetInt32();
+                            int condition = field[5].GetInt32();
+                            int cond_value1 = field[6].GetInt32();
+                            int cond_value2 = field[7].GetInt32();
+                            int cond_value3 = field[8].GetInt32();
+                            int negation = field[9].GetInt32();
+                            
                             sLog->outError("Rebirth Debug: GetRewards %d %d %d %d %d",type,param1,param2,param3,cost);
                             switch (type)
                             {
@@ -235,10 +339,21 @@ class event_npc : public CreatureScript
                                                return true;
                                            }
                                        }
-                                       sLog->outError("Rebirth Debug: 'ItemBuy' ItemID: %d  -- ItemCount: %d",param1,param2);
-                                       pPlayer->AddItem(param1, param2);
-                                       OnGossipHello(pPlayer, pCreature);
-                                       LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+
+                                       if (CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
+                                       {
+                                           sLog->outError("Rebirth Debug: 'ItemBuy' ItemID: %d  -- ItemCount: %d",param1,param2);
+                                           pPlayer->AddItem(param1, param2);
+                                           OnGossipHello(pPlayer, pCreature);
+                                           LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                       }
+                                       else
+                                       {
+                                           char str_info[200];
+                                           sprintf(str_info,"Du erfuellst die Voraussetzungen nicht um diese Belohnung zu kaufen!");
+                                           OnGossipHello(pPlayer, pCreature);
+                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
+                                       }
                                    }
 
                                    else
@@ -253,7 +368,7 @@ class event_npc : public CreatureScript
                                case 1:
                                    if (cost <= pEP)
                                    {
-                                       if (pPlayer->GetHonorPoints() + param1 <= 75000)
+                                       if (pPlayer->GetHonorPoints() + param1 <= 75000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->ModifyHonorPoints(param1);
                                            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
@@ -262,7 +377,7 @@ class event_npc : public CreatureScript
                                        else
                                        {
                                            char str_info[200];
-                                           sprintf(str_info,"Das Kaufen dieser Belohnung wuerde deine Ehrecap ueberschreiten!");
+                                           sprintf(str_info,"Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
                                            OnGossipHello(pPlayer, pCreature);
                                            pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                        }
@@ -283,7 +398,7 @@ class event_npc : public CreatureScript
                                        CharTitlesEntry const* title;
                                        title = sCharTitlesStore.LookupEntry(param1);
 
-                                       if (!pPlayer->HasTitle(title))
+                                       if (!pPlayer->HasTitle(title) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->SetTitle(title);
                                            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
@@ -292,7 +407,7 @@ class event_npc : public CreatureScript
                                        else
                                        {
                                            char str_info[200];
-                                           sprintf(str_info,"Du hast diesen Titel bereits!");
+                                           sprintf(str_info,"Du erfuellst die Voraussetzungen nicht um diese Belohnung zu kaufen!");
                                            OnGossipHello(pPlayer, pCreature);
                                            pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                        }
@@ -311,7 +426,7 @@ class event_npc : public CreatureScript
                                case 3: 
                                    if (cost <= pEP)
                                    {
-                                       if (pPlayer->getLevel() < 80)
+                                       if (pPlayer->getLevel() < 80 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->GiveXP(param1,pPlayer,1.0f);
                                            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
@@ -321,7 +436,7 @@ class event_npc : public CreatureScript
                                        else
                                        {
                                            char str_info[200];
-                                           sprintf(str_info,"Du kannst keine Erfahrung mehr erhalten!");
+                                           sprintf(str_info,"Du erfuellst die Voraussetzungen nicht um diese Belohnung zu kaufen!");
                                            OnGossipHello(pPlayer, pCreature);
                                            pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                        }
@@ -339,7 +454,7 @@ class event_npc : public CreatureScript
                                case 4:
                                    if (cost <= pEP)
                                    {
-                                       if (!pPlayer->HasSpell(param1))
+                                       if (!pPlayer->HasSpell(param1) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->learnSpell(param1,false);
                                            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
@@ -349,7 +464,7 @@ class event_npc : public CreatureScript
                                        else
                                        {
                                            char str_info[200];
-                                           sprintf(str_info,"Du hast diesen Zauber bereits!");
+                                           sprintf(str_info,"Du erfuellst die Voraussetzungen nicht um diese Belohnung zu kaufen!");
                                            OnGossipHello(pPlayer, pCreature);
                                            pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                        }
