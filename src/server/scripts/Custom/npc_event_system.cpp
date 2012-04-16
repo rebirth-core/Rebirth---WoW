@@ -10,6 +10,14 @@ class event_npc : public CreatureScript
     	{
     	}
 
+        void SendMessageToPlayer(Player* player, Creature* creature, std::string message)
+        {
+            char str_info[200];
+            sprintf(str_info,"%s",message.c_str());
+            OnGossipHello(player, creature);
+            player->MonsterWhisper(str_info,player->GetGUID(),true);
+        }
+
         bool CheckCondition(int condition, int cParam1, int cParam2, int cParam3, int negation, Player* player)
         {
             int TEAM = 0;
@@ -110,6 +118,7 @@ class event_npc : public CreatureScript
 
         void RequestEventPoints(Player* player, Creature* creature)
         {
+
             QueryResult result = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", player->GetSession()->GetAccountId());
 
             if (result)
@@ -119,23 +128,19 @@ class event_npc : public CreatureScript
                 char str_info[200];
                 sprintf(str_info,"Du hast %u Event Punkte!", eventPunkte);
                 player->PlayerTalkClass->ClearMenus();
-                OnGossipHello(player, creature);
                 player->MonsterWhisper(str_info,player->GetGUID(),true);
             }
 
             else if (!result)
-            {
-                char str_info[200];
-                sprintf(str_info,"Es ist ein Fehler aufgetreten. Bitte wende dich an einen Administrator und melde FehlerID 100!");
-                player->PlayerTalkClass->ClearMenus();
-                OnGossipHello(player, creature);
-                player->MonsterWhisper(str_info,player->GetGUID(),true);
-            }
+                SendMessageToPlayer(player, creature,"Es ist ein Fehler aufgetreten. Bitte wende dich an einen Administrator und melde FehlerID 100!");
+
+            OnGossipHello(player, creature);
 
         }
 
         void RequestNextEvents(Player* player, Creature* creature)
         {
+
             QueryResult result = LoginDatabase.PQuery("SELECT FROM_UNIXTIME(date), type, reqLevel FROM rebirth_next_event WHERE date > UNIX_TIMESTAMP()");
 
             if (result)
@@ -160,23 +165,21 @@ class event_npc : public CreatureScript
                      char str_info[200];
                      sprintf(str_info,"Event Info: Datum: %s || Typ: %s || Empfohlenes Level: %u",date.c_str(),eventType.c_str(),reqLevel);
                      player->PlayerTalkClass->ClearMenus();
-                     OnGossipHello(player, creature);
                      player->MonsterWhisper(str_info,player->GetGUID(),true);
+
                 } while (result->NextRow());
             }
             else
-            {
-                char str_info[200];
-                sprintf(str_info,"Es ist zurzeit kein Event in Planung!");
-                player->PlayerTalkClass->ClearMenus();
-                OnGossipHello(player, creature);
-                player->MonsterWhisper(str_info,player->GetGUID(),true);
-            }
+                SendMessageToPlayer(player, creature,"Es ist zurzeit kein Event in Planung!");
+
+            OnGossipHello(player, creature);
         }
 
         void TeleportToEvent(Player* player, Creature* creature)
         {
+
             QueryResult result = LoginDatabase.PQuery("SELECT x, y, z, map, reqLevel FROM rebirth_next_event WHERE active = 1");
+
             if (result)
             {
                 Field* field = result->Fetch();
@@ -189,13 +192,9 @@ class event_npc : public CreatureScript
                 if (player->getLevel() >= reqLevel)
                     player->TeleportTo(map, x, y, z, 0.0f, 0);
                 else
-                {
-                    char str_info[200];
-                    sprintf(str_info,"Deine Stufe ist zu niedrig um an diesem Event teilnehmen zu koennen!");
-                    player->PlayerTalkClass->ClearMenus();
-                    OnGossipHello(player, creature);
-                    player->MonsterWhisper(str_info,player->GetGUID(),true);
-                }
+                    SendMessageToPlayer(player, creature,"Deine Stufe ist zu niedrig um an diesem Event teilnehmen zu koennen!");
+
+                OnGossipHello(player, creature);
 
             }
         }
@@ -214,10 +213,13 @@ class event_npc : public CreatureScript
           if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_ENABLED))
           {
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Event Punkte habe ich?", GOSSIP_SENDER_MAIN, 1);
+
             if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED))
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wann finden die naechsten Events statt?", GOSSIP_SENDER_MAIN, 2);
+
             if (isActive() && sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_TELEPORT_ENABLED))
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleportiere mich zum Event!", GOSSIP_SENDER_MAIN, 3);
+
             if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED))
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Eventbelohnungen kaufen!", GOSSIP_SENDER_MAIN, 4);
             pPlayer->PlayerTalkClass->SendGossipMenu(120100, pCreature->GetGUID());
@@ -246,6 +248,7 @@ class event_npc : public CreatureScript
                     break;
                 case 4:
                     QueryResult result = WorldDatabase.PQuery("SELECT id, name FROM rebirth_event_reward_categorie");
+
                     if (result)
                     {
                         do
@@ -255,17 +258,20 @@ class event_npc : public CreatureScript
                             std::string catName = field[1].GetCString();
                             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, catName.c_str(), GOSSIP_SENDER_MAIN, catId+100);
                         } while (result->NextRow());
+
                         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<<Hauptmenue>>", GOSSIP_SENDER_MAIN, 5);
                         pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
                     }
+
                     break;
 
             }
 
                 if (uiAction >= 100 && uiAction < 1000)
                 {
+
                     QueryResult result = WorldDatabase.PQuery("SELECT id, name, type, param1, param2, param3, cost FROM rebirth_event_rewards WHERE catid = %u", uiAction-100);
-                    sLog->outError("Rebirth Debug: Kategorie == %d", uiAction-100);
+
                     if (result)
                     {
                         do
@@ -287,20 +293,19 @@ class event_npc : public CreatureScript
 
                 if (uiAction >= 1000 && uiAction < 10000)
                 {
+
                     QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition_type, cond_value1, cond_value2, cond_value3, negation FROM rebirth_event_rewards WHERE id = %u AND catid != ''", uiAction-1000);
                     QueryResult resulta = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
                     int pEP = 0;
                     if (resulta)
                     {
-                        sLog->outError("Rebirth Debug: resulta == true");
+
                         Field* field = resulta->Fetch();
                         int pEP = field[0].GetInt32();
-                        sLog->outError("Rebirth Debug: pEP = %d",pEP);
                     
                         if (result)
                         {
-                            sLog->outError("Rebirth Debug: pEP = %d",pEP);
-                            sLog->outError("Rebirth Debug: result == true");
+
                             Field* field = result->Fetch();
                             int type = field[0].GetInt32();
                             int param1 = field[1].GetInt32();
@@ -313,28 +318,19 @@ class event_npc : public CreatureScript
                             int cond_value3 = field[8].GetInt32();
                             int negation = field[9].GetInt32();
                             
-                            sLog->outError("Rebirth Debug: GetRewards %d %d %d %d %d",type,param1,param2,param3,cost);
                             switch (type)
                             {
-                               sLog->outError("Rebirth Debug: pEP = %d",pEP);
-                               sLog->outError("Rebirth Debug: 'OnBuy' case: %d",type);
                                case 0:
-                                   sLog->outError("Rebirth Debug: 'ItemBuy' %d <= %d",cost,pEP);
-                                   sLog->outError("Rebirth Debug: pEP = %d",pEP);
                                    if (cost <= pEP)
                                    {
-                                       sLog->outError("Rebirth Debug: pEP = %d",pEP);
                                        Item* item = pPlayer->GetItemByEntry(param1);
-                                       sLog->outError("Rebirth Debug: 'ItemBuy' %d <= %d  >>true<<",cost,pEP);
+
                                        if (pPlayer->HasItemCount(param1, 1, true))
                                        {
                                            if (item->GetTemplate()->MaxCount <= pPlayer->GetItemCount(param1, true, 0))
                                            {
-                                               char str_info[200];
-                                               sprintf(str_info,"Du hast bereits die maximale Anzahl dieses Gegenstands erreicht. Du kannst keine weiteren aufnehmen!");
+                                               SendMessageToPlayer(pPlayer, pCreature, "Du hast bereits die maximale Anzahl dieses Gegenstands erreicht. Du kannst keine weiteren aufnehmen!");
                                                pPlayer->PlayerTalkClass->ClearMenus();
-                                               OnGossipHello(pPlayer, pCreature);
-                                               pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                                OnGossipHello(pPlayer, pCreature);
                                                return true;
                                            }
@@ -349,19 +345,15 @@ class event_npc : public CreatureScript
                                        }
                                        else
                                        {
-                                           char str_info[200];
-                                           sprintf(str_info,"Du erfuellst die Voraussetzungen nicht um diese Belohnung zu kaufen!");
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
                                            OnGossipHello(pPlayer, pCreature);
-                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                        }
                                    }
 
                                    else
                                    {
-                                       char str_info[200];
-                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
+                                       SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
                                        OnGossipHello(pPlayer, pCreature);
-                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
 
                                    break;
@@ -376,19 +368,15 @@ class event_npc : public CreatureScript
                                        }
                                        else
                                        {
-                                           char str_info[200];
-                                           sprintf(str_info,"Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
                                            OnGossipHello(pPlayer, pCreature);
-                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                        }
                                    }
 
                                    else
                                    {
-                                       char str_info[200];
-                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
+                                       SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
                                        OnGossipHello(pPlayer, pCreature);
-                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
 
                                    break;
@@ -406,19 +394,15 @@ class event_npc : public CreatureScript
                                        }
                                        else
                                        {
-                                           char str_info[200];
-                                           sprintf(str_info,"Du erfuellst die Voraussetzungen nicht um diese Belohnung zu kaufen!");
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
                                            OnGossipHello(pPlayer, pCreature);
-                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                        }
                                    }
 
                                    else
                                    {
-                                       char str_info[200];
-                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
+                                       SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
                                        OnGossipHello(pPlayer, pCreature);
-                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
 
                                    break;
@@ -435,19 +419,15 @@ class event_npc : public CreatureScript
 
                                        else
                                        {
-                                           char str_info[200];
-                                           sprintf(str_info,"Du erfuellst die Voraussetzungen nicht um diese Belohnung zu kaufen!");
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
                                            OnGossipHello(pPlayer, pCreature);
-                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                        }
                                    }
 
                                    else
                                    {
-                                       char str_info[200];
-                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
+                                       SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
                                        OnGossipHello(pPlayer, pCreature);
-                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
                                    break;
 
@@ -463,19 +443,15 @@ class event_npc : public CreatureScript
 
                                        else
                                        {
-                                           char str_info[200];
-                                           sprintf(str_info,"Du erfuellst die Voraussetzungen nicht um diese Belohnung zu kaufen!");
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu können!");
                                            OnGossipHello(pPlayer, pCreature);
-                                           pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                        }
                                    }
 
                                    else
                                    {
-                                       char str_info[200];
-                                       sprintf(str_info,"Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
+                                       SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Eventpunkte um diese Belohnung zu kaufen!");
                                        OnGossipHello(pPlayer, pCreature);
-                                       pPlayer->MonsterWhisper(str_info,pPlayer->GetGUID(),true);
                                    }
                             }
                         }
