@@ -13,6 +13,12 @@ class event_npc : public CreatureScript
         int isVote;
         int rewardType;
 
+        enum GOSSIPMENU
+        {
+            VOTE_MENU    = 10,
+            EVENT_MENU   = 11
+        };
+
         void RequestVotePoints(Player* player, Creature* creature)
         {
 
@@ -231,28 +237,12 @@ class event_npc : public CreatureScript
     	bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     	{
             if (sWorld->getBoolConfig(CONFIG_REBIRTH_VOTESYSTEM_ENABLED))
-            {
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Vote-Punkte habe ich?", GOSSIP_SENDER_MAIN, 6);
-
-                if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED))
-                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Votebelohnungen kaufen!", GOSSIP_SENDER_MAIN, 7);
-            }
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "VOTE MENUE", GOSSIP_SENDER_MAIN, VOTE_MENU);
 
             if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_ENABLED))
-            {
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Event-Punkte habe ich?", GOSSIP_SENDER_MAIN, 1);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "EVENT MENUE", GOSSIP_SENDER_MAIN, EVENT_MENU);
 
-                if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED))
-                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wann finden die naechsten Events statt?", GOSSIP_SENDER_MAIN, 2);
-
-                if (isActive() && sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_TELEPORT_ENABLED))
-                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleportiere mich zum Event!", GOSSIP_SENDER_MAIN, 3);
-
-                if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED))
-                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Eventbelohnungen kaufen!", GOSSIP_SENDER_MAIN, 4);
-
-                pPlayer->PlayerTalkClass->SendGossipMenu(120100, pCreature->GetGUID());
-            }
+            pPlayer->PlayerTalkClass->SendGossipMenu(120100, pCreature->GetGUID());
 
             return true;
     	}
@@ -266,19 +256,55 @@ class event_npc : public CreatureScript
 
             switch (uiAction)
             {
+                sLog->outString("uiAction: %u", uiAction);
+                case VOTE_MENU:
+                    sLog->outString("VOTE_MENU");
+                    if (sWorld->getBoolConfig(CONFIG_REBIRTH_VOTESYSTEM_ENABLED))
+                    {
+                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Vote-Punkte habe ich?", GOSSIP_SENDER_MAIN, 6);
+
+                        if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED))
+                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Votebelohnungen kaufen!", GOSSIP_SENDER_MAIN, 7);
+
+                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ">> Hauptmenue <<", GOSSIP_SENDER_MAIN, 5);
+                        pPlayer->PlayerTalkClass->SendGossipMenu(120101, pCreature->GetGUID());
+                    }
+                    break;
+                case EVENT_MENU:
+                    if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_ENABLED))
+                    {
+                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Event-Punkte habe ich?", GOSSIP_SENDER_MAIN, 1);
+
+                        if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED))
+                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wann finden die naechsten Events statt?", GOSSIP_SENDER_MAIN, 2);
+
+                        if (isActive() && sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_TELEPORT_ENABLED))
+                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleportiere mich zum Event!", GOSSIP_SENDER_MAIN, 3);
+
+                        if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED))
+                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Eventbelohnungen kaufen!", GOSSIP_SENDER_MAIN, 4);
+
+                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ">> Hauptmenue <<", GOSSIP_SENDER_MAIN, 5);
+                        pPlayer->PlayerTalkClass->SendGossipMenu(120100, pCreature->GetGUID());
+                    }
+                    break;
 
                 case 1:
                     RequestEventPoints(pPlayer, pCreature);
                     break;
+
                 case 2:
                     RequestNextEvents(pPlayer, pCreature);
                     break;
+
                 case 3:
                     TeleportToEvent(pPlayer, pCreature);
                     break;
+
                 case 5:
                     OnGossipHello(pPlayer,pCreature);
                     break;
+
                 case 4: //EventReward Menu
                     resultEvent = WorldDatabase.PQuery("SELECT id, name FROM rebirth_event_reward_categorie WHERE eventsystem = 1");
 
@@ -295,13 +321,11 @@ class event_npc : public CreatureScript
 
                         rewardType = 1;  //EventRewards
                         isVote = false;
-                        sLog->outError("Rebirth Debug: rewardType = %d",rewardType);
 
-                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<<Hauptmenue>>", GOSSIP_SENDER_MAIN, 5);
+                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ">> Hauptmenue <<", GOSSIP_SENDER_MAIN, 5);
                         pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
 
                     }
-
                     break;
 
                 case 7:  //VoteReward Menu
@@ -322,7 +346,7 @@ class event_npc : public CreatureScript
                         isVote = true;
                         sLog->outError("Rebirth Debug: rewardType = %d",rewardType);
 
-                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<<Hauptmenue>>", GOSSIP_SENDER_MAIN, 5);
+                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ">> Hauptmenue <<", GOSSIP_SENDER_MAIN, 5);
                         pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
 
                     }
@@ -355,7 +379,7 @@ class event_npc : public CreatureScript
                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, str_info, GOSSIP_SENDER_MAIN, id+1000);
                            
                         } while (result->NextRow());
-                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<<Kategorien>>", GOSSIP_SENDER_MAIN, 4);
+                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ">> Kategorien <<", GOSSIP_SENDER_MAIN, 4);
                         pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
                     }
                 }
@@ -363,14 +387,19 @@ class event_npc : public CreatureScript
                 if (uiAction >= 1000 && uiAction < 10000)
                 {
 
+                    QueryResult resulta;
                     QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition_type, cond_value1, cond_value2, cond_value3, negation FROM rebirth_event_rewards WHERE id = %u AND catid != ''", uiAction-1000);
-                    QueryResult resulta = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
-                    int pEP = 0;
+                    if (isVote)
+                        resulta = LoginDatabase.PQuery("SELECT vote_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
+                    else
+                        resulta = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
+
+                    int pRP = 0;
                     if (resulta)
                     {
 
                         Field* field = resulta->Fetch();
-                        int pEP = field[0].GetInt32();
+                        int pRP = field[0].GetInt32();
                     
                         if (result)
                         {
@@ -390,7 +419,7 @@ class event_npc : public CreatureScript
                             switch (type)
                             {
                                case 0:
-                                   if (cost <= pEP)
+                                   if (cost <= pRP)
                                    {
                                        Item* item = pPlayer->GetItemByEntry(param1);
 
@@ -424,7 +453,7 @@ class event_npc : public CreatureScript
 
                                    break;
                                case 1:
-                                   if (cost <= pEP)
+                                   if (cost <= pRP)
                                    {
                                        if (pPlayer->GetHonorPoints() + param1 <= 75000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
@@ -444,7 +473,7 @@ class event_npc : public CreatureScript
 
                                    break;
                                case 2:
-                                   if (cost <= pEP)
+                                   if (cost <= pRP)
                                    {
                                        CharTitlesEntry const* title;
                                        title = sCharTitlesStore.LookupEntry(param1);
@@ -468,7 +497,7 @@ class event_npc : public CreatureScript
                                    break;
 
                                case 3: 
-                                   if (cost <= pEP)
+                                   if (cost <= pRP)
                                    {
                                        if (pPlayer->getLevel() < 80 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
@@ -489,7 +518,7 @@ class event_npc : public CreatureScript
                                    break;
 
                                case 4:
-                                   if (cost <= pEP)
+                                   if (cost <= pRP)
                                    {
                                        if (!pPlayer->HasSpell(param1) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
