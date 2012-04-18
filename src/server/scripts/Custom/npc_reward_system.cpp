@@ -34,6 +34,7 @@ class reward_npc : public CreatureScript
             REWARD_TYPE_XP        = 3,
             REWARD_TYPE_SPELL     = 4,
             REWARD_TYPE_BUFF      = 5,
+            REWARD_TYPE_ARENA     = 6
         };
 
         void RequestVotePoints(Player* player, Creature* creature)
@@ -462,7 +463,9 @@ class reward_npc : public CreatureScript
                                        if (CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->AddItem(param1, param2);
+
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
+
                                            if (isVote)
                                                LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            else
@@ -486,10 +489,12 @@ class reward_npc : public CreatureScript
                                        if (pPlayer->GetHonorPoints() + param1 <= 75000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->ModifyHonorPoints(param1);
+
                                            if (isVote)
                                                LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            else
                                                LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
                                        else
@@ -512,10 +517,12 @@ class reward_npc : public CreatureScript
                                        if (!pPlayer->HasTitle(title) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->SetTitle(title);
+
                                            if (isVote)
                                                LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            else
                                                LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
                                        else
@@ -535,10 +542,12 @@ class reward_npc : public CreatureScript
                                        if (pPlayer->getLevel() < 80 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->GiveXP(param1,pPlayer,1.0f);
+
                                            if (isVote)
                                                LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            else
                                                LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
 
@@ -558,10 +567,12 @@ class reward_npc : public CreatureScript
                                        if (!pPlayer->HasSpell(param1) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->learnSpell(param1,false);
+
                                            if (isVote)
                                                LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            else
                                                LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
 
@@ -595,6 +606,31 @@ class reward_npc : public CreatureScript
 
                                    else
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Punkte um diese Belohnung zu kaufen!");
+                               }
+
+                               case REWARD_TYPE_ARENA:
+                               {
+                                   if (cost <= pRP)
+                                   {
+                                       if (pPlayer->GetArenaPoints() + param1 <= 4000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
+                                       {
+                                           pPlayer->ModifyArenaPoints(param1);
+
+                                           if (isVote)
+                                               LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                           else
+                                               LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
+                                       }
+                                       else
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu koennen!");
+                                   }
+
+                                   else
+                                       SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Punkte um diese Belohnung zu kaufen!");
+
+                                   break;
                                }
                             }
                         }
