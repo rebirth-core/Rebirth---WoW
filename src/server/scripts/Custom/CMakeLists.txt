@@ -14,7 +14,7 @@ set(scripts_STAT_SRCS
   Custom/argent_tournament.cpp
   Custom/dalaran_squirrel.cpp
   Custom/cs_event_system.cpp
-  Custom/npc_event_system.cpp
+  Custom/npc_reward_system.cpp
   Custom/rebirth_custom_fixes.cpp
 )
 

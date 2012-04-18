@@ -1242,6 +1242,8 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.NextEvent.Info.Enabled", false);
     m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_TELEPORT_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Teleport.Enabled", false);
     m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Rewards.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_VOTESYSTEM_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Vote.System.Enabled", false);
+    m_bool_configs[CONFIG_REBIRTH_VOTESYSTEM_REWARDS_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Vote.System.Rewards.Enabled", false);
 
     // Management for channels with flag CHANNEL_DBC_FLAG_CITY_ONLY.
     m_bool_configs[CONFIG_CHANNEL_ON_CITY_ONLY_FLAG]  = ConfigMgr::GetBoolDefault("Channel.CityOnlyFlag", true);
