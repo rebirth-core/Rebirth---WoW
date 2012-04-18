@@ -1,12 +1,12 @@
 #include "ScriptPCH.h"
 #include "Player.h"
 
-class event_npc : public CreatureScript
+class reward_npc : public CreatureScript
 {
 	public:
 
-    	event_npc()
-        	: CreatureScript("event_npc")
+    	reward_npc()
+        	: CreatureScript("reward_npc")
     	{
     	}
 
@@ -321,7 +321,7 @@ class event_npc : public CreatureScript
                     break;
 
                 case EVENT_CATEGORIES: //EventReward Menu
-                    resultEvent = WorldDatabase.PQuery("SELECT id, name FROM rebirth_event_reward_categorie WHERE eventsystem = 1");
+                    resultEvent = WorldDatabase.PQuery("SELECT id, name FROM rebirth_reward_categorie WHERE eventsystem = 1");
 
                     if (resultEvent)
                     {
@@ -344,7 +344,7 @@ class event_npc : public CreatureScript
                     break;
 
                 case VOTE_CATEGORIES:  //VoteReward Menu
-                    resultVote = WorldDatabase.PQuery("SELECT id, name FROM rebirth_event_reward_categorie WHERE votesystem = 1");
+                    resultVote = WorldDatabase.PQuery("SELECT id, name FROM rebirth_reward_categorie WHERE votesystem = 1");
 
                     if (resultVote)
                     {
@@ -380,7 +380,7 @@ class event_npc : public CreatureScript
                 */
                 if (uiAction >= 100 && uiAction < 1000)
                 {
-                    QueryResult result = WorldDatabase.PQuery("SELECT id, name, type, param1, param2, param3, cost FROM rebirth_event_rewards WHERE catid = %u AND rewardType = %d OR catid = %u AND rewardType = 0", uiAction-100, rewardType, uiAction-100);
+                    QueryResult result = WorldDatabase.PQuery("SELECT id, name, type, param1, param2, param3, cost FROM rebirth_rewards WHERE catid = %u AND rewardType = %d OR catid = %u AND rewardType = 0", uiAction-100, rewardType, uiAction-100);
 
                     if (result)
                     {
@@ -411,7 +411,7 @@ class event_npc : public CreatureScript
                 {
 
                     QueryResult resulta;
-                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition_type, cond_value1, cond_value2, cond_value3, negation FROM rebirth_event_rewards WHERE id = %u AND catid != ''", uiAction-1000);
+                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition_type, cond_value1, cond_value2, cond_value3, negation FROM rebirth_rewards WHERE id = %u AND catid != ''", uiAction-1000);
                     if (isVote)
                         resulta = LoginDatabase.PQuery("SELECT vote_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
                     else
@@ -606,7 +606,7 @@ class event_npc : public CreatureScript
 
 };
 
-void AddSC_event_npc()
+void AddSC_reward_npc()
 {
-	new event_npc();
+	new reward_npc();
 }
