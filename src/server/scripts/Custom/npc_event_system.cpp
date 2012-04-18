@@ -15,8 +15,25 @@ class event_npc : public CreatureScript
 
         enum GOSSIPMENU
         {
-            VOTE_MENU    = 10,
-            EVENT_MENU   = 11
+            VOTE_MENU         = 10,
+            EVENT_MENU        = 11,
+            REQ_VOTEPOINTS    = 6,
+            VOTE_CATEGORIES   = 7,
+            REQ_EVENTPOINTS   = 1,
+            EVENT_CATEGORIES  = 4,
+            REQ_NEXT_EVENTS   = 2,
+            EVENT_TELEPORT    = 3,
+            MAIN_MENU         = 5
+        };
+
+        enum REWARDTYPES
+        {
+            REWARD_TYPE_ITEM      = 0,
+            REWARD_TYPE_HONOR     = 1,
+            REWARD_TYPE_TITLE     = 2,
+            REWARD_TYPE_XP        = 3,
+            REWARD_TYPE_SPELL     = 4,
+            REWARD_TYPE_BUFF      = 5,
         };
 
         void RequestVotePoints(Player* player, Creature* creature)
@@ -256,9 +273,7 @@ class event_npc : public CreatureScript
 
             switch (uiAction)
             {
-                sLog->outString("uiAction: %u", uiAction);
                 case VOTE_MENU:
-                    sLog->outString("VOTE_MENU");
                     if (sWorld->getBoolConfig(CONFIG_REBIRTH_VOTESYSTEM_ENABLED))
                     {
                         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Vote-Punkte habe ich?", GOSSIP_SENDER_MAIN, 6);
@@ -289,23 +304,23 @@ class event_npc : public CreatureScript
                     }
                     break;
 
-                case 1:
+                case REQ_EVENTPOINTS:
                     RequestEventPoints(pPlayer, pCreature);
                     break;
 
-                case 2:
+                case REQ_NEXT_EVENTS:
                     RequestNextEvents(pPlayer, pCreature);
                     break;
 
-                case 3:
+                case EVENT_TELEPORT:
                     TeleportToEvent(pPlayer, pCreature);
                     break;
 
-                case 5:
+                case MAIN_MENU:
                     OnGossipHello(pPlayer,pCreature);
                     break;
 
-                case 4: //EventReward Menu
+                case EVENT_CATEGORIES: //EventReward Menu
                     resultEvent = WorldDatabase.PQuery("SELECT id, name FROM rebirth_event_reward_categorie WHERE eventsystem = 1");
 
                     if (resultEvent)
@@ -328,7 +343,7 @@ class event_npc : public CreatureScript
                     }
                     break;
 
-                case 7:  //VoteReward Menu
+                case VOTE_CATEGORIES:  //VoteReward Menu
                     resultVote = WorldDatabase.PQuery("SELECT id, name FROM rebirth_event_reward_categorie WHERE votesystem = 1");
 
                     if (resultVote)
@@ -344,7 +359,6 @@ class event_npc : public CreatureScript
 
                         rewardType = 2;  //VoteRewards
                         isVote = true;
-                        sLog->outError("Rebirth Debug: rewardType = %d",rewardType);
 
                         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ">> Hauptmenue <<", GOSSIP_SENDER_MAIN, 5);
                         pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
@@ -353,15 +367,19 @@ class event_npc : public CreatureScript
 
                     break;
 
-                case 6:
+                case REQ_VOTEPOINTS:
                     RequestVotePoints(pPlayer, pCreature);
                     break;
 
             }
 
+
+                /*
+                    Hier wird die Liste der Rewards erstellt
+                    ToDo: Eine schönere Umsetzung finden
+                */
                 if (uiAction >= 100 && uiAction < 1000)
                 {
-                    sLog->outError("Rebirth Debug: rewardType = %d",rewardType);
                     QueryResult result = WorldDatabase.PQuery("SELECT id, name, type, param1, param2, param3, cost FROM rebirth_event_rewards WHERE catid = %u AND rewardType = %d OR catid = %u AND rewardType = 0", uiAction-100, rewardType, uiAction-100);
 
                     if (result)
@@ -384,6 +402,11 @@ class event_npc : public CreatureScript
                     }
                 }
 
+
+                /*
+                    Ab hier werden die Belohnungen vergeben
+                    ToDo: Eine schönere Umsetzung finden
+                */
                 if (uiAction >= 1000 && uiAction < 10000)
                 {
 
@@ -418,7 +441,9 @@ class event_npc : public CreatureScript
                             
                             switch (type)
                             {
-                               case 0:
+
+                               case REWARD_TYPE_ITEM:
+                               {
                                    if (cost <= pRP)
                                    {
                                        Item* item = pPlayer->GetItemByEntry(param1);
@@ -452,7 +477,10 @@ class event_npc : public CreatureScript
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Punkte um diese Belohnung zu kaufen!");
 
                                    break;
-                               case 1:
+                               }
+
+                               case REWARD_TYPE_HONOR:
+                               {
                                    if (cost <= pRP)
                                    {
                                        if (pPlayer->GetHonorPoints() + param1 <= 75000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
@@ -472,7 +500,10 @@ class event_npc : public CreatureScript
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Punkte um diese Belohnung zu kaufen!");
 
                                    break;
-                               case 2:
+                               }
+
+                               case REWARD_TYPE_TITLE:
+                               {
                                    if (cost <= pRP)
                                    {
                                        CharTitlesEntry const* title;
@@ -495,8 +526,10 @@ class event_npc : public CreatureScript
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Punkte um diese Belohnung zu kaufen!");
 
                                    break;
+                               }
 
-                               case 3: 
+                               case REWARD_TYPE_XP: 
+                               {
                                    if (cost <= pRP)
                                    {
                                        if (pPlayer->getLevel() < 80 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
@@ -516,8 +549,10 @@ class event_npc : public CreatureScript
                                    else
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Punkte um diese Belohnung zu kaufen!");
                                    break;
+                               }
 
-                               case 4:
+                               case REWARD_TYPE_SPELL:
+                               {
                                    if (cost <= pRP)
                                    {
                                        if (!pPlayer->HasSpell(param1) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
@@ -536,6 +571,31 @@ class event_npc : public CreatureScript
 
                                    else
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Punkte um diese Belohnung zu kaufen!");
+                               }
+
+                               case REWARD_TYPE_BUFF:
+                               {
+                                   if (cost <= pRP)
+                                   {
+                                       if (CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
+                                       {
+                                           pPlayer->AddAura(param1,pPlayer);
+
+                                           if (isVote)
+                                               LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                           else
+                                               LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
+                                       }
+
+                                       else
+                                           SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu koennen!");
+                                   }
+
+                                   else
+                                       SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Punkte um diese Belohnung zu kaufen!");
+                               }
                             }
                         }
                     }
