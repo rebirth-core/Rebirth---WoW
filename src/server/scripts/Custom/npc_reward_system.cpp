@@ -10,16 +10,9 @@ class reward_npc : public CreatureScript
     	{
     	}
 
-        int isVote;
-        int rewardType;
-
         enum GOSSIPMENU
         {
-            VOTE_MENU         = 10,
-            EVENT_MENU        = 11,
-            REQ_VOTEPOINTS    = 6,
-            VOTE_CATEGORIES   = 7,
-            REQ_EVENTPOINTS   = 1,
+            REQ_REBIRTHPOINTS = 1,
             EVENT_CATEGORIES  = 4,
             REQ_NEXT_EVENTS   = 2,
             EVENT_TELEPORT    = 3,
@@ -36,27 +29,6 @@ class reward_npc : public CreatureScript
             REWARD_TYPE_BUFF      = 5,
             REWARD_TYPE_ARENA     = 6
         };
-
-        void RequestVotePoints(Player* player, Creature* creature)
-        {
-
-            QueryResult result = LoginDatabase.PQuery("SELECT vote_punkte FROM account WHERE id = %u", player->GetSession()->GetAccountId());
-
-            if (result)
-            {
-                Field* field = result->Fetch();
-                uint32 votePunkte = field[0].GetUInt32();
-                char str_info[200];
-                sprintf(str_info,"Du hast %u Vote Punkt(e)!", votePunkte);
-                player->PlayerTalkClass->ClearMenus();
-                player->MonsterWhisper(str_info,player->GetGUID(),true);
-                OnGossipHello(player, creature);
-            }
-
-            else if (!result)
-                SendMessageToPlayer(player, creature,"Es ist ein Fehler aufgetreten. Bitte wende dich an einen Administrator und melde FehlerID 101!");
-
-        }
 
         void SendMessageToPlayer(Player* player, Creature* creature, std::string message)
         {
@@ -163,17 +135,17 @@ class reward_npc : public CreatureScript
             return true;
         }
 
-        void RequestEventPoints(Player* player, Creature* creature)
+        void RequestRebirthPoints(Player* player, Creature* creature)
         {
 
-            QueryResult result = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", player->GetSession()->GetAccountId());
+            QueryResult result = LoginDatabase.PQuery("SELECT rebirth_punkte FROM account WHERE id = %u", player->GetSession()->GetAccountId());
 
             if (result)
             {
                 Field* field = result->Fetch();
                 uint32 eventPunkte = field[0].GetUInt32();
                 char str_info[200];
-                sprintf(str_info,"Du hast %u Event Punkte!", eventPunkte);
+                sprintf(str_info,"Du hast %u Rebirth Punkte!", eventPunkte);
                 player->PlayerTalkClass->ClearMenus();
                 player->MonsterWhisper(str_info,player->GetGUID(),true);
                 OnGossipHello(player, creature);
@@ -226,7 +198,7 @@ class reward_npc : public CreatureScript
 
             QueryResult result = LoginDatabase.PQuery("SELECT x, y, z, map, reqLevel FROM rebirth_next_event WHERE active = 1");
 
-            if (result)
+            if (result && isActive())
             {
                 Field* field = result->Fetch();
                 float x = field[0].GetFloat();
@@ -239,8 +211,10 @@ class reward_npc : public CreatureScript
                     player->TeleportTo(map, x, y, z, 0.0f, 0);
                 else
                     SendMessageToPlayer(player, creature,"Deine Stufe ist zu niedrig um an diesem Event teilnehmen zu koennen!");
-
             }
+
+            else if (!isActive())
+                SendMessageToPlayer(player, creature,"Der Event Teleport wurde noch nicht vom Eventleiter aktiviert!");
         }
 
         bool isActive()
@@ -254,13 +228,21 @@ class reward_npc : public CreatureScript
 
     	bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     	{
-            if (sWorld->getBoolConfig(CONFIG_REBIRTH_VOTESYSTEM_ENABLED))
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "VOTE MENUE", GOSSIP_SENDER_MAIN, VOTE_MENU);
-
             if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_ENABLED))
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "EVENT MENUE", GOSSIP_SENDER_MAIN, EVENT_MENU);
+            {
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Rebirth-Punkte habe ich?", GOSSIP_SENDER_MAIN, 1);
 
-            pPlayer->PlayerTalkClass->SendGossipMenu(120100, pCreature->GetGUID());
+                if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED))
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wann finden die naechsten Events statt?", GOSSIP_SENDER_MAIN, 2);
+
+                if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_TELEPORT_ENABLED))
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleportiere mich zum Event!", GOSSIP_SENDER_MAIN, 3);
+
+                if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED))
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Belohnungen kaufen!", GOSSIP_SENDER_MAIN, 4);
+
+                pPlayer->PlayerTalkClass->SendGossipMenu(120100, pCreature->GetGUID());
+            }
 
             return true;
     	}
@@ -274,39 +256,8 @@ class reward_npc : public CreatureScript
 
             switch (uiAction)
             {
-                case VOTE_MENU:
-                    if (sWorld->getBoolConfig(CONFIG_REBIRTH_VOTESYSTEM_ENABLED))
-                    {
-                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Vote-Punkte habe ich?", GOSSIP_SENDER_MAIN, 6);
-
-                        if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED))
-                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Votebelohnungen kaufen!", GOSSIP_SENDER_MAIN, 7);
-
-                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ">> Hauptmenue <<", GOSSIP_SENDER_MAIN, 5);
-                        pPlayer->PlayerTalkClass->SendGossipMenu(120101, pCreature->GetGUID());
-                    }
-                    break;
-                case EVENT_MENU:
-                    if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_ENABLED))
-                    {
-                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wieviele Event-Punkte habe ich?", GOSSIP_SENDER_MAIN, 1);
-
-                        if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_NEXT_EVENT_INFO_ENABLED))
-                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wann finden die naechsten Events statt?", GOSSIP_SENDER_MAIN, 2);
-
-                        if (isActive() && sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_TELEPORT_ENABLED))
-                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleportiere mich zum Event!", GOSSIP_SENDER_MAIN, 3);
-
-                        if (sWorld->getBoolConfig(CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED))
-                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Eventbelohnungen kaufen!", GOSSIP_SENDER_MAIN, 4);
-
-                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ">> Hauptmenue <<", GOSSIP_SENDER_MAIN, 5);
-                        pPlayer->PlayerTalkClass->SendGossipMenu(120100, pCreature->GetGUID());
-                    }
-                    break;
-
-                case REQ_EVENTPOINTS:
-                    RequestEventPoints(pPlayer, pCreature);
+                case REQ_REBIRTHPOINTS:
+                    RequestRebirthPoints(pPlayer, pCreature);
                     break;
 
                 case REQ_NEXT_EVENTS:
@@ -322,7 +273,7 @@ class reward_npc : public CreatureScript
                     break;
 
                 case EVENT_CATEGORIES: //EventReward Menu
-                    resultEvent = WorldDatabase.PQuery("SELECT id, name FROM rebirth_reward_categorie WHERE eventsystem = 1");
+                    resultEvent = WorldDatabase.PQuery("SELECT id, name FROM rebirth_reward_categorie");
 
                     if (resultEvent)
                     {
@@ -335,43 +286,11 @@ class reward_npc : public CreatureScript
                             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, catName.c_str(), GOSSIP_SENDER_MAIN, catId+100);
                         } while (resultEvent->NextRow());
 
-                        rewardType = 1;  //EventRewards
-                        isVote = false;
-
                         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ">> Hauptmenue <<", GOSSIP_SENDER_MAIN, 5);
                         pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
 
                     }
                     break;
-
-                case VOTE_CATEGORIES:  //VoteReward Menu
-                    resultVote = WorldDatabase.PQuery("SELECT id, name FROM rebirth_reward_categorie WHERE votesystem = 1");
-
-                    if (resultVote)
-                    {
-
-                        do
-                        {
-                            Field* field = resultVote->Fetch();
-                            int catId = field[0].GetInt32();
-                            std::string catName = field[1].GetCString();
-                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, catName.c_str(), GOSSIP_SENDER_MAIN, catId+100);
-                        } while (resultVote->NextRow());
-
-                        rewardType = 2;  //VoteRewards
-                        isVote = true;
-
-                        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ">> Hauptmenue <<", GOSSIP_SENDER_MAIN, 5);
-                        pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
-
-                    }
-
-                    break;
-
-                case REQ_VOTEPOINTS:
-                    RequestVotePoints(pPlayer, pCreature);
-                    break;
-
             }
 
 
@@ -381,7 +300,7 @@ class reward_npc : public CreatureScript
                 */
                 if (uiAction >= 100 && uiAction < 1000)
                 {
-                    QueryResult result = WorldDatabase.PQuery("SELECT id, name, type, param1, param2, param3, cost FROM rebirth_rewards WHERE catid = %u AND rewardType = %d OR catid = %u AND rewardType = 0", uiAction-100, rewardType, uiAction-100);
+                    QueryResult result = WorldDatabase.PQuery("SELECT id, name, type, param1, param2, param3, cost FROM rebirth_rewards WHERE catid = %u", uiAction-100);
 
                     if (result)
                     {
@@ -393,7 +312,7 @@ class reward_npc : public CreatureScript
                            int cost = field[6].GetInt32();
 
                            char str_info[200];
-                           sprintf(str_info,"%s (%d Punkte)",name.c_str(), cost);
+                           sprintf(str_info,"%s (%d RP)",name.c_str(), cost);
                            sLog->outError(str_info);
                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, str_info, GOSSIP_SENDER_MAIN, id+1000);
                            
@@ -410,13 +329,8 @@ class reward_npc : public CreatureScript
                 */
                 if (uiAction >= 1000 && uiAction < 10000)
                 {
-
-                    QueryResult resulta;
                     QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition_type, cond_value1, cond_value2, cond_value3, negation FROM rebirth_rewards WHERE id = %u AND catid != ''", uiAction-1000);
-                    if (isVote)
-                        resulta = LoginDatabase.PQuery("SELECT vote_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
-                    else
-                        resulta = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
+                    QueryResult resulta = LoginDatabase.PQuery("SELECT rebirth_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
 
                     int pRP = 0;
                     if (resulta)
@@ -463,13 +377,8 @@ class reward_npc : public CreatureScript
                                        if (CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->AddItem(param1, param2);
-
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
-
-                                           if (isVote)
-                                               LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           else
-                                               LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
+                                           LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                        }
                                        else
                                            SendMessageToPlayer(pPlayer, pCreature, "Du erfuellst die Voraussetzungen nicht um diese Belohnung kaufen zu koennen!");
@@ -489,12 +398,7 @@ class reward_npc : public CreatureScript
                                        if (pPlayer->GetHonorPoints() + param1 <= 75000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->ModifyHonorPoints(param1);
-
-                                           if (isVote)
-                                               LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           else
-                                               LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-
+                                           LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
                                        else
@@ -517,12 +421,7 @@ class reward_npc : public CreatureScript
                                        if (!pPlayer->HasTitle(title) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->SetTitle(title);
-
-                                           if (isVote)
-                                               LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           else
-                                               LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-
+                                           LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
                                        else
@@ -542,12 +441,7 @@ class reward_npc : public CreatureScript
                                        if (pPlayer->getLevel() < 80 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->GiveXP(param1,pPlayer,1.0f);
-
-                                           if (isVote)
-                                               LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           else
-                                               LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-
+                                           LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
 
@@ -567,12 +461,7 @@ class reward_npc : public CreatureScript
                                        if (!pPlayer->HasSpell(param1) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->learnSpell(param1,false);
-
-                                           if (isVote)
-                                               LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           else
-                                               LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-
+                                           LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
 
@@ -591,12 +480,7 @@ class reward_npc : public CreatureScript
                                        if (CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->AddAura(param1,pPlayer);
-
-                                           if (isVote)
-                                               LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           else
-                                               LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-
+                                           LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
 
@@ -615,12 +499,7 @@ class reward_npc : public CreatureScript
                                        if (pPlayer->GetArenaPoints() + param1 <= 4000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->ModifyArenaPoints(param1);
-
-                                           if (isVote)
-                                               LoginDatabase.PExecute("UPDATE account SET vote_punkte = vote_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-                                           else
-                                               LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
-
+                                           LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
                                        else

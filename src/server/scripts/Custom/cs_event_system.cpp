@@ -17,7 +17,7 @@ class rebirth_commandscript : public CommandScript
             if(points <  0 || points > 10000)
                return false;
 
-            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte + %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
+            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte + %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
             (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%d Eventpunkt(e) wurden hinzugefuegt.",points);
             (ChatHandler(handler->getSelectedPlayer())).PSendSysMessage("Du hast %d Eventpunkt(e) erhalten!", points);
             
@@ -64,7 +64,7 @@ class rebirth_commandscript : public CommandScript
             if(points <  0 || points > 10000)
                return false;
 
-            QueryResult result = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %u", handler->getSelectedPlayer()->GetSession()->GetAccountId());
+            QueryResult result = LoginDatabase.PQuery("SELECT rebirth_punkte FROM account WHERE id = %u", handler->getSelectedPlayer()->GetSession()->GetAccountId());
             if (!result)
                return false;
 
@@ -74,7 +74,7 @@ class rebirth_commandscript : public CommandScript
             if (eventPoints - points < 0)
                 points = eventPoints;
 
-            LoginDatabase.PExecute("UPDATE account SET event_punkte = event_punkte - %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
+            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", points, handler->getSelectedPlayer()->GetSession()->GetAccountId());
             (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("Spieler %s wurden %d Eventpunkt(e) abgezogen.",handler->getSelectedPlayer()->GetName(), points);
             (ChatHandler(handler->getSelectedPlayer())).PSendSysMessage("Dir wurden %d Eventpunkt(e) abgezogen", points);
             LoginDatabase.PExecute("INSERT INTO rebirth_command_log (command, fromAccount, toAccount, param1, date) VALUES ('rebirth event removepoints',%d,%d,%d,UNIX_TIMESTAMP())",handler->getSelectedPlayer()->GetSession()->GetAccountId(), handler->GetSession()->GetAccountId(), points);
@@ -191,7 +191,7 @@ class rebirth_commandscript : public CommandScript
                 Field* field = result->Fetch();
                 accountid = field[0].GetInt32();
             }
-            QueryResult result = LoginDatabase.PQuery("SELECT event_punkte FROM account WHERE id = %d", accountid);
+            QueryResult result = LoginDatabase.PQuery("SELECT rebirth_punkte FROM account WHERE id = %d", accountid);
             int punkte = 0;
             if (result)
             {
@@ -199,6 +199,7 @@ class rebirth_commandscript : public CommandScript
                 punkte = field[0].GetInt32();
             }
             (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%s verfuegt ueber %d Eventpunkte",charname.c_str(), punkte);
+            return true;
         }
 
         static bool HandleDeactivateCommand(ChatHandler* handler, const char* args)
