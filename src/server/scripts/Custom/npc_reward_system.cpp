@@ -131,6 +131,18 @@ class reward_npc : public CreatureScript
                     else if (player->getClass() == cParam1 && negation == 1)
                         return false;
                     break;
+
+                case 8:    //Aura Condition
+                    if (player->HasAura(cParam1) && negation == 0) 
+                        return true;
+                    else if (!player->HasAura(cParam1) && negation == 0)
+                        return false;
+
+                    if (!player->HasAura(cParam1) && negation == 1)  
+                        return true;
+                    else if (player->HasAura(cParam1) && negation == 1)
+                        return false;
+                    break;
             }
             return true;
         }
