@@ -30,6 +30,38 @@ class reward_npc : public CreatureScript
             REWARD_TYPE_ARENA     = 6
         };
 
+        void RewardScript(Player* player, int scriptid)
+        {
+            QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3 FROM rebirth_reward_scripts WHERE id = %d",scriptid);
+            if (result)
+            {
+                Field* field = result->Fetch();
+
+                do
+                {
+                    int type = field[0].GetInt32();
+                    int param1 = field[1].GetInt32();
+                    int param2 = field[2].GetInt32();
+                    int param3 = field[3].GetInt32();
+
+                    switch (type)
+                    {
+                        case 0:
+                            player->RemoveAura(param1);
+                            break;
+
+                        case 1:
+                            player->AddItem(param1, -param2);
+                            break;
+
+                        case 2:
+                            player->removeSpell(param1,false,false);
+                            break;
+                    }
+                } while (result->NextRow());
+            }
+        }
+
         void SendMessageToPlayer(Player* player, Creature* creature, std::string message)
         {
             char str_info[200];
@@ -341,7 +373,7 @@ class reward_npc : public CreatureScript
                 */
                 if (uiAction >= 1000 && uiAction < 10000)
                 {
-                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition_type, cond_value1, cond_value2, cond_value3, negation FROM rebirth_rewards WHERE id = %u AND catid != ''", uiAction-1000);
+                    QueryResult result = WorldDatabase.PQuery("SELECT type, param1, param2, param3, cost, condition_type, cond_value1, cond_value2, cond_value3, negation, script_id FROM rebirth_rewards WHERE id = %u AND catid != ''", uiAction-1000);
                     QueryResult resulta = LoginDatabase.PQuery("SELECT rebirth_punkte FROM account WHERE id = %u", pPlayer->GetSession()->GetAccountId());
 
                     int pRP = 0;
@@ -365,6 +397,7 @@ class reward_npc : public CreatureScript
                             int cond_value2 = field[7].GetInt32();
                             int cond_value3 = field[8].GetInt32();
                             int negation = field[9].GetInt32();
+                            int scriptID = field[10].GetInt32();
                             
                             switch (type)
                             {
@@ -389,6 +422,7 @@ class reward_npc : public CreatureScript
                                        if (CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->AddItem(param1, param2);
+                                           RewardScript(pPlayer, scriptID);
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                        }
@@ -410,6 +444,7 @@ class reward_npc : public CreatureScript
                                        if (pPlayer->GetHonorPoints() + param1 <= 75000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->ModifyHonorPoints(param1);
+                                           RewardScript(pPlayer, scriptID);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
@@ -433,6 +468,7 @@ class reward_npc : public CreatureScript
                                        if (!pPlayer->HasTitle(title) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->SetTitle(title);
+                                           RewardScript(pPlayer, scriptID);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
@@ -453,6 +489,7 @@ class reward_npc : public CreatureScript
                                        if (pPlayer->getLevel() < 80 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->GiveXP(param1,pPlayer,1.0f);
+                                           RewardScript(pPlayer, scriptID);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
@@ -473,6 +510,7 @@ class reward_npc : public CreatureScript
                                        if (!pPlayer->HasSpell(param1) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->learnSpell(param1,false);
+                                           RewardScript(pPlayer, scriptID);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
@@ -492,6 +530,7 @@ class reward_npc : public CreatureScript
                                        if (CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->AddAura(param1,pPlayer);
+                                           RewardScript(pPlayer, scriptID);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
@@ -511,6 +550,7 @@ class reward_npc : public CreatureScript
                                        if (pPlayer->GetArenaPoints() + param1 <= 4000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
                                            pPlayer->ModifyArenaPoints(param1);
+                                           RewardScript(pPlayer, scriptID);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
