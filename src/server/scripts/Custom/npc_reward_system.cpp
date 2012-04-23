@@ -51,7 +51,7 @@ class reward_npc : public CreatureScript
                             break;
 
                         case 1:
-                            player->AddItem(param1, -param2);
+                            player->DestroyItemCount(param1, param2, true, false);
                             break;
 
                         case 2:
