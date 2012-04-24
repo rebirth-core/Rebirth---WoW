@@ -68,7 +68,6 @@ void AddSC_reload_commandscript();
 void AddSC_tele_commandscript();
 void AddSC_titles_commandscript();
 void AddSC_wp_commandscript();
-void AddSC_gps_commandscript();
 void AddSC_rebirth_commandscript();
 void AddSC_reward_npc();
 
@@ -682,7 +681,6 @@ void AddCommandScripts()
     AddSC_tele_commandscript();
     AddSC_titles_commandscript();
     AddSC_wp_commandscript();
-    AddSC_gps_commandscript();
     AddSC_rebirth_commandscript();
     AddSC_reward_npc();
 }

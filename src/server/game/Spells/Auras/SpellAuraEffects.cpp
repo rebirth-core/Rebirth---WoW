@@ -4919,7 +4919,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
 								{
 									Caster->CastSpell(target, 40917, true);
 									((Player*)Caster)->KilledMonsterCredit(23343,0);
-									((Creature*)target)->ForcedDespawn(500);
+									((Creature*)target)->DespawnOrUnsummon(500);
 								}
 							}
 							return;

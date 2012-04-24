@@ -421,8 +421,8 @@ class reward_npc : public CreatureScript
 
                                        if (CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
-                                           pPlayer->AddItem(param1, param2);
                                            RewardScript(pPlayer, scriptID);
+                                           pPlayer->AddItem(param1, param2);
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                        }
@@ -443,8 +443,8 @@ class reward_npc : public CreatureScript
                                    {
                                        if (pPlayer->GetHonorPoints() + param1 <= 75000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
-                                           pPlayer->ModifyHonorPoints(param1);
                                            RewardScript(pPlayer, scriptID);
+                                           pPlayer->ModifyHonorPoints(param1);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
@@ -467,8 +467,8 @@ class reward_npc : public CreatureScript
 
                                        if (!pPlayer->HasTitle(title) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
-                                           pPlayer->SetTitle(title);
                                            RewardScript(pPlayer, scriptID);
+                                           pPlayer->SetTitle(title);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
@@ -488,8 +488,8 @@ class reward_npc : public CreatureScript
                                    {
                                        if (pPlayer->getLevel() < 80 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
-                                           pPlayer->GiveXP(param1,pPlayer,1.0f);
                                            RewardScript(pPlayer, scriptID);
+                                           pPlayer->GiveXP(param1,pPlayer,1.0f);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
@@ -509,8 +509,8 @@ class reward_npc : public CreatureScript
                                    {
                                        if (!pPlayer->HasSpell(param1) && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
-                                           pPlayer->learnSpell(param1,false);
                                            RewardScript(pPlayer, scriptID);
+                                           pPlayer->learnSpell(param1,false);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
@@ -553,8 +553,8 @@ class reward_npc : public CreatureScript
                                    {
                                        if (pPlayer->GetArenaPoints() + param1 <= 4000 && CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
-                                           pPlayer->ModifyArenaPoints(param1);
                                            RewardScript(pPlayer, scriptID);
+                                           pPlayer->ModifyArenaPoints(param1);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
