@@ -521,16 +521,19 @@ class reward_npc : public CreatureScript
 
                                    else
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Punkte um diese Belohnung zu kaufen!");
+                                   break;
                                }
 
                                case REWARD_TYPE_BUFF:
                                {
                                    if (cost <= pRP)
                                    {
+                                       sLog->outError("CheckCondition(%d, cond_value1, cond_value2, cond_value3, negation, pPlayer)",condition);
                                        if (CheckCondition(condition, cond_value1, cond_value2, cond_value3, negation, pPlayer))
                                        {
-                                           pPlayer->AddAura(param1,pPlayer);
+                                           sLog->outError("true>>");
                                            RewardScript(pPlayer, scriptID);
+                                           pPlayer->AddAura(param1,pPlayer);
                                            LoginDatabase.PExecute("UPDATE account SET rebirth_punkte = rebirth_punkte - %d WHERE id = %u", cost, pPlayer->GetSession()->GetAccountId());
                                            SendMessageToPlayer(pPlayer, pCreature, "Du hast eine Belohnung erhalten!");
                                        }
@@ -541,6 +544,7 @@ class reward_npc : public CreatureScript
 
                                    else
                                        SendMessageToPlayer(pPlayer, pCreature, "Du hast nicht genug Punkte um diese Belohnung zu kaufen!");
+                                   break;
                                }
 
                                case REWARD_TYPE_ARENA:
