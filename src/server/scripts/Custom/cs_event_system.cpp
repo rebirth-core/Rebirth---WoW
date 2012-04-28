@@ -6,6 +6,85 @@ class rebirth_commandscript : public CommandScript
     public:
         rebirth_commandscript() : CommandScript("rebirth_commandscript") { }
 
+        static bool HandleMatchCommand(ChatHandler* handler, const char* args)
+        {
+            QueryResult result = CharacterDatabase.PQuery("SELECT * FROM event_teams");
+            if (result)
+            {
+                Field* field = result->Fetch();
+
+                do
+                {
+
+                    Player* player = ObjectAccessor::FindPlayer(field[0].GetUInt32());
+
+                    if (field[1].GetUInt32() == 1)
+                        player->TeleportTo(0, -13168.901f, 250.31f, 22.0f, 0.0f, 0);
+
+                    if (field[1].GetUInt32() == 2)
+                        player->TeleportTo(0, -13244.92f, 288.558f, 22.0f, 0.0f, 0);
+
+                } while (result->NextRow());
+            }
+        }
+
+        static bool HandleTeamOneCommand(ChatHandler* handler, const char* args)
+        {
+            Player* player;
+
+            if (!*args)
+            {
+                player = handler->getSelectedPlayer();
+                CharacterDatabase.PExecute("REPLACE event_teams SET player = %u, team = 1", player->GetGUID());
+                return true;
+            }
+
+            else
+            {
+                std::string name = strtok((char*)args, " ");
+
+                QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'",name);
+                if (result)
+                {
+                    Field* field = result->Fetch();
+                    CharacterDatabase.PExecute("REPLACE event_teams SET player = %u, team = 1", field[0].GetUInt32());
+                    return true;
+                }
+                else
+                    return false;
+
+            }
+
+        }
+
+        static bool HandleTeamTwoCommand(ChatHandler* handler, const char* args)
+        {
+            Player* player;
+
+            if (!*args)
+            {
+                player = handler->getSelectedPlayer();
+                CharacterDatabase.PExecute("REPLACE event_teams SET player = %u, team = 2", player->GetGUID());
+                return true;
+            }
+
+            else
+            {
+                std::string name = strtok((char*)args, " ");
+
+                QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'",name);
+                if (result)
+                {
+                    Field* field = result->Fetch();
+                    CharacterDatabase.PExecute("REPLACE event_teams SET player = %u, team = 2", field[0].GetUInt32());
+                    return true;
+                }
+                else
+                    return false;
+
+            }
+
+        }
 
         static bool HandleAddPointsCommand(ChatHandler* handler, const char* args)
         {
@@ -250,6 +329,8 @@ class rebirth_commandscript : public CommandScript
                 { "removepoints", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
                 { "activate", SEC_MODERATOR, true, &HandleActivateCommand, "", NULL },
                 { "deactivate", SEC_MODERATOR, true, &HandleDeactivateCommand, "", NULL },
+                { "teamone", SEC_MODERATOR, true, &HandleTeamOneCommand, "", NULL },
+                { "teamtwo", SEC_MODERATOR, true, &HandleTeamTwoCommand, "", NULL },
                 //{ "addreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 //{ "delreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 //{ "set", SEC_MODERATOR, true, NULL, "", RebirthSetCommandTable  },
@@ -266,6 +347,9 @@ class rebirth_commandscript : public CommandScript
             static ChatCommand RebirthCommandTable[] =
             {
                 { "rebirth", SEC_MODERATOR, true, NULL, "", RebirthSubCommandTable  },
+                { "teamone", SEC_MODERATOR, true, &HandleTeamOneCommand, "", NULL },
+                { "teamtwo", SEC_MODERATOR, true, &HandleTeamTwoCommand, "", NULL },
+                { "match", SEC_MODERATOR, true, &HandleMatchCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
