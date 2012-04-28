@@ -9,19 +9,32 @@ class rebirth_commandscript : public CommandScript
         static bool HandleMatchCommand(ChatHandler* handler, const char* args)
         {
             QueryResult result = CharacterDatabase.PQuery("SELECT * FROM event_teams");
+
             if (result)
             {
                 Field* field = result->Fetch();
 
                 do
                 {
-
+                    bool isOnline = true;
+                    QueryResult check = CharacterDatabase.PQuery("SELECT online, name FROM characters WHERE guid = %u",field[0].GetUInt32());
+                    if (check)
+                    {
+                        Field* fcheck = check->Fetch();
+                        if (fcheck[0].GetUInt32() == 0)
+                        {
+                            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%s ist nicht online und wurde nicht geportet",fcheck[1].GetCString());
+                            isOnline = false;
+                        }
+                        else
+                            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%s wird geportet!",fcheck[1].GetCString());
+                    }
                     Player* player = ObjectAccessor::FindPlayer(field[0].GetUInt32());
 
-                    if (field[1].GetUInt32() == 1)
+                    if (field[1].GetUInt32() == 1 && isOnline)
                         player->TeleportTo(0, -13168.901f, 250.31f, 22.0f, 0.0f, 0);
 
-                    if (field[1].GetUInt32() == 2)
+                    if (field[1].GetUInt32() == 2 && isOnline)
                         player->TeleportTo(0, -13244.92f, 288.558f, 22.0f, 0.0f, 0);
 
                 } while (result->NextRow());
@@ -38,6 +51,7 @@ class rebirth_commandscript : public CommandScript
             {
                 player = handler->getSelectedPlayer();
                 CharacterDatabase.PExecute("REPLACE event_teams SET player = %u, team = 1", player->GetGUID());
+                (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%s wurde Team 1 hinzugefuegt",player->GetName());
                 return true;
             }
 
@@ -50,6 +64,7 @@ class rebirth_commandscript : public CommandScript
                 {
                     Field* field = result->Fetch();
                     CharacterDatabase.PExecute("REPLACE event_teams SET player = %u, team = 1", field[0].GetUInt32());
+                    (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%s wurde Team 1 hinzugefuegt",name.c_str());
                     return true;
                 }
                 else
@@ -67,6 +82,7 @@ class rebirth_commandscript : public CommandScript
             {
                 player = handler->getSelectedPlayer();
                 CharacterDatabase.PExecute("REPLACE event_teams SET player = %u, team = 2", player->GetGUID());
+                (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%s wurde Team 2 hinzugefuegt",player->GetName());
                 return true;
             }
 
@@ -79,6 +95,7 @@ class rebirth_commandscript : public CommandScript
                 {
                     Field* field = result->Fetch();
                     CharacterDatabase.PExecute("REPLACE event_teams SET player = %u, team = 2", field[0].GetUInt32());
+                    (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%s wurde Team 2 hinzugefuegt",name.c_str());
                     return true;
                 }
                 else
