@@ -43,10 +43,9 @@ class rebirth_commandscript : public CommandScript
 
             else
             {
-                char* char_namee = strtok((char*)args, " ");
-                std::string name = char_namee;
+                std::string name = strtok((char*)args, " ");
 
-                QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'",name);
+                QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'",name.c_str());
                 if (result)
                 {
                     Field* field = result->Fetch();
@@ -73,10 +72,9 @@ class rebirth_commandscript : public CommandScript
 
             else
             {
-                char* char_namee = strtok((char*)args, " ");
-                std::string name = char_namee;
+                std::string name = strtok((char*)args, " ");
 
-                QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'",name);
+                QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'",name.c_str());
                 if (result)
                 {
                     Field* field = result->Fetch();
