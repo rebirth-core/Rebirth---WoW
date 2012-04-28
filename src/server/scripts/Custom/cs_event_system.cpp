@@ -25,7 +25,9 @@ class rebirth_commandscript : public CommandScript
                         player->TeleportTo(0, -13244.92f, 288.558f, 22.0f, 0.0f, 0);
 
                 } while (result->NextRow());
+                return true;
             }
+            return true;
         }
 
         static bool HandleTeamOneCommand(ChatHandler* handler, const char* args)
