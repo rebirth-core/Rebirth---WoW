@@ -6,6 +6,41 @@ class rebirth_commandscript : public CommandScript
     public:
         rebirth_commandscript() : CommandScript("rebirth_commandscript") { }
 
+        static bool HandleTeamWipeCommand(ChatHandler* handler, const char* args)
+        {
+            QueryResult result = CharacterDatabase.PQuery("SELECT * FROM event_teams");
+
+            if (result)
+            {
+                Field* field = result->Fetch();
+                do
+                {
+                    bool isOnline = true;
+                    QueryResult check = CharacterDatabase.PQuery("SELECT online, name FROM characters WHERE guid = %u",field[0].GetUInt32());
+                    if (check)
+                    {
+                        Field* fcheck = check->Fetch();
+                        if (fcheck[0].GetUInt32() == 0)
+                        {
+                            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%s ist nicht online und wurde nicht geportet",fcheck[1].GetCString());
+                            isOnline = false;
+                        }
+                    }
+                    if (isOnline)
+                    {
+                        Player* player = ObjectAccessor::FindPlayer(field[0].GetUInt32());
+                        player->ResurrectPlayer(1.0f);
+                        player->SpawnCorpseBones();
+                        player->SaveToDB();
+                        player->TeleportTo(0, -13252.568f, 294.62f, 34.0f, 0.0f, 0);
+                    }
+                } while (result->NextRow());
+            }
+            CharacterDatabase.PExecute("DELETE FROM event_teams");
+            (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("Teams wurden zurueckgesetzt");
+            return true;
+        }
+
         static bool HandleMatchCommand(ChatHandler* handler, const char* args)
         {
             QueryResult result = CharacterDatabase.PQuery("SELECT * FROM event_teams");
@@ -369,6 +404,7 @@ class rebirth_commandscript : public CommandScript
                 { "teamone", SEC_MODERATOR, true, &HandleTeamOneCommand, "", NULL },
                 { "teamtwo", SEC_MODERATOR, true, &HandleTeamTwoCommand, "", NULL },
                 { "match", SEC_MODERATOR, true, &HandleMatchCommand, "", NULL },
+                { "teamwipe", SEC_MODERATOR, true, &HandleTeamWipeCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
