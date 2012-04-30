@@ -50,6 +50,9 @@ enum Spells
 {
     // Halion
     SPELL_FLAME_BREATH                  = 74525,
+    SPELL_FLAME_BREATH_10H              = 74527,
+    SPELL_FLAME_BREATH_25N              = 74526,
+    SPELL_FLAME_BREATH_25H              = 74528,
     SPELL_CLEAVE                        = 74524,
     SPELL_METEOR_STRIKE                 = 74637,
     SPELL_TAIL_LASH                     = 74531,
@@ -64,6 +67,9 @@ enum Spells
 
     // Twilight Halion
     SPELL_DARK_BREATH                   = 74806,
+    SPELL_DARK_BREATH_10H               = 75955,
+    SPELL_DARK_BREATH_25N               = 75954,
+    SPELL_DARK_BREATH_25H               = 75956,
 
     SPELL_MARK_OF_CONSUMPTION           = 74795,
     SPELL_SOUL_CONSUMPTION              = 74792,
@@ -361,7 +367,7 @@ class boss_halion : public CreatureScript
                             break;
                         }
                         case EVENT_FLAME_BREATH:
-                            DoCast(me, SPELL_FLAME_BREATH);
+                            DoCast(me, RAID_MODE(SPELL_FLAME_BREATH,SPELL_FLAME_BREATH_25N, SPELL_FLAME_BREATH_10H, SPELL_FLAME_BREATH_25H));
                             events.ScheduleEvent(EVENT_FLAME_BREATH, 25000);
                             break;
                         case EVENT_CLEAVE:
@@ -563,7 +569,7 @@ class boss_twilight_halion : public CreatureScript
                     {
                         case EVENT_DARK_BREATH:
                         {
-                            DoCast(me, SPELL_DARK_BREATH);
+                            DoCast(me, RAID_MODE(SPELL_DARK_BREATH,SPELL_DARK_BREATH_25N,SPELL_DARK_BREATH_10H,SPELL_DARK_BREATH_25H));
                             events.ScheduleEvent(EVENT_DARK_BREATH, urand(10000, 15000));
                             break;
                         }
