@@ -67,6 +67,9 @@ enum Spells
 
     // Twilight Halion
     SPELL_DARK_BREATH                   = 74806,
+    SPELL_DARK_BREATH_10H               = 75955,
+    SPELL_DARK_BREATH_25N               = 75954,
+    SPELL_DARK_BREATH_25H               = 75956,
 
     SPELL_MARK_OF_CONSUMPTION           = 74795,
     SPELL_SOUL_CONSUMPTION              = 74792,
@@ -566,7 +569,7 @@ class boss_twilight_halion : public CreatureScript
                     {
                         case EVENT_DARK_BREATH:
                         {
-                            DoCast(me, SPELL_DARK_BREATH);
+                            DoCast(me, RAID_MODE(SPELL_DARK_BREATH,SPELL_DARK_BREATH_25N,SPELL_DARK_BREATH_10H,SPELL_DARK_BREATH_25H));
                             events.ScheduleEvent(EVENT_DARK_BREATH, urand(10000, 15000));
                             break;
                         }
