@@ -3391,4 +3391,27 @@ Rebirth.Event.System.Teleport.Enabled = 0
 Rebirth.Event.System.Rewards.Enabled = 0
 
 #
+#   Rebirth.TeamX.Teleport
+#      Hier werden die Positionen für den Teleport der .team Commands festgelegt
+#
+
+Rebirth.TeamOne.Teleport.X            =   -13168.9
+Rebirth.TeamOne.Teleport.Y            =   250.3
+Rebirth.TeamOne.Teleport.Z            =   22.0
+Rebirth.TeamOne.Teleport.Map          =   1
+Rebirth.TeamOne.Teleport.Orientation  =   0.0
+
+Rebirth.TeamTwo.Teleport.X            =   -13244.9
+Rebirth.TeamTwo.Teleport.Y            =   288.5
+Rebirth.TeamTwo.Teleport.Z            =   22.0
+Rebirth.TeamTwo.Teleport.Map          =   0
+Rebirth.TeamTwo.Teleport.Orientation  =   0.0
+
+Rebirth.TeamWipe.Teleport.X            =   -13252.5
+Rebirth.TeamWipe.Teleport.Y            =   294.6
+Rebirth.TeamWipe.Teleport.Z            =   34.0
+Rebirth.TeamWipe.Teleport.Map          =   0
+Rebirth.TeamWipe.Teleport.Orientation  =   0.0
+
+#
 ###################################################################################################
