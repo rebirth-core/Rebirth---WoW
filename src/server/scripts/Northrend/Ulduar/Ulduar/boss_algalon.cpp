@@ -1550,7 +1550,7 @@ class spell_algalon_cosmic_smash_damage : public SpellScriptLoader
 
             void CalcDamage(SpellEffIndex /*effIndex*/)
             {
-                float distance = GetHitUnit()->GetExactDist2d(GetTargetDest());
+                float distance = GetHitUnit()->GetExactDist2d(GetExplTargetDest());
                 if (distance < 6.0f)
                     return;
 
