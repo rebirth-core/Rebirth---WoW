@@ -50,6 +50,9 @@ enum Spells
 {
     // Halion
     SPELL_FLAME_BREATH                  = 74525,
+    SPELL_FLAME_BREATH_10H              = 74527,
+    SPELL_FLAME_BREATH_25N              = 74526,
+    SPELL_FLAME_BREATH_25H              = 74528,
     SPELL_CLEAVE                        = 74524,
     SPELL_METEOR_STRIKE                 = 74637,
     SPELL_TAIL_LASH                     = 74531,
@@ -361,7 +364,7 @@ class boss_halion : public CreatureScript
                             break;
                         }
                         case EVENT_FLAME_BREATH:
-                            DoCast(me, SPELL_FLAME_BREATH);
+                            DoCast(me, RAID_MODE(SPELL_FLAME_BREATH,SPELL_FLAME_BREATH_25N, SPELL_FLAME_BREATH_10H, SPELL_FLAME_BREATH_25H));
                             events.ScheduleEvent(EVENT_FLAME_BREATH, 25000);
                             break;
                         case EVENT_CLEAVE:
