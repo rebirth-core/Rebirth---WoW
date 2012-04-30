@@ -70,6 +70,7 @@ void AddSC_titles_commandscript();
 void AddSC_wp_commandscript();
 void AddSC_rebirth_commandscript();
 void AddSC_reward_npc();
+void AddSC_npc_gurubashi_theme();
 
 #ifdef SCRIPTS
 //world
@@ -1266,5 +1267,6 @@ void AddCustomScripts()
     AddSC_ArgentTournament();
     AddSC_dalaran_squirrel();
     AddSC_rebirth_fixes();
+    AddSC_npc_gurubashi_theme();
 #endif
 }
