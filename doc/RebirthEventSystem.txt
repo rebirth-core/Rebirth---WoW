@@ -1,0 +1,182 @@
+Hier eine Auflistung der Commands:
+
+rebirth playerinfo #SPIELERNAME (GMLevel 2)
+Mit diesem Befehl kann man Abfragen, wieviele Eventpunkte ein Spieler hat.
+
+rebirth event addpoints #COUNT (GMLevel 4)
+Mit diesem Befehl kann man dem selektiertem Spieler #COUNT Eventpunkte hinzufügen
+
+rebirth event removepoints #COUNT (GMLevel 4)
+Mit diesem Befehl kann man dem selektiertem Spieler #COUNT Eventpunkte abziehen
+
+rebirth event activate #EVENTID (GMLevel 3)
+Dieser Befehlt aktiviert das Event mit der ID #EVENTID. Durch die Aktivierung wird im Menü des EventNPCs der Punkt "Teleportiere mich zum Event" eingebunden.
+
+rebirth event deactivate #EVENTID (GMLevel 3)
+Dieser Befehlt deaktiviert das Event mit der ID #EVENTID. Durch die Deaktivierung wird im Menü des EventNPCs der Punkt "Teleportiere mich zum Event" entfernt.
+
+
+
+So, nun eine Beschreibung der neuen Tables in der Auth DB:
+
+rebirth_next_event
+Beschreibung: In dieser Table werden Events eingetragen
+
+Attribute:
+id
+Das Attribut id ist der Primärschlüssel der Table. Mittels dieser ID kann ein Event aktiviert/deaktiviert werden
+
+date
+Dieses Attribut beinhaltet das Datum, an dem das Event statt finden soll in Form eines UnixTimestamps
+
+type
+Dieses Attribut steht für den Event Typ. Zur Auswahl stehen:
+0 = PvP
+1 = PvE
+2 = Fun
+3 = Sonstiges
+
+reqlevel
+Dieses Attribut beinhaltet das benötigte Level für dieses Event. Wenn ein Spieler unterhalt dieses Levels ist, kann er sich nicht zum Event porten
+
+x y z map
+Diese 4 Attribute geben die Koordinaten des Events an
+
+active
+Mit diesem Attribut kann man ein Event de- und aktivieren.
+1 = aktiv
+0 = deaktiv
+
+
+
+
+rebirth_command_log
+Beschreibung: In dieser Table wird mitgeloggt, wer wem Punkte gibt oder entfernt
+Attribute:
+command
+Dieses Attribut gibt an welcher Command verwendet wurde
+
+fromAccount
+Dieses Attribut gibt die Account ID des Accounts an, der den Befehl ausgeführt hat
+
+toAccount
+Dieses Attribut gibt die Account ID des Accounts an, auf den der Befehl gewirkt wurde
+
+param1
+Dieses Attribut ist ein Parameter, der sich auf den Befehl bezieht. Für addpoints/removepoints gibt dieses Attribut die Anzahl der Punkte an, die hinzugefügt oder abgezogen wurden.
+
+date
+Dieses Attribut beinhaltet das Datum und die Zeit in Form eines Unix Timestamps an dem der Befehl ausgeführt wurde
+
+
+
+So, nun eine Beschreibung der neuen Tables in der World DB:
+
+rebirth_reward_categorie
+Beschreibung: Hier werden Kategorien für Belohnungen angelegt
+Attribute:
+id
+Dieses Attribut ist der Primärschlüssel der Table und wird benötigt, um die Belohnungen einer Kategorie zuzuweisen
+
+name
+Dieses Attribut bennent die Kategorie
+
+eventsystem
+Hier kann man die Kategorie für die Event Rewards aktivieren und deaktivieren
+0 = deaktiviert
+1 = aktiviert
+
+votesystem
+Hier kann man die Kategorie für die Vote Rewards aktivieren und deaktivieren
+0 = deaktiviert
+1 = aktiviert
+
+
+
+
+
+rebirth_rewards
+Beschreibung: Hier werden die Belohnungen festgelegt
+Attribute:
+id
+Dieses Attribut ist der Primärschlüssel der Table und wird vom Script verwendet
+
+catid
+Dieses Attribut weist die Belohnung einer Kategorie zu
+
+name
+Dieses Attribut benennt die Belohnung
+
+type
+Dieses Attribut liefert dem Script Informationen über die Art der Belohnung
+
+type 0 = Gegenstand
+param1 = Item ID
+param2 = Item Count
+
+type 1 = Ehrenpunkte
+param1 = Ehrenpunkte Count
+
+type 2 = Titel
+param1 = Titel ID
+
+type 3 = Erfahrung
+param1 = XP Count
+
+type 4 = Zauber
+param1 = Spell ID
+
+param1-3
+Siehe Type
+
+cost
+Dieses Attribut legt die Kosten für die Belohnung fest.
+
+condition
+Dieses Attribut gibt die Art der Bedingung an.
+
+CONDITION_0
+Keine Funktion
+
+CONDITION_1
+Überprüft, ob ein Spieler über einen Zauber verfügt (Wenn es der Fall ist wird die Belohnung vergeben). Wenn diese Bedingung negiert ist, dann wird geprüft, ob der Spieler diesen Zauber nicht besitzt (Wenn es der Fall ist wird die Belohnung vergeben).
+cond_value1 = SpellID
+
+CONDITION_2
+Überprüft, ob ein Spieler über einen Titel verfügt (Wenn es der Fall ist wird die Belohnung vergeben). Wenn diese Bedingung negiert ist, dann wird geprüft, ob der Spieler diesen Titel nicht besitzt (Wenn es der Fall ist wird die Belohnung vergeben).
+cond_value1 = TitelID
+
+CONDITION_3
+Überprüft, ob ein Spieler über ein Item bzw über eine Anzahl von Items verfügt (Wenn es der Fall ist wird die Belohnung vergeben). Wenn diese Bedingung negiert ist, dann wird geprüft, ob der Spieler das Item bzw die benötigte Anzahl nicht besitzt (Wenn es der Fall ist wird die Belohnung vergeben).
+cond_value1 = ItemID
+cond_value2 = ItemCount
+
+CONDITION_4
+Überprüft, ob ein Spieler ein bestimmtes Level bereits erreicht hat (Wenn es der Fall ist wird die Belohnung vergeben). Wenn diese Bedingung negiert ist, dann wird geprüft, ob der Spieler ein bestimmtes Level noch nicht erreicht hat (Wenn es der Fall ist wird die Belohnung vergeben).
+cond_value1 = Level
+
+CONDITION_5
+Überprüft, welcher Fraktion der Spieler angehört (Wenn er der angegebenen Fraktion angehört wird die Belohnung vergeben). Wenn diese Bedingung negiert ist, dann wird geprüft, ob er nicht der angegebenen Fraktion angehört (Wenn er der angegebenen Fraktion nicht angehört wird die Belohnung vergeben).
+cond_value1 = 1 (Allianz) oder 0 (Horde)
+
+CONDITION_6
+Überprüft, welchem Volk der Spieler angehört (Wenn er dem angegebenen Volk angehört wird die Belohnung vergeben). Wenn diese Bedingung negiert ist, dann wird geprüft, ob er nicht dem angegebenen Volk angehört (Wenn er dem angegebenen Volk nicht angehört wird die Belohnung vergeben).
+cond_value1 = RaceID
+
+CONDITION_7
+Überprüft, welcher Klasse der Spieler angehört (Wenn er der angegebenen Klasse angehört wird die Belohnung vergeben). Wenn diese Bedingung negiert ist, dann wird geprüft, ob er nicht der angegebenen Klasse angehört (Wenn er der angegebenen Klasse nicht angehört wird die Belohnung vergeben).
+cond_value1 = ClassID
+
+cond_value1-3
+Das sind die Parameter für die conditions
+
+negation
+Mit diesem Attribut können Bedingungen negiert werden.
+0 = unnegiert
+1 = negiert
+
+rewardType
+Mit diesem Attribut kann man bestimmen, ob die Belohnung Vote- oder im Eventsystem verfügbar ist (oder in beiden)
+0 = Event und Vote Reward
+1 = Event Reward
+2 = Vote Reward
