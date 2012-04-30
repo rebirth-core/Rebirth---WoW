@@ -7,6 +7,30 @@ class rebirth_commandscript : public CommandScript
     public:
         rebirth_commandscript() : CommandScript("rebirth_commandscript") { }
 
+        static bool HandleSetFFACommand(ChatHandler* handler, const char* args)
+        {
+            handler->getSelectedPlayer()->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+            return true;
+        }
+
+        static bool HandleRemoveFFACommand(ChatHandler* handler, const char* args)
+        {
+            handler->getSelectedPlayer()->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+            return true;
+        }
+
+        static bool HandleSetSanctuaryCommand(ChatHandler* handler, const char* args)
+        {
+            handler->getSelectedPlayer()->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+            return true;
+        }
+
+        static bool HandleRemoveSanctuaryCommand(ChatHandler* handler, const char* args)
+        {
+            handler->getSelectedPlayer()->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+            return true;
+        }
+
         static bool HandleMassSummonCommand(ChatHandler* handler, const char* args)
         {
             if (!*args)
@@ -445,6 +469,10 @@ class rebirth_commandscript : public CommandScript
                 { "match", SEC_MODERATOR, true, &HandleMatchCommand, "", NULL },
                 { "teamwipe", SEC_MODERATOR, true, &HandleTeamWipeCommand, "", NULL },
                 { "masssummon", SEC_MODERATOR, true, &HandleMassSummonCommand, "", NULL },
+                { "setffa", SEC_MODERATOR, true, &HandleSetFFACommand, "", NULL },
+                { "removeffa", SEC_MODERATOR, true, &HandleRemoveFFACommand, "", NULL },
+                { "setsanctuary", SEC_MODERATOR, true, &HandleSetSanctuaryCommand, "", NULL },
+                { "removesanctuary", SEC_MODERATOR, true, &HandleRemoveSanctuaryCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
