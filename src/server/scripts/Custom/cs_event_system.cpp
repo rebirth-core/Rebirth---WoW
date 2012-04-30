@@ -67,7 +67,7 @@ class rebirth_commandscript : public CommandScript
                     Player* player = ObjectAccessor::FindPlayer(field[0].GetUInt32());
 
                     if (field[1].GetUInt32() == 1 && isOnline)
-                        player->TeleportTo(0, -13168.901f, 250.31f, 22.0f, 0.0f, 0);
+                        player->TeleportTo(0, -13168.901f, 250.31f, 22.0f, 0.0f, 0);  //ToDo: Dynamisch machen (Configs? oder DB?)
 
                     if (field[1].GetUInt32() == 2 && isOnline)
                         player->TeleportTo(0, -13244.92f, 288.558f, 22.0f, 0.0f, 0);
@@ -82,15 +82,14 @@ class rebirth_commandscript : public CommandScript
         {
             Player* player;
 
-            if (!*args)
+            if (!*args && (player = handler->getSelectedPlayer()))
             {
-                player = handler->getSelectedPlayer();
                 CharacterDatabase.PExecute("REPLACE event_teams SET player = %u, team = 1", player->GetGUID());
                 (ChatHandler(handler->GetSession()->GetPlayer())).PSendSysMessage("%s wurde Team 1 hinzugefuegt",player->GetName());
                 return true;
             }
 
-            else
+            else if(*args)
             {
                 std::string name = strtok((char*)args, " ");
 
@@ -106,6 +105,8 @@ class rebirth_commandscript : public CommandScript
                     return false;
 
             }
+            else
+                return false;
 
         }
 
@@ -113,7 +114,7 @@ class rebirth_commandscript : public CommandScript
         {
             Player* player;
 
-            if (!*args)
+            if (!*args && (player = handler->getSelectedPlayer()))
             {
                 player = handler->getSelectedPlayer();
                 CharacterDatabase.PExecute("REPLACE event_teams SET player = %u, team = 2", player->GetGUID());
@@ -121,7 +122,7 @@ class rebirth_commandscript : public CommandScript
                 return true;
             }
 
-            else
+            else if(*args)
             {
                 std::string name = strtok((char*)args, " ");
 
@@ -137,6 +138,8 @@ class rebirth_commandscript : public CommandScript
                     return false;
 
             }
+            else
+                return false;
 
         }
 
