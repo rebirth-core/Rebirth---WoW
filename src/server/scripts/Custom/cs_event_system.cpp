@@ -7,6 +7,29 @@ class rebirth_commandscript : public CommandScript
     public:
         rebirth_commandscript() : CommandScript("rebirth_commandscript") { }
 
+        static bool HandleMassSummonCommand(ChatHandler* handler, const char* args)
+        {
+            if (!*args)
+               return false;
+
+            int range = atoi((char*)args);
+
+            std::list<Player*> plrList = handler->GetSession()->GetPlayer()->GetNearestPlayersList(range);
+            for (std::list<Player*>::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+            {
+                if (*itr)
+                {
+                    (*itr)->TeleportTo(handler->GetSession()->GetPlayer()->GetMapId(),
+                                       handler->GetSession()->GetPlayer()->GetPositionX(),
+                                       handler->GetSession()->GetPlayer()->GetPositionY(),
+                                       handler->GetSession()->GetPlayer()->GetPositionZ(),
+                                       handler->GetSession()->GetPlayer()->GetOrientation(),0);
+                }
+            }
+
+            return true;
+        }
+
         static bool HandleTeamWipeCommand(ChatHandler* handler, const char* args)
         {
             QueryResult result = CharacterDatabase.PQuery("SELECT * FROM event_teams");
@@ -421,6 +444,7 @@ class rebirth_commandscript : public CommandScript
                 { "teamtwo", SEC_MODERATOR, true, &HandleTeamTwoCommand, "", NULL },
                 { "match", SEC_MODERATOR, true, &HandleMatchCommand, "", NULL },
                 { "teamwipe", SEC_MODERATOR, true, &HandleTeamWipeCommand, "", NULL },
+                { "masssummon", SEC_MODERATOR, true, &HandleMassSummonCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
