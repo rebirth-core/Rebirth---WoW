@@ -1,5 +1,6 @@
 #include "ScriptPCH.h"
 #include "Chat.h"
+#include "World.h"
 
 class rebirth_commandscript : public CommandScript
 {
@@ -32,7 +33,11 @@ class rebirth_commandscript : public CommandScript
                         player->ResurrectPlayer(1.0f);
                         player->SpawnCorpseBones();
                         player->SaveToDB();
-                        player->TeleportTo(0, -13252.568f, 294.62f, 34.0f, 0.0f, 0);
+                        player->TeleportTo(sWorld->getIntConfig(CONFIG_TEAMWIPE_TELEPORT_MAP), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMWIPE_TELEPORT_X), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMWIPE_TELEPORT_Y), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMWIPE_TELEPORT_Z), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMWIPE_TELEPORT_O), 0);
                     }
                 } while (result->NextRow());
             }
@@ -67,10 +72,18 @@ class rebirth_commandscript : public CommandScript
                     Player* player = ObjectAccessor::FindPlayer(field[0].GetUInt32());
 
                     if (field[1].GetUInt32() == 1 && isOnline)
-                        player->TeleportTo(0, -13168.901f, 250.31f, 22.0f, 0.0f, 0);  //ToDo: Dynamisch machen (Configs? oder DB?)
+                        player->TeleportTo(sWorld->getIntConfig(CONFIG_TEAMONE_TELEPORT_MAP), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMONE_TELEPORT_X), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMONE_TELEPORT_Y), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMONE_TELEPORT_Z), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMONE_TELEPORT_O), 0);
 
                     if (field[1].GetUInt32() == 2 && isOnline)
-                        player->TeleportTo(0, -13244.92f, 288.558f, 22.0f, 0.0f, 0);
+                        player->TeleportTo(sWorld->getIntConfig(CONFIG_TEAMTWO_TELEPORT_MAP), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMTWO_TELEPORT_X), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMTWO_TELEPORT_Y), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMTWO_TELEPORT_Z), 
+                                           sWorld->getFloatConfig(CONFIG_TEAMTWO_TELEPORT_O), 0);
 
                 } while (result->NextRow());
                 return true;

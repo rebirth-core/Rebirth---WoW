@@ -1244,6 +1244,24 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_REBIRTH_EVENTSYSTEM_REWARDS_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Event.System.Rewards.Enabled", false);
     m_bool_configs[CONFIG_REBIRTH_VOTESYSTEM_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Vote.System.Enabled", false);
     m_bool_configs[CONFIG_REBIRTH_VOTESYSTEM_REWARDS_ENABLED] = ConfigMgr::GetBoolDefault("Rebirth.Vote.System.Rewards.Enabled", false);
+    //TeamOne Command Configs
+    m_float_configs[CONFIG_TEAMONE_TELEPORT_X] = ConfigMgr::GetFloatDefault("Rebirth.TeamOne.Teleport.X", -13168.901f);
+    m_float_configs[CONFIG_TEAMONE_TELEPORT_Y] = ConfigMgr::GetFloatDefault("Rebirth.TeamOne.Teleport.Y", 250.31f);
+    m_float_configs[CONFIG_TEAMONE_TELEPORT_Z] = ConfigMgr::GetFloatDefault("Rebirth.TeamOne.Teleport.Z", 22.0f);
+    m_int_configs[CONFIG_TEAMONE_TELEPORT_MAP] = ConfigMgr::GetIntDefault("Rebirth.TeamOne.Teleport.Map", 0);
+    m_float_configs[CONFIG_TEAMONE_TELEPORT_O] = ConfigMgr::GetFloatDefault("Rebirth.TeamOne.Teleport.Orientation", 0.0f);
+    //TeamTwo Command Configs
+    m_float_configs[CONFIG_TEAMTWO_TELEPORT_X] = ConfigMgr::GetFloatDefault("Rebirth.TeamTwo.Teleport.X", -13244.92f);
+    m_float_configs[CONFIG_TEAMTWO_TELEPORT_Y] = ConfigMgr::GetFloatDefault("Rebirth.TeamTwo.Teleport.Y", 288.558f);
+    m_float_configs[CONFIG_TEAMTWO_TELEPORT_Z] = ConfigMgr::GetFloatDefault("Rebirth.TeamTwo.Teleport.Z", 22.0f);
+    m_int_configs[CONFIG_TEAMTWO_TELEPORT_MAP] = ConfigMgr::GetIntDefault("Rebirth.TeamTwo.Teleport.Map", 0);
+    m_float_configs[CONFIG_TEAMTWO_TELEPORT_O] = ConfigMgr::GetFloatDefault("Rebirth.TeamTwo.Teleport.Orientation", 0.0f);
+    //TeamWipe Command Configs
+    m_float_configs[CONFIG_TEAMWIPE_TELEPORT_X] = ConfigMgr::GetFloatDefault("Rebirth.TeamWipe.Teleport.X", -13252.568f);
+    m_float_configs[CONFIG_TEAMWIPE_TELEPORT_Y] = ConfigMgr::GetFloatDefault("Rebirth.TeamWipe.Teleport.Y", 294.62f);
+    m_float_configs[CONFIG_TEAMWIPE_TELEPORT_Z] = ConfigMgr::GetFloatDefault("Rebirth.TeamWipe.Teleport.Z", 34.0f);
+    m_int_configs[CONFIG_TEAMWIPE_TELEPORT_MAP] = ConfigMgr::GetIntDefault("Rebirth.TeamWipe.Teleport.Map", 0);
+    m_float_configs[CONFIG_TEAMWIPE_TELEPORT_O] = ConfigMgr::GetFloatDefault("Rebirth.TeamWipe.Teleport.Orientation", 0.0f);
 
     // Management for channels with flag CHANNEL_DBC_FLAG_CITY_ONLY.
     m_bool_configs[CONFIG_CHANNEL_ON_CITY_ONLY_FLAG]  = ConfigMgr::GetBoolDefault("Channel.CityOnlyFlag", true);
@@ -1734,7 +1752,7 @@ void World::SetInitialWorldSettings()
     m_gameTime = time(NULL);
     m_startTime = m_gameTime;
 
-    LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, uptime, revision) VALUES(%u, %u, 0, '%s')",
+    LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, uptime, revision, startstring) VALUES(%u, %u, 0, '%s', FROM_UNIXTIME(UNIX_TIMESTAMP()))",
                             realmID, uint32(m_startTime), _FULLVERSION);       // One-time query
 
     m_timers[WUPDATE_WEATHERS].SetInterval(1*IN_MILLISECONDS);
