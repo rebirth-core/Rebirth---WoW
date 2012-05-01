@@ -442,12 +442,10 @@ class rebirth_commandscript : public CommandScript
 
             static ChatCommand RebirthSubSubCommandTable[] =
             {
-                { "addpoints", SEC_MODERATOR, true, &HandleAddPointsCommand, "", NULL },
-                { "removepoints", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
-                { "activate", SEC_MODERATOR, true, &HandleActivateCommand, "", NULL },
-                { "deactivate", SEC_MODERATOR, true, &HandleDeactivateCommand, "", NULL },
-                { "teamone", SEC_MODERATOR, true, &HandleTeamOneCommand, "", NULL },
-                { "teamtwo", SEC_MODERATOR, true, &HandleTeamTwoCommand, "", NULL },
+                { "addpoints", SEC_ADMINISTRATOR, true, &HandleAddPointsCommand, "", NULL },
+                { "removepoints", SEC_ADMINISTRATOR, true, &HandleRemovePointsCommand, "", NULL },
+                { "activate", SEC_ADMINISTRATOR, true, &HandleActivateCommand, "", NULL },
+                { "deactivate", SEC_ADMINISTRATOR, true, &HandleDeactivateCommand, "", NULL },
                 //{ "addreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 //{ "delreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 //{ "set", SEC_MODERATOR, true, NULL, "", RebirthSetCommandTable  },
@@ -472,7 +470,7 @@ class rebirth_commandscript : public CommandScript
 
             static ChatCommand MassSubCommandTable[] =
             {
-                { "summon", SEC_MODERATOR, true, &HandleMassSummonCommand, "", NULL },
+                { "summon", SEC_ADMINISTRATOR, true, &HandleMassSummonCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
@@ -489,7 +487,7 @@ class rebirth_commandscript : public CommandScript
             static ChatCommand RebirthCommandTable[] =
             {
                 { "rebirth", SEC_MODERATOR, true, NULL, "", RebirthSubCommandTable  },
-                { "mass", SEC_MODERATOR, true, NULL, "", MassSubCommandTable  },
+                { "mass", SEC_ADMINISTRATOR, true, NULL, "", MassSubCommandTable  },
                 { "setflag", SEC_MODERATOR, true, NULL, "", FlagSubCommandTable  },
                 { "pvpevent", SEC_MODERATOR, true, NULL, "", PvPEventSubCommandTable  },
                 { NULL, 0, false, NULL, "", NULL }
