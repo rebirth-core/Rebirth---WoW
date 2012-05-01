@@ -7,6 +7,47 @@ class rebirth_commandscript : public CommandScript
     public:
         rebirth_commandscript() : CommandScript("rebirth_commandscript") { }
 
+        static bool HandleMassSetFFACommand(ChatHandler* handler, const char* args)
+        {
+            if (!*args)
+               return false;
+
+            int range = atoi((char*)args);
+
+            std::list<Player*> plrList = handler->GetSession()->GetPlayer()->GetNearestPlayersList(range);
+            for (std::list<Player*>::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+            {
+                if (*itr)
+                {
+                    (*itr)->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
+                    (*itr)->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+                    (*itr)->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+                    (*itr)->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+                }
+            }
+
+            return true;
+        }
+
+        static bool HandleMassRemoveFFACommand(ChatHandler* handler, const char* args)
+        {
+            if (!*args)
+               return false;
+
+            int range = atoi((char*)args);
+
+            std::list<Player*> plrList = handler->GetSession()->GetPlayer()->GetNearestPlayersList(range);
+            for (std::list<Player*>::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+            {
+                if (*itr)
+                {
+                    (*itr)->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+                }
+            }
+
+            return true;
+        }
+
         static bool HandleSetFFACommand(ChatHandler* handler, const char* args)
         {
             handler->getSelectedPlayer()->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
@@ -477,6 +518,8 @@ class rebirth_commandscript : public CommandScript
             static ChatCommand MassSubCommandTable[] =
             {
                 { "summon", SEC_ADMINISTRATOR, true, &HandleMassSummonCommand, "", NULL },
+                { "setffa", SEC_ADMINISTRATOR, true, &HandleMassSetFFACommand, "", NULL },
+                { "removeffa", SEC_ADMINISTRATOR, true, &HandleMassRemoveFFACommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
