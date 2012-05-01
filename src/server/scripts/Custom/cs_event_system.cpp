@@ -7,8 +7,52 @@ class rebirth_commandscript : public CommandScript
     public:
         rebirth_commandscript() : CommandScript("rebirth_commandscript") { }
 
+        static bool HandleMassSetFFACommand(ChatHandler* handler, const char* args)
+        {
+            if (!*args)
+               return false;
+
+            int range = atoi((char*)args);
+
+            std::list<Player*> plrList = handler->GetSession()->GetPlayer()->GetNearestPlayersList(range);
+            for (std::list<Player*>::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+            {
+                if (*itr)
+                {
+                    (*itr)->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
+                    (*itr)->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+                    (*itr)->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+                    (*itr)->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+                }
+            }
+
+            return true;
+        }
+
+        static bool HandleMassRemoveFFACommand(ChatHandler* handler, const char* args)
+        {
+            if (!*args)
+               return false;
+
+            int range = atoi((char*)args);
+
+            std::list<Player*> plrList = handler->GetSession()->GetPlayer()->GetNearestPlayersList(range);
+            for (std::list<Player*>::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+            {
+                if (*itr)
+                {
+                    (*itr)->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+                }
+            }
+
+            return true;
+        }
+
         static bool HandleSetFFACommand(ChatHandler* handler, const char* args)
         {
+            handler->getSelectedPlayer()->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
+            handler->getSelectedPlayer()->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+            handler->getSelectedPlayer()->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
             handler->getSelectedPlayer()->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
             return true;
         }
@@ -21,6 +65,9 @@ class rebirth_commandscript : public CommandScript
 
         static bool HandleSetSanctuaryCommand(ChatHandler* handler, const char* args)
         {
+            handler->getSelectedPlayer()->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
+            handler->getSelectedPlayer()->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+            handler->getSelectedPlayer()->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
             handler->getSelectedPlayer()->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
             return true;
         }
@@ -442,12 +489,10 @@ class rebirth_commandscript : public CommandScript
 
             static ChatCommand RebirthSubSubCommandTable[] =
             {
-                { "addpoints", SEC_MODERATOR, true, &HandleAddPointsCommand, "", NULL },
-                { "removepoints", SEC_MODERATOR, true, &HandleRemovePointsCommand, "", NULL },
-                { "activate", SEC_MODERATOR, true, &HandleActivateCommand, "", NULL },
-                { "deactivate", SEC_MODERATOR, true, &HandleDeactivateCommand, "", NULL },
-                { "teamone", SEC_MODERATOR, true, &HandleTeamOneCommand, "", NULL },
-                { "teamtwo", SEC_MODERATOR, true, &HandleTeamTwoCommand, "", NULL },
+                { "addpoints", SEC_ADMINISTRATOR, true, &HandleAddPointsCommand, "", NULL },
+                { "removepoints", SEC_ADMINISTRATOR, true, &HandleRemovePointsCommand, "", NULL },
+                { "activate", SEC_ADMINISTRATOR, true, &HandleActivateCommand, "", NULL },
+                { "deactivate", SEC_ADMINISTRATOR, true, &HandleDeactivateCommand, "", NULL },
                 //{ "addreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 //{ "delreward", SEC_MODERATOR, true, NULL, "", RebirthSubSubSubCommandTable  },
                 //{ "set", SEC_MODERATOR, true, NULL, "", RebirthSetCommandTable  },
@@ -461,18 +506,38 @@ class rebirth_commandscript : public CommandScript
                 { NULL, 0, false, NULL, "", NULL }
             };
 
-            static ChatCommand RebirthCommandTable[] =
+            static ChatCommand PvPEventSubCommandTable[] =
             {
-                { "rebirth", SEC_MODERATOR, true, NULL, "", RebirthSubCommandTable  },
                 { "teamone", SEC_MODERATOR, true, &HandleTeamOneCommand, "", NULL },
                 { "teamtwo", SEC_MODERATOR, true, &HandleTeamTwoCommand, "", NULL },
                 { "match", SEC_MODERATOR, true, &HandleMatchCommand, "", NULL },
                 { "teamwipe", SEC_MODERATOR, true, &HandleTeamWipeCommand, "", NULL },
-                { "masssummon", SEC_MODERATOR, true, &HandleMassSummonCommand, "", NULL },
+                { NULL, 0, false, NULL, "", NULL }
+            };
+
+            static ChatCommand MassSubCommandTable[] =
+            {
+                { "summon", SEC_ADMINISTRATOR, true, &HandleMassSummonCommand, "", NULL },
+                { "setffa", SEC_ADMINISTRATOR, true, &HandleMassSetFFACommand, "", NULL },
+                { "removeffa", SEC_ADMINISTRATOR, true, &HandleMassRemoveFFACommand, "", NULL },
+                { NULL, 0, false, NULL, "", NULL }
+            };
+
+            static ChatCommand FlagSubCommandTable[] =
+            {
                 { "setffa", SEC_MODERATOR, true, &HandleSetFFACommand, "", NULL },
                 { "removeffa", SEC_MODERATOR, true, &HandleRemoveFFACommand, "", NULL },
                 { "setsanctuary", SEC_MODERATOR, true, &HandleSetSanctuaryCommand, "", NULL },
                 { "removesanctuary", SEC_MODERATOR, true, &HandleRemoveSanctuaryCommand, "", NULL },
+                { NULL, 0, false, NULL, "", NULL }
+            };
+
+            static ChatCommand RebirthCommandTable[] =
+            {
+                { "rebirth", SEC_MODERATOR, true, NULL, "", RebirthSubCommandTable  },
+                { "mass", SEC_ADMINISTRATOR, true, NULL, "", MassSubCommandTable  },
+                { "flag", SEC_MODERATOR, true, NULL, "", FlagSubCommandTable  },
+                { "pvpevent", SEC_MODERATOR, true, NULL, "", PvPEventSubCommandTable  },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
