@@ -525,7 +525,6 @@ class rebirth_commandscript : public CommandScript
 
             static ChatCommand FlagSubCommandTable[] =
             {
-                { "setflag", SEC_MODERATOR, true, NULL, "", FlagSubCommandTable  },
                 { "setffa", SEC_MODERATOR, true, &HandleSetFFACommand, "", NULL },
                 { "removeffa", SEC_MODERATOR, true, &HandleRemoveFFACommand, "", NULL },
                 { "setsanctuary", SEC_MODERATOR, true, &HandleSetSanctuaryCommand, "", NULL },
@@ -537,7 +536,7 @@ class rebirth_commandscript : public CommandScript
             {
                 { "rebirth", SEC_MODERATOR, true, NULL, "", RebirthSubCommandTable  },
                 { "mass", SEC_ADMINISTRATOR, true, NULL, "", MassSubCommandTable  },
-                { "setflag", SEC_MODERATOR, true, NULL, "", FlagSubCommandTable  },
+                { "flag", SEC_MODERATOR, true, NULL, "", FlagSubCommandTable  },
                 { "pvpevent", SEC_MODERATOR, true, NULL, "", PvPEventSubCommandTable  },
                 { NULL, 0, false, NULL, "", NULL }
             };
