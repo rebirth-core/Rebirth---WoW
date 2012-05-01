@@ -461,18 +461,37 @@ class rebirth_commandscript : public CommandScript
                 { NULL, 0, false, NULL, "", NULL }
             };
 
-            static ChatCommand RebirthCommandTable[] =
+            static ChatCommand PvPEventSubCommandTable[] =
             {
-                { "rebirth", SEC_MODERATOR, true, NULL, "", RebirthSubCommandTable  },
                 { "teamone", SEC_MODERATOR, true, &HandleTeamOneCommand, "", NULL },
                 { "teamtwo", SEC_MODERATOR, true, &HandleTeamTwoCommand, "", NULL },
                 { "match", SEC_MODERATOR, true, &HandleMatchCommand, "", NULL },
                 { "teamwipe", SEC_MODERATOR, true, &HandleTeamWipeCommand, "", NULL },
-                { "masssummon", SEC_MODERATOR, true, &HandleMassSummonCommand, "", NULL },
+                { NULL, 0, false, NULL, "", NULL }
+            };
+
+            static ChatCommand MassSubCommandTable[] =
+            {
+                { "summon", SEC_MODERATOR, true, &HandleMassSummonCommand, "", NULL },
+                { NULL, 0, false, NULL, "", NULL }
+            };
+
+            static ChatCommand FlagSubCommandTable[] =
+            {
+                { "setflag", SEC_MODERATOR, true, NULL, "", FlagSubCommandTable  },
                 { "setffa", SEC_MODERATOR, true, &HandleSetFFACommand, "", NULL },
                 { "removeffa", SEC_MODERATOR, true, &HandleRemoveFFACommand, "", NULL },
                 { "setsanctuary", SEC_MODERATOR, true, &HandleSetSanctuaryCommand, "", NULL },
                 { "removesanctuary", SEC_MODERATOR, true, &HandleRemoveSanctuaryCommand, "", NULL },
+                { NULL, 0, false, NULL, "", NULL }
+            };
+
+            static ChatCommand RebirthCommandTable[] =
+            {
+                { "rebirth", SEC_MODERATOR, true, NULL, "", RebirthSubCommandTable  },
+                { "mass", SEC_MODERATOR, true, NULL, "", MassSubCommandTable  },
+                { "setflag", SEC_MODERATOR, true, NULL, "", FlagSubCommandTable  },
+                { "pvpevent", SEC_MODERATOR, true, NULL, "", PvPEventSubCommandTable  },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
