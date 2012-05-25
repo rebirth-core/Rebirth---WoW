@@ -7,6 +7,94 @@ class rebirth_commandscript : public CommandScript
     public:
         rebirth_commandscript() : CommandScript("rebirth_commandscript") { }
 
+
+        static bool HandleFightLeaveCommand(ChatHandler* handler, const char* args)
+        {
+        	handler->PSendSysMessage("Beginne Wiederbelebung toter Spieler...");
+
+        	QueryResult result = CharacterDatabase.PQuery(
+        			"SELECT player FROM royal_fighters");
+
+        	if (result)
+        	{
+        		do
+        		{
+        			Field* field = result->Fetch();
+        			Player* player = ObjectAccessor::FindPlayer(field[0].GetUInt32());
+
+        			QueryResult data = CharacterDatabase.PQuery(
+        					"SELECT online FROM characters WHERE guid = %u", player->GetGUID());
+        			Field* dataField;
+        			if (player->isDead() && data && (dataField = data->Fetch()))
+        			{
+        				if (dataField[0].GetInt16() == 1)
+        				{
+        				    CharacterDatabase.PExecute(
+        						    "DELETE FROM royal_fighters WHERE player = %u", player->GetGUID());
+
+        				    player->TeleportTo(571, 5761.0708f, 588.2848f, 563.0f, 1.0f, 0);
+        				    player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
+        				    player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        				    player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+
+        				    handler->PSendSysMessage("Spieler %s wurde wiederbelebt.", player->GetName());
+        				}
+
+        				else
+        					handler->PSendSysMessage("Spieler %s ist nicht online.", player->GetName());
+        			}
+
+        		} while (result->NextRow());
+        	}
+        }
+
+        static bool HandleFightCommand(ChatHandler* handler, const char* args)
+        {
+        	Player* player;
+
+        	if (!*args && (player = handler->getSelectedPlayer()))
+        		CharacterDatabase.PExecute(
+        				"REPLACE royal_fighters SET player = %u", player->GetGUID());
+        	else if (*args)
+        	{
+        		QueryResult result = CharacterDatabase.PQuery(
+        				"SELECT guid, online FROM characters WHERE name = '%s'",strtok((char*)args, " "));
+        		if (result)
+        		{
+        			Field* field = result->Fetch();
+
+        			if (field[1].GetInt16() != 1)
+        			{
+        				handler->PSendSysMessage("Spieler nicht online!");
+        				return true;
+        			}
+
+        			player = ObjectAccessor::FindPlayer(field[0].GetUInt32());
+        			CharacterDatabase.PExecute(
+        			        "REPLACE royal_fighters SET player = %u", player->GetGUID());
+        		}
+        		else
+        		{
+        			handler->PSendSysMessage("Charakter nicht gefunden!");
+        			return true;
+        		}
+        	}
+        	else
+        	{
+        		handler->PSendSysMessage("Charakter nicht gefunden!");
+        		return true;
+        	}
+
+        	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
+        	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+        	player->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+
+        	player->TeleportTo(571, 5777.65f, 606.986f, 565.302f, 4.13931f, 0);
+
+        	return true;
+        }
+
         static bool HandleMassSetFFACommand(ChatHandler* handler, const char* args)
         {
             if (!*args)
@@ -538,6 +626,8 @@ class rebirth_commandscript : public CommandScript
                 { "mass", SEC_ADMINISTRATOR, true, NULL, "", MassSubCommandTable  },
                 { "flag", SEC_MODERATOR, true, NULL, "", FlagSubCommandTable  },
                 { "pvpevent", SEC_MODERATOR, true, NULL, "", PvPEventSubCommandTable  },
+                { "revfighters", SEC_MODERATOR, true, &HandleFightLeaveCommand, "", NULL },
+                { "fight", SEC_MODERATOR, true, &HandleFightCommand, "", NULL },
                 { NULL, 0, false, NULL, "", NULL }
             };
 
