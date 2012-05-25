@@ -32,7 +32,9 @@ class rebirth_commandscript : public CommandScript
         				    CharacterDatabase.PExecute(
         						    "DELETE FROM royal_fighters WHERE player = %u", player->GetGUID());
 
-        				    player->ResurrectPlayer(100, false);
+        				    player->ResurrectPlayer(1.0f);
+        				    player->SpawnCorpseBones();
+        				    player->SaveToDB();
         				    player->TeleportTo(571, 5761.0708f, 588.2848f, 563.0f, 1.0f, 0);
         				    player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
         				    player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
