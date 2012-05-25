@@ -86,12 +86,14 @@ class rebirth_commandscript : public CommandScript
         		return true;
         	}
 
+
+
+        	player->TeleportTo(571, 5777.65f, 606.986f, 565.302f, 4.13931f, 0);
+
         	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
         	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
         	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
         	player->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
-
-        	player->TeleportTo(571, 5777.65f, 606.986f, 565.302f, 4.13931f, 0);
 
         	return true;
         }
