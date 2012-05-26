@@ -2,12 +2,39 @@
 #include "Chat.h"
 #include "World.h"
 
+class FlagEvent : public BasicEvent
+{
+    public:
+        FlagEvent(Player& player) :  _player(player) { }
+
+        bool Execute(uint64 /*time*/, uint32 /*diff*/)
+        {
+        	_player.RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
+        	_player.RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        	_player.RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+        	_player.SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+            return true;
+        }
+
+    private:
+        Player& _player;
+};
+
+
 class rebirth_commandscript : public CommandScript
 {
     public:
         rebirth_commandscript() : CommandScript("rebirth_commandscript") { }
 
 
+        static void GiveFFA(Player* player)
+        {
+        	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
+        	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+        	player->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        }
+        
         static bool HandleFightLeaveCommand(ChatHandler* handler, const char* args)
         {
         	handler->PSendSysMessage("Beginne Wiederbelebung toter Spieler...");
@@ -19,36 +46,53 @@ class rebirth_commandscript : public CommandScript
         	{
         		do
         		{
+        			
         			Field* field = result->Fetch();
-        			Player* player = ObjectAccessor::FindPlayer(field[0].GetUInt32());
-
         			QueryResult data = CharacterDatabase.PQuery(
-        					"SELECT online FROM characters WHERE guid = %u", player->GetGUID());
-        			Field* dataField;
-        			if (player->isDead() && data && (dataField = data->Fetch()))
+        					"SELECT online FROM characters WHERE guid = %u", field[0].GetUInt32());
+        			if (data)
         			{
-        				if (dataField[0].GetInt16() == 1)
-        				{
-        				    CharacterDatabase.PExecute(
-        						    "DELETE FROM royal_fighters WHERE player = %u", player->GetGUID());
-
-        				    player->ResurrectPlayer(1.0f);
-        				    player->SpawnCorpseBones();
-        				    player->SaveToDB();
-        				    player->TeleportTo(571, 5761.0708f, 588.2848f, 563.0f, 1.0f, 0);
-        				    player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
-        				    player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
-        				    player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
-
-        				    handler->PSendSysMessage("Spieler %s wurde wiederbelebt.", player->GetName());
-        				}
-
-        				else
-        					handler->PSendSysMessage("Spieler %s ist nicht online.", player->GetName());
+							Field* dataField = data->Fetch();
+							
+							if (dataField[0].GetInt16() == 1)
+							{
+								Player* player = ObjectAccessor::FindPlayer(field[0].GetUInt32());
+								
+								if (player->isDead())
+								{
+									if (dataField[0].GetInt16() == 1)
+									{
+										CharacterDatabase.PExecute(
+												"DELETE FROM royal_fighters WHERE player = %u", player->GetGUID());
+			
+										player->ResurrectPlayer(1.0f);
+										player->SpawnCorpseBones();
+										player->SaveToDB();
+										
+										int pos = urand(0,1);
+										
+										if (pos == 0)
+											player->TeleportTo(571, 5761.0708f, 588.2848f, 563.0f, 1.0f, 0);
+										else
+											player->TeleportTo(571, 5791.92334f, 625.488f, 562.1431f, 1.0f, 0);
+										
+										player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
+										player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+										player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+			
+										handler->PSendSysMessage("Spieler %s wurde wiederbelebt.", player->GetName());
+									}
+			
+									else
+										handler->PSendSysMessage("Spieler %s ist nicht online.", player->GetName());
+								}
+							}
         			}
 
         		} while (result->NextRow());
         	}
+        	
+        	return true;
         }
 
         static bool HandleFightCommand(ChatHandler* handler, const char* args)
@@ -91,11 +135,7 @@ class rebirth_commandscript : public CommandScript
 
 
         	player->TeleportTo(571, 5777.65f, 606.986f, 565.302f, 4.13931f, 0);
-
-        	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_PVP);
-        	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
-        	player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
-        	player->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        	player->m_Events.AddEvent(new FlagEvent(*player), player->m_Events.CalculateTime(3000), true);
 
         	return true;
         }
@@ -639,7 +679,6 @@ class rebirth_commandscript : public CommandScript
             return RebirthCommandTable;
         }
 };
-
 
 
 void AddSC_rebirth_commandscript()
