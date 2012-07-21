@@ -340,7 +340,7 @@ class reward_npc : public CreatureScript
 
                 /*
                     Hier wird die Liste der Rewards erstellt
-                    ToDo: Eine schönere Umsetzung finden
+                    ToDo: Eine schï¿½nere Umsetzung finden
                 */
                 if (uiAction >= 100 && uiAction < 1000)
                 {
@@ -356,7 +356,7 @@ class reward_npc : public CreatureScript
                            int cost = field[6].GetInt32();
 
                            char str_info[200];
-                           sprintf(str_info,"%s (%d RP)",name.c_str(), cost);
+                           sprintf(str_info,"%s |cffff0000(%d RP)",name.c_str(), cost);
                            sLog->outError(str_info);
                            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, str_info, GOSSIP_SENDER_MAIN, id+1000);
                            
@@ -369,7 +369,7 @@ class reward_npc : public CreatureScript
 
                 /*
                     Ab hier werden die Belohnungen vergeben
-                    ToDo: Eine schönere Umsetzung finden
+                    ToDo: Eine schï¿½nere Umsetzung finden
                 */
                 if (uiAction >= 1000 && uiAction < 10000)
                 {
