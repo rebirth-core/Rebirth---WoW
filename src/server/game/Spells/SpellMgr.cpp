@@ -2982,8 +2982,10 @@ void SpellMgr::LoadDbcDataCorrections()
 
         switch (spellInfo->Id)
         {
-            case 40244: case 40245: // Simon Game Visual
-            case 40246: case 40247: // Simon Game Visual
+            case 40244: // Simon Game Visual
+            case 40245: // Simon Game Visual
+            case 40246: // Simon Game Visual
+            case 40247: // Simon Game Visual
             case 42835: // Spout, remove damage effect, only anim is needed
                 spellInfo->Effect[0] = 0;
                 break;
@@ -2995,7 +2997,6 @@ void SpellMgr::LoadDbcDataCorrections()
                 spellInfo->EffectImplicitTargetB[0] = 0;
                 break;
             case 63665: // Charge (Argent Tournament emote on riders)
-            case 31447: // Mark of Kaz'rogal (needs target selection script)
             case 31298: // Sleep (needs target selection script)
             case 51904: // Summon Ghouls On Scarlet Crusade (this should use conditions table, script for this spell needs to be fixed)
             case 2895:  // Wrath of Air Totem rank 1 (Aura)
@@ -3091,8 +3092,10 @@ void SpellMgr::LoadDbcDataCorrections()
             case 61588: // Blazing Harpoon
             case 52479: // Gift of the Harvester
             case 48246: // Ball of Flame
-            case 36384: // Skartax Purple Beam
                 spellInfo->MaxAffectedTargets = 1;
+                break;
+            case 36384: // Skartax Purple Beam
+                spellInfo->MaxAffectedTargets = 2;
                 break;
             case 41376: // Spite
             case 39992: // Needle Spine
@@ -3180,6 +3183,9 @@ void SpellMgr::LoadDbcDataCorrections()
                 break;
             case 51852: // The Eye of Acherus (no spawn in phase 2 in db)
                 spellInfo->EffectMiscValue[0] |= 1;
+                break;
+            case 51912: // Crafty's Ultra-Advanced Proto-Typical Shortening Blaster
+                spellInfo->EffectAmplitude[0] = 3000;
                 break;
             case 29809: // Desecration Arm - 36 instead of 37 - typo? :/
                 spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_7_YARDS;
@@ -3337,11 +3343,17 @@ void SpellMgr::LoadDbcDataCorrections()
             case 53313: // Entangling Roots (Rank 8) -- Nature's Grasp Proc
                 spellInfo->CastingTimeIndex = 1;
                 break;
+            case 59414: // Pulsing Shockwave Aura (Loken)
+                // this flag breaks movement, remove it
+                spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
+                break;
             case 61719: // Easter Lay Noblegarden Egg Aura - Interrupt flags copied from aura which this aura is linked with
                 spellInfo->AuraInterruptFlags = AURA_INTERRUPT_FLAG_HITBYSPELL | AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
                 break;
             case 49206: // Summon Gargoyle
                 spellInfo->DurationIndex = 587;
+            case 70650: // Death Knight T10 Tank 2P Bonus
+                spellInfo->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
                 break;
             // ULDUAR SPELLS
             //
@@ -3402,11 +3414,6 @@ void SpellMgr::LoadDbcDataCorrections()
                 // may be db data bug, or blizz may keep reapplying area auras every update with checking immunity
                 // that will be clear if we get more spells with problem like this
                 spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
-                break;
-            case 62584: // Lifebinder's Gift
-            case 64185: // Lifebinder's Gift
-                spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_NEARBY_ENTRY;
-                spellInfo->EffectImplicitTargetB[2] = TARGET_UNIT_NEARBY_ENTRY;
                 break;
             case 62301: // Cosmic Smash (Algalon the Observer)
                 spellInfo->MaxAffectedTargets = 1;
@@ -3539,7 +3546,7 @@ void SpellMgr::LoadDbcDataCorrections()
                 spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_200_YARDS;   // 200yd
                 break;
             case 70598: // Sindragosa's Fury
-                spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_CASTER;
+                spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
                 break;
             case 69846: // Frost Bomb
                 spellInfo->speed = 0.0f;    // This spell's summon happens instantly
@@ -3672,6 +3679,7 @@ void SpellMgr::LoadDbcDataCorrections()
 
         switch (spellInfo->SpellFamilyName)
         {
+
             case SPELLFAMILY_DRUID:
                 // Starfall Target Selection
                 if (spellInfo->SpellFamilyFlags[2] & 0x100)
